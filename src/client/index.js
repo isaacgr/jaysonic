@@ -1,6 +1,8 @@
 const _ = require("lodash");
 const events = require("events");
 const net = require("net");
+const { formatRequest, parseStream } = require("../functions");
+const JSONStream = require("JSONStream");
 
 /**
  * @class Client
@@ -26,21 +28,48 @@ class Client {
     };
 
     this.server = server;
+    this.id = 1;
+
+    /**
+     * we get the message in either chunks or as a whole, so it gets buffered
+     *
+     * whole message:
+     * {"jsonrpc": "2.0", "result": -19, "id": 1}
+     *
+     * chunk:
+     * {"jsonrpc": "2.0",
+     *
+     */
+    this.messageBuffer = "";
     this.options = _.merge(defaults, options || {});
   }
 
-  async connect() {
-    this.client = new net.Socket();
-    this.connection = this.client.connect(this.server);
-    return await this.connection;
+  connect() {
+    return new Promise((resolve, reject) => {
+      this.client = new net.Socket();
+      this.connection = this.client.connect(this.server);
+      resolve(this.connection);
+      this.client.once("error", error => {
+        console.log("error: " + error);
+        reject(error);
+      });
+    });
   }
 
-  async end() {
-    return await this.connection.end();
+  end() {
+    return Promise.resolve(this.connection.end());
   }
 
-  async request(method, params) {
-    return await this.client.on("data", data => data);
+  request(method, params, id = this.id) {
+    return new Promise((resolve, reject) => {
+      const clientMessage = formatRequest(method, params, id, this.options);
+      this.client.write(clientMessage);
+      this.client.setEncoding("utf8");
+      this.client.on("data", data => {
+        this.messageBuffer += data;
+        resolve(data);
+      });
+    });
   }
 }
 require("util").inherits(Client, events.EventEmitter);
