@@ -7,3 +7,13 @@ client.connect().then(conn => {
     `Client connected to ${client.server.host} on port ${client.server.port}`
   );
 });
+
+client
+  .request("Test")
+  .then(res => {
+    console.log(res);
+  })
+  .catch(error => {
+    console.log(error);
+    client.end();
+  });

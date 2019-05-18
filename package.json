@@ -4,12 +4,17 @@
   "description": "A better jsonrpc client",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "./node_modules/.bin/babel src --out-dir lib",
+    "prepare": "npm run build"
   },
   "author": "Isaac Rowell",
   "license": "ISC",
   "devDependencies": {
+    "@babel/cli": "^7.4.4",
+    "@babel/core": "^7.4.4",
     "@babel/preset-env": "^7.4.4",
+    "@babel/register": "^7.4.4",
     "babel-core": "^6.26.3",
     "babelify": "^10.0.0"
   },

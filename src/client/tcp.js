@@ -1,4 +1,5 @@
 const Client = require(".");
+const _ = require("lodash");
 
 /**
  * Constructor for Jsonic TCP client
@@ -12,7 +13,7 @@ const Client = require(".");
 class TCPClient extends Client {
   constructor(options) {
     super(options);
-    this.options = options;
+    this.options = _.merge(super.options, options || {});
   }
 }
 
