@@ -2,7 +2,6 @@ const _ = require("lodash");
 const events = require("events");
 const net = require("net");
 const { formatRequest, parseStream } = require("../functions");
-const JSONStream = require("JSONStream");
 
 /**
  * @class Client
@@ -41,16 +40,18 @@ class Client {
      *
      */
     this.messageBuffer = "";
+    this.notifications = {};
     this.options = _.merge(defaults, options || {});
   }
 
   connect() {
     return new Promise((resolve, reject) => {
-      this.client = new net.Socket();
-      this.connection = this.client.connect(this.server);
-      resolve(this.connection);
-      this.client.once("error", error => {
-        console.log("error: " + error);
+      this.connection = new net.Socket();
+      this.client = this.connection.connect(this.server);
+      this.connection.on("connect", () => {
+        resolve(this.client);
+      });
+      this.client.on("error", error => {
         reject(error);
       });
     });
@@ -63,12 +64,72 @@ class Client {
   request(method, params, id = this.id) {
     return new Promise((resolve, reject) => {
       const clientMessage = formatRequest(method, params, id, this.options);
+      return this._handleMessage(clientMessage);
+    });
+  }
+
+  _handleMessage(clientMessage) {
+    return new Promise((resolve, reject) => {
       this.client.write(clientMessage);
       this.client.setEncoding("utf8");
       this.client.on("data", data => {
         this.messageBuffer += data;
-        resolve(data);
+        /**
+         * want to search for whole messages by matching the delimiter from the start of the buffer
+         */
+        for (
+          let endPos;
+          (endPos = this.messageBuffer.indexOf(
+            this.options.delimiter,
+            endPos + 1
+          ));
+
+        ) {
+          let chunk = this.messageBuffer.substring(
+            this.messageBuffer,
+            endPos + 1
+          );
+          // will throw an error if not valid json
+          // this will throw for every chunk with } in it that isnt complete, but thats fine
+          try {
+            console.log(JSON.parse(chunk));
+            const message = JSON.parse(chunk);
+            // valid json, so we pull the chunk from the buffer
+            this.messageBuffer = this.messageBuffer
+              .substring(endPos + 1)
+              .trim();
+            // start new buffer
+            endPos = 0;
+
+            if (!message.id) {
+              /**
+               * if there is no message id in the response, then we assume its a notification
+               * ignore it here and handle these separately
+               */
+              this.notifications[message.id] = message;
+              // just start a new buffer
+              endPos = 0;
+            }
+            if (message.id !== this.id) {
+              // response was not meant for this message
+              continue;
+            }
+            this.id += 1;
+          } catch (e) {
+            if (e instanceof SyntaxError) {
+              // if we've reached the end of the message, and JSON is still invalid, then throw error
+              if (endPos == -1) {
+                reject(e);
+              }
+            }
+          }
+        }
+        return () => {
+          this.client.removeListener();
+          resolve(this.messageBuffer);
+        };
       });
+      this.client.on("error", error => reject(error));
     });
   }
 }

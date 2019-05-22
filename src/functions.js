@@ -35,7 +35,7 @@ const formatRequest = (method, params, id, options) => {
   return messageString;
 };
 
-const parseStream = async (stream, options) => {};
+const parseStream = () => {};
 
 module.exports = {
   formatRequest,

@@ -16,6 +16,7 @@
     "@babel/preset-env": "^7.4.4",
     "@babel/register": "^7.4.4",
     "babel-core": "^6.26.3",
+    "babel-plugin-transform-es2015-arrow-functions": "^6.22.0",
     "babelify": "^10.0.0"
   },
   "dependencies": {
