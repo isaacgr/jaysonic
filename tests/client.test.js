@@ -4,7 +4,7 @@ const client = new Jasonic.client({ host: "172.16.230.4", port: 6969 });
 
 client
   .connect()
-  .then(conn => {
+  .then(() => {
     console.log(
       `Client connected to ${client.server.host} on port ${client.server.port}`
     );
@@ -21,4 +21,13 @@ client
   .catch(error => {
     console.log(error);
     client.end();
+  });
+
+client
+  .subscribe("test")
+  .then(message => {
+    console.log(message);
+  })
+  .catch(error => {
+    console.log(error);
   });
