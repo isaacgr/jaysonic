@@ -43,6 +43,13 @@ class Client {
     this.message_id = 1;
     this.serving_message_id = 1;
 
+    /**
+     * we can receive whole messages, or parital so we need to buffer
+     *
+     * whole message: {"jsonrpc": 2.0, "params": ["hello"], id: 1}
+     *
+     * partial message: {"jsonrpc": 2.0, "params"
+     */
     this.messageBuffer = "";
     this.notifications = {};
     this.responseQueue = {};
@@ -131,8 +138,9 @@ class Client {
           }
         } catch (e) {
           if (e instanceof SyntaxError) {
-            // if any of the json messages are invalid, throw an error
-            this.send_error(this.message_id, ERR_PARSE_ERROR);
+            // if we've gotten all chunks, and json is still invalid throw error
+            if (this.messageBuffer.indexOf(chunk) === this.messageBuffer.length)
+              this.send_error(this.message_id, ERR_PARSE_ERROR);
           }
         }
       }
