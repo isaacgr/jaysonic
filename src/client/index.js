@@ -43,16 +43,6 @@ class Client {
     this.message_id = 1;
     this.serving_message_id = 1;
 
-    /**
-     * we get the message in either chunks or as a whole, so it gets buffered
-     *
-     * whole message:
-     * {"jsonrpc": "2.0", "result": -19, "id": 1}
-     *
-     * chunk:
-     * {"jsonrpc": "2.0",
-     *
-     */
     this.messageBuffer = "";
     this.notifications = {};
     this.responseQueue = {};
@@ -75,7 +65,7 @@ class Client {
   }
 
   end() {
-    return Promise.resolve(this.connection.end());
+    return Promise.resolve(this.client.end());
   }
 
   request(method, params, id = this.message_id) {
@@ -98,43 +88,30 @@ class Client {
     });
   }
 
-  subscribe(method) {
-    return new Promise((resolve, reject) => {
-      this.on("notify", notifyMethod => {
-        method === notifyMethod && resolve(this.notifications[method]);
-      });
-      this.on("error", error => reject(error));
+  subscriptions(methods) {
+    this.on("notify", notifyMethod => {
+      const params = this.notifications[notifyMethod].params;
+      methods[notifyMethod](params);
+    });
+    this.on("error", error => {
+      throw new Error(JSON.stringify(error));
     });
   }
 
   _listen() {
     this.client.on("data", data => {
-      this.messageBuffer += data;
+      this.messageBuffer += data.trim();
       /**
        * want to search for whole messages by matching the delimiter from the start of the buffer
        */
-      for (
-        let endPos;
-        (endPos = this.messageBuffer.indexOf(
-          this.options.delimiter,
-          endPos + 1
-        )) !== -1;
 
-      ) {
-        let chunk = this.messageBuffer.substring(
-          this.messageBuffer,
-          endPos + 1
-        );
-        // will throw an error if not valid json
+      for (let chunk of this.messageBuffer.split(this.options.delimiter)) {
         try {
+          // will throw an error if not valid json
           const message = JSON.parse(chunk);
-          // valid json, so we pull the chunk from the buffer
-          this.messageBuffer = this.messageBuffer.substring(endPos + 1).trim();
-          // start new buffer
-          endPos = 0;
 
           if (!message.id) {
-            //if there is no message id in the response, then we assume its a notification
+            // no id, so notification
             try {
               var method = message.method.replace(".", "_");
             } catch (e) {
@@ -144,18 +121,18 @@ class Client {
             }
             this.notifications[method] = message;
             this.emit("notify", method);
-            // just start a new buffer
-            endPos = 0;
           }
-          this.serving_message_id = message.id;
-          this.responseQueue[this.serving_message_id] = message;
-          this.emit("response", this.serving_message_id);
+
+          // no method, so response
+          if (!message.method) {
+            this.serving_message_id = message.id;
+            this.responseQueue[this.serving_message_id] = message;
+            this.emit("response", this.serving_message_id);
+          }
         } catch (e) {
           if (e instanceof SyntaxError) {
-            // if we've reached the end of the message, and JSON is still invalid, then throw error
-            if (endPos === -1) {
-              this.send_error(this.message_id, ERR_PARSE_ERROR);
-            }
+            // if any of the json messages are invalid, throw an error
+            this.send_error(this.message_id, ERR_PARSE_ERROR);
           }
         }
       }
@@ -163,11 +140,11 @@ class Client {
   }
 
   send_error(id, code, message = null) {
-    if (!message) {
-      message = ERR_MSGS[message] || "Unknown Error";
-    }
-    response = { error: { code: code, message: message }, id: id };
-    this.emit("error");
+    const response = {
+      error: { code: code, message: ERR_MSGS[message] || "Unknown Error" },
+      id: id
+    };
+    this.emit("error", response);
   }
 }
 require("util").inherits(Client, events.EventEmitter);

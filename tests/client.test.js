@@ -23,11 +23,8 @@ client
     client.end();
   });
 
-client
-  .subscribe("test")
-  .then(message => {
-    console.log(message);
-  })
-  .catch(error => {
-    console.log(error);
-  });
+// const test = params => console.log("test");
+
+// client.subscriptions({
+//   test: test
+// });
