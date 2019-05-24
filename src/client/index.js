@@ -14,17 +14,19 @@ const { formatRequest, parseStream } = require("../functions");
  * @return {Client}
  */
 
-ERR_PARSE_ERROR = -32700;
-ERR_INVALID_REQUEST = -32600;
-ERR_METHOD_NOT_FOUND = -32601;
-ERR_INVALID_PARAMS = -32602;
-ERR_INTERNAL = -32603;
+ERR_CODES = {
+  parseError: -32700,
+  invalidRequest: -32600,
+  methodNotFound: -32601,
+  invalidParams: -32602,
+  internal: -32603
+};
 
 ERR_MSGS = {
-  ERR_PARSE_ERROR: "Parse Error",
-  ERR_INVALID_REQUEST: "Invalid Request",
-  ERR_METHOD_NOT_FOUND: "Method not found",
-  ERR_INVALID_PARAMS: "Invalid parameters"
+  parseError: "Parse Error",
+  invalidRequest: "Invalid Request",
+  methodNotFound: "Method not found",
+  invalidParams: "Invalid parameters"
 };
 
 class Client {
@@ -41,6 +43,7 @@ class Client {
     this.server = server;
     this.message_id = 1;
     this.serving_message_id = 1;
+    this.pendingCalls = {};
 
     /**
      * we can receive whole messages, or parital so we need to buffer
@@ -61,8 +64,13 @@ class Client {
       this.client.connect(this.server);
       this.client.setEncoding("utf8");
       this.client.on("connect", () => {
+        /**
+         * start listeners, response handlers and error handlers
+         */
         this._listen();
-        resolve();
+        this._handle_response();
+        this._handle_error();
+        resolve(this.server);
       });
       this.client.on("error", error => {
         reject(error);
@@ -74,24 +82,20 @@ class Client {
     return Promise.resolve(this.client.end());
   }
 
-  request(method, params, id = this.message_id) {
-    this.message_id = id;
-    return new Promise((resolve, reject) => {
+  request(method, params) {
+    const req_promise = new Promise((resolve, reject) => {
       const clientMessage = formatRequest(
         method,
         params,
         this.message_id,
         this.options
       );
+      this.pendingCalls[this.message_id] = { resolve, reject };
+      this.message_id += 1;
       this.client.write(clientMessage);
-      this.on("response", id => {
-        if (Object.keys(this.responseQueue[id]).indexOf(this.message_id)) {
-          this.message_id += 1;
-          resolve(this.responseQueue[id]);
-        }
-      });
-      this.on("error", error => reject(error));
     });
+
+    return req_promise;
   }
 
   notify(methods) {
@@ -99,25 +103,47 @@ class Client {
       const params = this.notifications[notifyMethod].params;
       methods[notifyMethod](params);
     });
+  }
+
+  _handle_response() {
+    this.on("response", id => {
+      if (!(this.pendingCalls[id] === undefined)) {
+        this.pendingCalls[id].resolve(this.responseQueue[id]);
+        delete this.responseQueue[id];
+        delete this.responseQueue[id];
+      }
+    });
+  }
+
+  _handle_error() {
     this.on("error", error => {
-      throw new Error(JSON.stringify(error));
+      this.pendingCalls[error.id].reject(error);
     });
   }
 
   _listen() {
     this.client.on("data", data => {
-      this.messageBuffer += data.trim();
+      this.messageBuffer += data.trimLeft();
       /**
        * want to search for whole messages by matching the delimiter from the start of the buffer
        */
-
-      for (let chunk of this.messageBuffer.split(this.options.delimiter)) {
+      const messages = this.messageBuffer.split(this.options.delimiter);
+      for (let chunk of messages) {
         try {
           // will throw an error if not valid json
           const message = JSON.parse(chunk);
+          if (message.error) {
+            // got an error back
+            this.send_error(
+              message.id,
+              message.error.code,
+              message.error.message
+            );
+          }
 
           if (!message.id) {
             // no id, so notification
+            console.log(message);
             this.notifications[method] = message;
             this.emit("notify", method);
           }
@@ -131,8 +157,15 @@ class Client {
         } catch (e) {
           if (e instanceof SyntaxError) {
             // if we've gotten all chunks, and json is still invalid throw error
-            if (this.messageBuffer.indexOf(chunk) === this.messageBuffer.length)
-              this.send_error(this.message_id, ERR_PARSE_ERROR);
+            if (
+              this.messageBuffer.indexOf(chunk) === this.messageBuffer.length
+            ) {
+              this.send_error(
+                this.message_id,
+                ERR_CODES["parseError"],
+                ERR_MSGS["parseError"]
+              );
+            }
           }
         }
       }
@@ -144,7 +177,7 @@ class Client {
 
   send_error(id, code, message = null) {
     const response = {
-      error: { code: code, message: ERR_MSGS[message] || "Unknown Error" },
+      error: { code: code, message: message || "Unknown Error" },
       id: id
     };
     this.emit("error", response);
