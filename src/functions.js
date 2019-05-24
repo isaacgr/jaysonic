@@ -19,7 +19,7 @@ const formatRequest = (method, params, id, options) => {
   }
 
   if (params) {
-    if (!isObject(params) || !isArray(params)) {
+    if (!isObject(params) && !isArray(params)) {
       throw new TypeError(params + " must be an object or array");
     }
     request.params = params;

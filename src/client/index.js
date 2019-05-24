@@ -35,8 +35,7 @@ class Client {
 
     const defaults = {
       version: 2,
-      delimiter: "\r\n",
-      persist: true
+      delimiter: "\r\n"
     };
 
     this.server = server;
@@ -95,7 +94,7 @@ class Client {
     });
   }
 
-  subscriptions(methods) {
+  notify(methods) {
     this.on("notify", notifyMethod => {
       const params = this.notifications[notifyMethod].params;
       methods[notifyMethod](params);
@@ -119,13 +118,6 @@ class Client {
 
           if (!message.id) {
             // no id, so notification
-            try {
-              var method = message.method.replace(".", "_");
-            } catch (e) {
-              if (e instanceof TypeError) {
-                this.send_error(this.message_id, ERR_INVALID_PARAMS);
-              }
-            }
             this.notifications[method] = message;
             this.emit("notify", method);
           }
@@ -144,6 +136,9 @@ class Client {
           }
         }
       }
+    });
+    this.client.on("end", () => {
+      console.warn("Other side closed connection");
     });
   }
 

@@ -11,9 +11,8 @@ const _ = require("lodash");
  */
 
 class TCPClient extends Client {
-  constructor(options) {
-    super(options);
-    this.options = _.merge(super.options, options || {});
+  constructor(server, options) {
+    super(server, options);
   }
 }
 
