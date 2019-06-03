@@ -1,7 +1,7 @@
 const _ = require("lodash");
 const events = require("events");
 const net = require("net");
-const { formatRequest, parseStream } = require("../functions");
+const { formatRequest } = require("../functions");
 
 /**
  * @class Client
@@ -193,3 +193,10 @@ module.exports = Client;
  * @static
  */
 Client.tcp = require("./tcp");
+
+/**
+ * HTTP client constructor
+ * @type ClientHTTP
+ * @static
+ */
+Client.http = require("./http");

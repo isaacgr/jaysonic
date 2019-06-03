@@ -11,3 +11,10 @@ const Jsonic = module.exports;
  */
 
 Jsonic.client = Jsonic.client = require("./client");
+
+/**
+ * @static
+ * @type Server
+ */
+
+Jsonic.server = Jsonic.server = require("./server");
