@@ -17,6 +17,7 @@ class HTTPServer extends Server {
   }
   _listen() {
     this.server.on("connection", client => {
+      console.log(client);
       // got a client connection, do something with the data
       this.server.on("request", (request, response) => {
         request

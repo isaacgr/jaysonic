@@ -110,7 +110,6 @@ class Client {
       if (!(this.pendingCalls[id] === undefined)) {
         this.pendingCalls[id].resolve(this.responseQueue[id]);
         delete this.responseQueue[id];
-        delete this.responseQueue[id];
       }
     });
   }
@@ -143,7 +142,6 @@ class Client {
 
           if (!message.id) {
             // no id, so notification
-            console.log(message);
             this.notifications[method] = message;
             this.emit("notify", method);
           }

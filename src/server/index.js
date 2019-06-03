@@ -1,7 +1,6 @@
 const _ = require("lodash");
 const events = require("events");
 const net = require("net");
-const http = require("http");
 const { formatRequest } = require("../functions");
 
 ERR_CODES = {
@@ -41,11 +40,10 @@ class Server {
   listen() {
     return new Promise((resolve, reject) => {
       const { host, port, exclusive } = this.options;
-
-      this.server = new http.Server();
+      this.server = new net.Server();
       this.server.listen({ host, port, exclusive });
       this.server.on("listening", () => {
-        this._listen();
+        this.dataListener();
         resolve({ host, port });
       });
       this.server.on("error", error => reject(error));
@@ -57,7 +55,7 @@ class Server {
     this.methods[name] = cb;
   }
 
-  validateRequest(message, response) {
+  validateRequest(message) {
     try {
       // throws error if json invalid
       const json = JSON.parse(message);
@@ -76,6 +74,7 @@ class Server {
           ERR_MSGS["methodNotFound"]
         );
       }
+      return true;
     } catch (e) {
       if (e instanceof SyntaxError) {
         send_error(null, ERR_CODES["parseError"], ERR_MSGS["parseError"]);
@@ -85,6 +84,16 @@ class Server {
 
   handleRequest(response) {
     this.messageBuffer = "";
+    response.send("OK");
+  }
+
+  dataListener() {
+    this.server.on("connection", client => {
+      client.on("data", data => {
+        this.messageBuffer += data;
+        const validData = this.validateRequest(this.messageBuffer);
+      });
+    });
   }
 
   send_error(id, code, message = null) {
@@ -105,3 +114,10 @@ module.exports = Server;
  * @static
  */
 Server.http = require("./http");
+
+/**
+ * TCP server constructor
+ * @type ServerTCP
+ * @static
+ */
+Server.tcp = require("./tcp");
