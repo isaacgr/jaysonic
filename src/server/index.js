@@ -40,10 +40,9 @@ class Server {
   listen() {
     return new Promise((resolve, reject) => {
       const { host, port, exclusive } = this.options;
-      this.server = new net.Server();
       this.server.listen({ host, port, exclusive });
       this.server.on("listening", () => {
-        this.dataListener();
+        this.handleData();
         resolve({ host, port });
       });
       this.server.on("error", error => reject(error));
@@ -74,6 +73,7 @@ class Server {
           ERR_MSGS["methodNotFound"]
         );
       }
+      // data looks good
       return true;
     } catch (e) {
       if (e instanceof SyntaxError) {
@@ -82,17 +82,16 @@ class Server {
     }
   }
 
-  handleRequest(response) {
-    this.messageBuffer = "";
-    response.send("OK");
+  handleData() {
+    throw new Error("function must be overwritten in subsclass");
   }
 
-  dataListener() {
-    this.server.on("connection", client => {
-      client.on("data", data => {
-        this.messageBuffer += data;
-        const validData = this.validateRequest(this.messageBuffer);
-      });
+  getResult(message) {
+    message.forEach(request => {
+      const message = JSON.parse(request);
+      const params = message.params;
+      const result = this.methods[message.method](...params);
+      return result;
     });
   }
 

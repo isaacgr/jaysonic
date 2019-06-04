@@ -14,10 +14,14 @@ const http = require("http");
 class HTTPServer extends Server {
   constructor(options) {
     super(options);
+    this.initserver();
   }
-  _listen() {
+  initserver() {
+    this.server = new http.Server();
+  }
+
+  handleData() {
     this.server.on("connection", client => {
-      console.log(client);
       // got a client connection, do something with the data
       this.server.on("request", (request, response) => {
         request
@@ -28,7 +32,9 @@ class HTTPServer extends Server {
             const message = this.messageBuffer.split(this.options.delimiter);
             const validRequest = this.validateRequest(message);
             if (validRequest) {
-              this.handle_request(response);
+              response.writeHead(200, { "Content-Type": "application/json" });
+              const result = this.getResult(message);
+              response.write(result);
             }
           });
         client.on("end", () => {
