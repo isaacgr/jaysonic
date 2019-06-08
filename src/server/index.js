@@ -1,7 +1,7 @@
 const _ = require("lodash");
 const events = require("events");
 const net = require("net");
-const { formatRequest } = require("../functions");
+const { formatResult } = require("../functions");
 
 ERR_CODES = {
   parseError: -32700,
@@ -43,7 +43,10 @@ class Server {
       this.server.listen({ host, port, exclusive });
       this.server.on("listening", () => {
         this.handleData();
-        resolve({ host, port });
+        resolve({
+          host: this.server.address().host,
+          port: this.server.address().port
+        });
       });
       this.server.on("error", error => reject(error));
     });
@@ -55,31 +58,43 @@ class Server {
   }
 
   validateRequest(message) {
-    try {
-      // throws error if json invalid
-      const json = JSON.parse(message);
+    return new Promise((resolve, reject) => {
+      try {
+        // throws error if json invalid
+        const json = JSON.parse(message);
 
-      if (!json.id) {
-        send_error(
-          null,
-          ERR_CODES["invalidRequest"],
-          ERR_MSGS["invalidRequest"]
-        );
+        if (!json.id) {
+          reject(
+            this.send_error(
+              null,
+              ERR_CODES["invalidRequest"],
+              ERR_MSGS["invalidRequest"]
+            )
+          );
+        }
+        if (!this.methods[json.method]) {
+          reject(
+            this.send_error(
+              null,
+              ERR_CODES["methodNotFound"],
+              ERR_MSGS["methodNotFound"]
+            )
+          );
+        }
+        // data looks good
+        resolve({ valid: true, json });
+      } catch (e) {
+        if (e instanceof SyntaxError) {
+          reject(
+            this.send_error(
+              null,
+              ERR_CODES["parseError"],
+              ERR_MSGS["parseError"]
+            )
+          );
+        }
       }
-      if (!this.methods[json.method]) {
-        send_error(
-          null,
-          ERR_CODES["methodNotFound"],
-          ERR_MSGS["methodNotFound"]
-        );
-      }
-      // data looks good
-      return true;
-    } catch (e) {
-      if (e instanceof SyntaxError) {
-        send_error(null, ERR_CODES["parseError"], ERR_MSGS["parseError"]);
-      }
-    }
+    });
   }
 
   handleData() {
@@ -87,11 +102,14 @@ class Server {
   }
 
   getResult(message) {
-    message.forEach(request => {
-      const message = JSON.parse(request);
-      const params = message.params;
-      const result = this.methods[message.method](...params);
-      return result;
+    return new Promise((resolve, reject) => {
+      try {
+        const params = message.params;
+        const result = this.methods[message.method](...params);
+        resolve(formatResult(message, result));
+      } catch (e) {
+        reject(e);
+      }
     });
   }
 
@@ -100,7 +118,7 @@ class Server {
       error: { code: code, message: message || "Unknown Error" },
       id: id
     };
-    this.emit("error", response);
+    return response;
   }
 }
 require("util").inherits(Server, events.EventEmitter);

@@ -159,7 +159,7 @@ class Client {
               this.messageBuffer.indexOf(chunk) === this.messageBuffer.length
             ) {
               this.send_error(
-                this.message_id,
+                this.serving_message_id,
                 ERR_CODES["parseError"],
                 ERR_MSGS["parseError"]
               );

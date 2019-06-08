@@ -35,9 +35,16 @@ const formatRequest = (method, params, id, options) => {
   return messageString;
 };
 
-const parseStream = () => {};
+const formatResult = (message, result) => {
+  const response = {
+    jsonrpc: message.jsonrpc,
+    id: message.id,
+    result
+  };
+  return JSON.stringify(response);
+};
 
 module.exports = {
   formatRequest,
-  parseStream
+  formatResult
 };

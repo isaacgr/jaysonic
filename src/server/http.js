@@ -14,6 +14,9 @@ const http = require("http");
 class HTTPServer extends Server {
   constructor(options) {
     super(options);
+
+    this.messageBuffer = "";
+
     this.initserver();
   }
   initserver() {
@@ -29,12 +32,14 @@ class HTTPServer extends Server {
             this.messageBuffer += data;
           })
           .on("end", () => {
-            const message = this.messageBuffer.split(this.options.delimiter);
+            const message = this.messageBuffer.split(this.options.delimiter)[0];
             const validRequest = this.validateRequest(message);
             if (validRequest) {
+              this.messageBuffer = "";
               response.writeHead(200, { "Content-Type": "application/json" });
               const result = this.getResult(message);
               response.write(result);
+              response.end();
             }
           });
         client.on("end", () => {
