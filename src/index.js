@@ -1,20 +1,20 @@
 /**
- * Namespace available as require('jsonic')
- * @namespace Jsonic
+ * Namespace available as require('jaysonic')
+ * @namespace Jaysonic
  */
 
-const Jsonic = module.exports;
+const Jaysonic = module.exports;
 
 /**
  * @static
  * @type Client
  */
 
-Jsonic.client = Jsonic.client = require("./client");
+Jaysonic.client = Jaysonic.client = require("./client");
 
 /**
  * @static
  * @type Server
  */
 
-Jsonic.server = Jsonic.server = require("./server");
+Jaysonic.server = Jaysonic.server = require("./server");
