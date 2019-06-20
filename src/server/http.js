@@ -14,9 +14,6 @@ const http = require("http");
 class HTTPServer extends Server {
   constructor(options) {
     super(options);
-
-    this.messageBuffer = "";
-
     this.initserver();
   }
   initserver() {
@@ -33,14 +30,19 @@ class HTTPServer extends Server {
           })
           .on("end", () => {
             const message = this.messageBuffer.split(this.options.delimiter)[0];
-            const validRequest = this.validateRequest(message);
-            if (validRequest) {
-              this.messageBuffer = "";
-              response.writeHead(200, { "Content-Type": "application/json" });
-              const result = this.getResult(message);
-              response.write(result);
-              response.end();
-            }
+            this.messageBuffer = "";
+            response.writeHead(200, { "Content-Type": "application/json" });
+            this.validateRequest(message)
+              .then(result => {
+                this.getResult(message).then(result => {
+                  response.write(result);
+                  response.end();
+                });
+              })
+              .catch(error => {
+                response.write(JSON.stringify(error));
+                response.end();
+              });
           });
         client.on("end", () => {
           console.warn("Other side closed connection");

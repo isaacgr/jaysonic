@@ -44,7 +44,7 @@ class Server {
       this.server.on("listening", () => {
         this.handleData();
         resolve({
-          host: this.server.address().host,
+          host: this.server.address().address,
           port: this.server.address().port
         });
       });
@@ -75,9 +75,28 @@ class Server {
         if (!this.methods[json.method]) {
           reject(
             this.send_error(
-              null,
+              json.id,
               ERR_CODES["methodNotFound"],
               ERR_MSGS["methodNotFound"]
+            )
+          );
+        }
+
+        if (typeof json.params !== "object" || typeof json.params !== "array") {
+          reject(
+            this.send_error(
+              json.id,
+              ERR_CODES["invalidParams"],
+              ERR_MSGS["invalidParams"]
+            )
+          );
+        }
+        if (this.methods[json.method].length !== json.params.length) {
+          reject(
+            this.send_error(
+              json.id,
+              ERR_CODES["invalidParams"],
+              ERR_MSGS["invalidParams"]
             )
           );
         }
@@ -102,13 +121,16 @@ class Server {
   }
 
   getResult(message) {
+    const parsed_message = JSON.parse(message);
+    const params = parsed_message.params;
     return new Promise((resolve, reject) => {
       try {
-        const params = message.params;
-        const result = this.methods[message.method](...params);
-        resolve(formatResult(message, result));
+        const result = this.methods[parsed_message.method](...params);
+        resolve(formatResult(parsed_message, result));
       } catch (e) {
-        reject(e);
+        console.log(e);
+        const error = this.send_error(parsed_message.id, ERR_CODES["internal"]);
+        reject(error);
       }
     });
   }

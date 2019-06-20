@@ -65,7 +65,7 @@ class HTTPClient extends Client {
     return http.request(options, res => {
       res.on("data", data => {
         this.messageBuffer += data;
-        console.log(this.messageBuffer);
+        this._verify_data();
       });
       res.on("end", () => {
         console.log("end");

@@ -114,6 +114,51 @@ class Client {
     });
   }
 
+  _verify_data() {
+    /**
+     * want to search for whole messages by matching the delimiter from the start of the buffer
+     */
+    const messages = this.messageBuffer.split(this.options.delimiter);
+    for (let chunk of messages) {
+      try {
+        // will throw an error if not valid json
+        const message = JSON.parse(chunk);
+        if (message.error) {
+          // got an error back
+          this.send_error(
+            message.id,
+            message.error.code,
+            message.error.message
+          );
+        }
+
+        if (!message.id) {
+          // no id, so notification
+          this.notifications[method] = message;
+          this.emit("notify", method);
+        }
+
+        // no method, so response
+        if (!message.method) {
+          this.serving_message_id = message.id;
+          this.responseQueue[this.serving_message_id] = message;
+          this.emit("response", this.serving_message_id);
+        }
+      } catch (e) {
+        if (e instanceof SyntaxError) {
+          // if we've gotten all chunks, and json is still invalid throw error
+          if (this.messageBuffer.indexOf(chunk) === this.messageBuffer.length) {
+            this.send_error(
+              this.serving_message_id,
+              ERR_CODES["parseError"],
+              ERR_MSGS["parseError"]
+            );
+          }
+        }
+      }
+    }
+  }
+
   _handle_error() {
     this.on("error", error => {
       this.pendingCalls[error.id].reject(error);
@@ -123,50 +168,7 @@ class Client {
   _listen() {
     this.client.on("data", data => {
       this.messageBuffer += data.trimLeft();
-      /**
-       * want to search for whole messages by matching the delimiter from the start of the buffer
-       */
-      const messages = this.messageBuffer.split(this.options.delimiter);
-      for (let chunk of messages) {
-        try {
-          // will throw an error if not valid json
-          const message = JSON.parse(chunk);
-          if (message.error) {
-            // got an error back
-            this.send_error(
-              message.id,
-              message.error.code,
-              message.error.message
-            );
-          }
-
-          if (!message.id) {
-            // no id, so notification
-            this.notifications[method] = message;
-            this.emit("notify", method);
-          }
-
-          // no method, so response
-          if (!message.method) {
-            this.serving_message_id = message.id;
-            this.responseQueue[this.serving_message_id] = message;
-            this.emit("response", this.serving_message_id);
-          }
-        } catch (e) {
-          if (e instanceof SyntaxError) {
-            // if we've gotten all chunks, and json is still invalid throw error
-            if (
-              this.messageBuffer.indexOf(chunk) === this.messageBuffer.length
-            ) {
-              this.send_error(
-                this.serving_message_id,
-                ERR_CODES["parseError"],
-                ERR_MSGS["parseError"]
-              );
-            }
-          }
-        }
-      }
+      this._verify_data();
     });
     this.client.on("end", () => {
       console.warn("Other side closed connection");
