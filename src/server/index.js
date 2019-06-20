@@ -82,7 +82,7 @@ class Server {
           );
         }
 
-        if (typeof json.params !== "object" || typeof json.params !== "array") {
+        if (typeof json.params !== "object") {
           reject(
             this.send_error(
               json.id,
@@ -140,6 +140,7 @@ class Server {
       error: { code: code, message: message || "Unknown Error" },
       id: id
     };
+    this.emit("error", response);
     return response;
   }
 }

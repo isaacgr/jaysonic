@@ -35,13 +35,15 @@ class HTTPServer extends Server {
             this.validateRequest(message)
               .then(result => {
                 this.getResult(message).then(result => {
-                  response.write(result);
-                  response.end();
+                  response.write(result, error => {
+                    response.end();
+                  });
                 });
               })
               .catch(error => {
-                response.write(JSON.stringify(error));
-                response.end();
+                response.write(JSON.stringify(error), error => {
+                  response.end();
+                });
               });
           });
         client.on("end", () => {
