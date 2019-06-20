@@ -1,6 +1,6 @@
-const _ = require("lodash");
 const events = require("events");
-const net = require("net");
+const isObject = require("lodash/isObject");
+const isArray = require("lodash/isArray");
 const { formatResult } = require("../functions");
 
 ERR_CODES = {
@@ -82,7 +82,7 @@ class Server {
           );
         }
 
-        if (typeof json.params !== "object") {
+        if (!isArray(json.params) || !isObject(json.params)) {
           reject(
             this.send_error(
               json.id,

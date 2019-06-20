@@ -2,7 +2,6 @@ const isString = require("lodash/isString");
 const isUndefined = require("lodash/isUndefined");
 const isObject = require("lodash/isObject");
 const isArray = require("lodash/isArray");
-const isFunction = require("lodash/isFunction");
 
 const formatRequest = (method, params, id, options) => {
   if (!isString(method)) {
@@ -26,7 +25,7 @@ const formatRequest = (method, params, id, options) => {
   }
 
   if (isUndefined(id)) {
-    throw TypeError("id must be defined");
+    throw new TypeError("id must be defined");
   } else {
     request.id = id;
   }
