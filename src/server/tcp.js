@@ -40,13 +40,18 @@ class TCPServer extends Server {
 
           validRequest()
             .then(result => {
-              this.getResult(result.json).then(result => {
-                client.write(result);
-                client.pipe(client);
-              });
+              this.getResult(result.json)
+                .then(result => {
+                  client.write(result);
+                  client.pipe(client);
+                })
+                .catch(error => {
+                  client.write(JSON.stringify(error) + this.options.delimiter);
+                  client.pipe(client);
+                });
             })
             .catch(error => {
-              client.write(error["message"] + "\r\n");
+              client.write(error["message"] + this.options.delimiter);
               client.pipe(client);
             });
         }

@@ -4,7 +4,7 @@
   "description": "A persistent jsonrpc client and server",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha tests/**/*test.js",
     "build": "./node_modules/.bin/babel src --out-dir lib",
     "prepare": "npm run build"
   },
@@ -20,6 +20,8 @@
     "babelify": "^10.0.0"
   },
   "dependencies": {
-    "lodash": "^4.17.11"
+    "chai": "^4.2.0",
+    "lodash": "^4.17.11",
+    "mocha": "^6.1.4"
   }
 }

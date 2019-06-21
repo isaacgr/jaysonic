@@ -1,2 +1,3 @@
-# Jsonic
-A better JSON-RPC library
+# Jaysonic
+
+A JSON-RPC server and client

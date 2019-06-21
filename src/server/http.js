@@ -3,12 +3,12 @@ const _ = require("lodash");
 const http = require("http");
 
 /**
- * Constructor for Jsonic HTTP client
- * @class HTTPClient
+ * Constructor for Jsonic HTTP server
+ * @class HTTPServer
  * @constructor
  * @extends Client
- * @param {Object} [options] optional settings for client
- * @return HTTPClient
+ * @param {Object} [options] optional settings for server
+ * @return HTTPServer
  */
 
 class HTTPServer extends Server {

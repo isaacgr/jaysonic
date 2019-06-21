@@ -1,4 +1,5 @@
 const events = require("events");
+const _ = require("lodash");
 const isObject = require("lodash/isObject");
 const isArray = require("lodash/isArray");
 const { formatResult } = require("../functions");
@@ -82,7 +83,7 @@ class Server {
           );
         }
 
-        if (!isArray(json.params) || !isObject(json.params)) {
+        if (!isArray(json.params) && !isObject(json.params)) {
           reject(
             this.send_error(
               json.id,
@@ -91,14 +92,31 @@ class Server {
             )
           );
         }
-        if (this.methods[json.method].length !== json.params.length) {
-          reject(
-            this.send_error(
-              json.id,
-              ERR_CODES["invalidParams"],
-              ERR_MSGS["invalidParams"]
-            )
-          );
+        if (isArray(json.params)) {
+          if (
+            this.methods[json.method].arguments.length !== json.params.length
+          ) {
+            reject(
+              this.send_error(
+                json.id,
+                ERR_CODES["invalidParams"],
+                ERR_MSGS["invalidParams"]
+              )
+            );
+          }
+        }
+        if (isObject(json.params)) {
+          if (
+            Object.keys(json.params).length !== Object.keys(json.params).length
+          ) {
+            reject(
+              this.send_error(
+                json.id,
+                ERR_CODES["invalidParams"],
+                ERR_MSGS["invalidParams"]
+              )
+            );
+          }
         }
         // data looks good
         resolve({ valid: true, json });
@@ -121,15 +139,14 @@ class Server {
   }
 
   getResult(message) {
-    const parsed_message = JSON.parse(message);
-    const params = parsed_message.params;
+    const params = message.params;
     return new Promise((resolve, reject) => {
       try {
-        const result = this.methods[parsed_message.method](...params);
-        resolve(formatResult(parsed_message, result));
+        const result = this.methods[message.method](params);
+        console.log(result);
+        resolve(formatResult(message, result));
       } catch (e) {
-        console.log(e);
-        const error = this.send_error(parsed_message.id, ERR_CODES["internal"]);
+        const error = this.send_error(message.id, ERR_CODES["internal"]);
         reject(error);
       }
     });
@@ -140,7 +157,6 @@ class Server {
       error: { code: code, message: message || "Unknown Error" },
       id: id
     };
-    this.emit("error", response);
     return response;
   }
 }
