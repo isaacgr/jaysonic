@@ -26,6 +26,7 @@ class TCPServer extends Server {
 
   handleData() {
     this.server.on("connection", client => {
+      this.emit("clientConnected", client);
       this.connectedClients.push(client);
       client.on("data", data => {
         this.messageBuffer += data;
@@ -59,24 +60,37 @@ class TCPServer extends Server {
               client.write(error["message"] + this.options.delimiter);
               client.pipe(client);
             });
+          client.on("close", () => {
+            this.emit("clientDisconnected", client);
+          });
         }
-      });
-      client.on("close", () => {
-        this.clientDisconnected(client);
       });
     });
   }
 
-  clientDisconnected(client) {
-    // return disconnected client object
-    const clientIndex = this.connectedClients.findIndex(c => {
-      return client === c;
+  clientConnected(cb) {
+    this.on("clientConnected", client => {
+      cb({
+        host: client.remoteAddress,
+        port: client.remotePort
+      });
     });
-    if (clientIndex === -1) {
-      return "unknown";
-    }
-    const [deletedClient] = this.connectedClients.splice(clientIndex, 1);
-    return deletedClient;
+  }
+
+  clientDisconnected(cb) {
+    this.on("clientDisconnected", client => {
+      const clientIndex = this.connectedClients.findIndex(c => {
+        return client === c;
+      });
+      if (clientIndex === -1) {
+        return "unknown";
+      }
+      const [deletedClient] = this.connectedClients.splice(clientIndex, 1);
+      cb({
+        host: deletedClient.remoteAddress,
+        port: deletedClient.remotePort
+      });
+    });
   }
   // only available for TCP server
   // notifications have no id

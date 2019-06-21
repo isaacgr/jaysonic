@@ -53,6 +53,10 @@ class Server {
     });
   }
 
+  close() {
+    this.server.close();
+  }
+
   method(name, cb) {
     // add the method and its associated callback to the object
     this.methods[name] = cb;
@@ -131,6 +135,10 @@ class Server {
         reject(error);
       }
     });
+  }
+
+  clientConnected() {
+    throw new Error("function must be overwritten in subclass");
   }
 
   clientDisconnected() {

@@ -12,6 +12,10 @@ beforeEach(done => {
   done();
 });
 
+after(() => {
+  server.close();
+});
+
 describe("TCP Client", () => {
   describe("connection", () => {
     it("should connect to server", done => {
@@ -72,7 +76,22 @@ describe("TCP Client", () => {
       });
     });
   });
-  // describe("notifications", () => {
-  //   it("should handle receiving a notification without params", done => {});
-  // });
+  describe("notifications", () => {
+    it("should handle receiving a notification", done => {
+      setTimeout(() => {
+        server.notify({
+          method: "notification",
+          params: []
+        });
+      }, 1000);
+      client.subscribe("notification", message => {
+        expect(message).to.eql({
+          jsonrpc: "2.0",
+          method: "notification",
+          params: []
+        });
+      });
+      done();
+    });
+  });
 });

@@ -53,7 +53,6 @@ class Client {
      * partial message: {"jsonrpc": 2.0, "params"
      */
     this.messageBuffer = "";
-    this.notifications = {};
     this.responseQueue = {};
     this.options = _.merge(defaults, options || {});
   }
@@ -68,7 +67,7 @@ class Client {
          * start listeners, response handlers and error handlers
          */
         this._listen();
-        this._handle_response();
+        this._handleResponse();
         this._handle_error();
         resolve(this.server);
       });
@@ -98,28 +97,19 @@ class Client {
     return req_promise;
   }
 
-  notify(methods) {
+  subscribe(method, cb) {
     /**
-     * @params {Object} [methods] object with methods as keys
-     *  ex.
-    *   const subscriptions = {
-          add: (a, b) => {
-            return a + b;
-          }
-        };
+     * @params {String} [method] method to subscribe to
+     * @params {Function} [cb] callback function to invoke on notify
      */
-    this.on("notify", notifyMethod => {});
-    // this.on("notify", notifyMethod => {
-    //   const { params } = this.notifications[notifyMethod];
-    //   if (params) {
-    //     methods[notifyMethod](params);
-    //   } else {
-    //     methods[notifyMethod]();
-    //   }
-    // });
+    this.on("notify", message => {
+      if (message.method === method) {
+        cb(message, error);
+      }
+    });
   }
 
-  _handle_response() {
+  _handleResponse() {
     this.on("response", id => {
       if (!(this.pendingCalls[id] === undefined)) {
         this.pendingCalls[id].resolve(this.responseQueue[id]);
@@ -128,7 +118,7 @@ class Client {
     });
   }
 
-  _verify_data() {
+  _verifyData() {
     /**
      * want to search for whole messages by matching the delimiter from the start of the buffer
      */
@@ -149,8 +139,7 @@ class Client {
 
         if (!message.id) {
           // no id, so notification
-          this.notifications[method] = message;
-          this.emit("notify", method);
+          this.emit("notify", message);
         }
 
         // no method, so response
@@ -183,7 +172,7 @@ class Client {
   _listen() {
     this.client.on("data", data => {
       this.messageBuffer += data.trimLeft();
-      this._verify_data();
+      this._verifyData();
     });
     this.client.on("end", () => {
       console.warn("Other side closed connection");
