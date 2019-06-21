@@ -42,7 +42,7 @@ class TCPServer extends Server {
             .then(result => {
               this.getResult(result.json)
                 .then(result => {
-                  client.write(result);
+                  client.write(result + this.options.delimiter);
                   client.pipe(client);
                 })
                 .catch(error => {

@@ -92,19 +92,7 @@ class Server {
             )
           );
         }
-        if (isArray(json.params)) {
-          if (
-            this.methods[json.method].arguments.length !== json.params.length
-          ) {
-            reject(
-              this.send_error(
-                json.id,
-                ERR_CODES["invalidParams"],
-                ERR_MSGS["invalidParams"]
-              )
-            );
-          }
-        }
+
         if (isObject(json.params)) {
           if (
             Object.keys(json.params).length !== Object.keys(json.params).length
@@ -143,7 +131,6 @@ class Server {
     return new Promise((resolve, reject) => {
       try {
         const result = this.methods[message.method](params);
-        console.log(result);
         resolve(formatResult(message, result));
       } catch (e) {
         const error = this.send_error(message.id, ERR_CODES["internal"]);
