@@ -1,6 +1,7 @@
 const Server = require(".");
 const _ = require("lodash");
 const net = require("net");
+const { formatResponse } = require("../functions");
 
 /**
  * Constructor for Jsonic TCP client
@@ -14,6 +15,9 @@ const net = require("net");
 class TCPServer extends Server {
   constructor(options) {
     super(options);
+
+    this.connectedClients = [];
+
     this.initServer();
   }
   initServer() {
@@ -22,6 +26,7 @@ class TCPServer extends Server {
 
   handleData() {
     this.server.on("connection", client => {
+      this.connectedClients.push(client);
       client.on("data", data => {
         this.messageBuffer += data;
         const messages = this.messageBuffer.split(this.options.delimiter);
@@ -56,6 +61,31 @@ class TCPServer extends Server {
             });
         }
       });
+      client.on("close", () => {
+        this.clientDisconnected(client);
+      });
+    });
+  }
+
+  clientDisconnected(client) {
+    // return disconnected client object
+    const clientIndex = this.connectedClients.findIndex(c => {
+      return client === c;
+    });
+    if (clientIndex === -1) {
+      return "unknown";
+    }
+    const [deletedClient] = this.connectedClients.splice(clientIndex, 1);
+    return deletedClient;
+  }
+  // only available for TCP server
+  // notifications have no id
+  notify(notification) {
+    const { method, params } = notification;
+    const response = formatResponse({ jsonrpc: "2.0" }, { method, params });
+    this.connectedClients.forEach(client => {
+      client.write(response + this.options.delimiter);
+      client.pipe(client);
     });
   }
 }

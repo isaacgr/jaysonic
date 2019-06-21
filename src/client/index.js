@@ -36,7 +36,7 @@ class Client {
     }
 
     const defaults = {
-      version: 2,
+      version: "2.0",
       delimiter: "\r\n"
     };
 
@@ -99,10 +99,24 @@ class Client {
   }
 
   notify(methods) {
-    this.on("notify", notifyMethod => {
-      const params = this.notifications[notifyMethod].params;
-      methods[notifyMethod](params);
-    });
+    /**
+     * @params {Object} [methods] object with methods as keys
+     *  ex.
+    *   const subscriptions = {
+          add: (a, b) => {
+            return a + b;
+          }
+        };
+     */
+    this.on("notify", notifyMethod => {});
+    // this.on("notify", notifyMethod => {
+    //   const { params } = this.notifications[notifyMethod];
+    //   if (params) {
+    //     methods[notifyMethod](params);
+    //   } else {
+    //     methods[notifyMethod]();
+    //   }
+    // });
   }
 
   _handle_response() {
@@ -126,6 +140,7 @@ class Client {
         if (message.error) {
           // got an error back
           this.send_error(
+            message.jsonrpc,
             message.id,
             message.error.code,
             message.error.message
@@ -175,8 +190,9 @@ class Client {
     });
   }
 
-  send_error(id, code, message = null) {
+  send_error(jsonrpc = this.options.version, id, code, message = null) {
     const response = {
+      jsonrpc: jsonrpc,
       error: { code: code, message: message || "Unknown Error" },
       id: id
     };

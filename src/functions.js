@@ -13,7 +13,7 @@ const formatRequest = (method, params, id, options) => {
   };
 
   // assume 2.0 request unless otherwise specified
-  if (!options.version || options.version !== 1) {
+  if (!options.version || options.version !== "1") {
     request.jsonrpc = "2.0";
   }
 
@@ -34,16 +34,27 @@ const formatRequest = (method, params, id, options) => {
   return messageString;
 };
 
-const formatResult = (message, result) => {
-  const response = {
-    jsonrpc: message.jsonrpc,
-    id: message.id,
-    result
-  };
+const formatResponse = (message, result) => {
+  const { jsonrpc, id } = message;
+  let response = {};
+  if (!id) {
+    // notifcation
+    response = {
+      jsonrpc,
+      ...result
+    };
+  } else {
+    response = {
+      jsonrpc,
+      id,
+      result
+    };
+  }
+
   return JSON.stringify(response);
 };
 
 module.exports = {
   formatRequest,
-  formatResult
+  formatResponse
 };

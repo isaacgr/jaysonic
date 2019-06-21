@@ -2,7 +2,7 @@ const events = require("events");
 const _ = require("lodash");
 const isObject = require("lodash/isObject");
 const isArray = require("lodash/isArray");
-const { formatResult } = require("../functions");
+const { formatResponse } = require("../functions");
 
 ERR_CODES = {
   parseError: -32700,
@@ -29,7 +29,7 @@ class Server {
       host: "localhost",
       port: 8100,
       exclusive: false,
-      version: 2,
+      version: "2.0",
       delimiter: "\r\n"
     };
 
@@ -63,7 +63,7 @@ class Server {
       try {
         // throws error if json invalid
         const json = JSON.parse(message);
-
+        const method = this.methods[json.method];
         if (!json.id) {
           reject(
             this.send_error(
@@ -93,19 +93,6 @@ class Server {
           );
         }
 
-        if (isObject(json.params)) {
-          if (
-            Object.keys(json.params).length !== Object.keys(json.params).length
-          ) {
-            reject(
-              this.send_error(
-                json.id,
-                ERR_CODES["invalidParams"],
-                ERR_MSGS["invalidParams"]
-              )
-            );
-          }
-        }
         // data looks good
         resolve({ valid: true, json });
       } catch (e) {
@@ -131,16 +118,28 @@ class Server {
     return new Promise((resolve, reject) => {
       try {
         const result = this.methods[message.method](params);
-        resolve(formatResult(message, result));
+        resolve(formatResponse(message, result));
       } catch (e) {
-        const error = this.send_error(message.id, ERR_CODES["internal"]);
+        let error = this.send_error(message.id, ERR_CODES["internal"]);
+        if (e instanceof TypeError) {
+          error = this.send_error(
+            message.id,
+            ERR_CODES["invalidParams"],
+            ERR_MSGS["invalidParams"]
+          );
+        }
         reject(error);
       }
     });
   }
 
+  clientDisconnected() {
+    throw new Error("function must be overwritten in subsclass");
+  }
+
   send_error(id, code, message = null) {
     const response = {
+      jsonrpc: this.options.version,
       error: { code: code, message: message || "Unknown Error" },
       id: id
     };
