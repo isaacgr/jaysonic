@@ -1,15 +1,22 @@
 const Jaysonic = require("../../src");
 const expect = require("chai").expect;
-const net = require("net");
 
 const server = new Jaysonic.server.tcp({ host: "127.0.0.1", port: 6969 });
-const client = new Jaysonic.client.tcp({ host: "127.0.0.1", port: 6969 });
-
-server.method("add", ([a, b]) => {
-  return a + b;
-});
+const { client, socket } = require("../client.js");
 
 // basing tests off of https://www.jsonrpc.org/specification
+
+before(done => {
+  server.listen().then(() => {
+    done();
+  });
+});
+
+beforeEach(done => {
+  client.connect().then(() => {
+    done();
+  });
+});
 
 after(() => {
   client.end().then(() => {
@@ -45,18 +52,17 @@ describe("TCP Server", () => {
   });
   describe("requests", () => {
     it("should handle call with positional params", done => {
-      server.method("subtract", ([a, b]) => {
-        return a - b;
-      });
-      const req = client.request("subtract", [1, 2]);
+      const req = client.request("add", [1, 2]);
       req.then(result => {
-        expect(result).to.eql({
-          jsonrpc: "2.0",
-          result: -1,
-          id: 1
-        });
+        console.log(result);
+        expect(result)
+          .to.eql({
+            jsonrpc: "2.0",
+            result: 3,
+            id: 1
+          })
+          .finally(done);
       });
-      done();
     });
     it("should handle call with named params", done => {
       server.method("greeting", ({ name }) => {
@@ -69,8 +75,8 @@ describe("TCP Server", () => {
           result: "Hello Isaac",
           id: 2
         });
+        done();
       });
-      done();
     });
     it("should send 'method not found' error", done => {
       const req = client.request("nonexistent", []);
@@ -80,41 +86,25 @@ describe("TCP Server", () => {
           error: { code: -32601, message: "Method not found" },
           id: 3
         });
+        done();
       });
-      done();
     });
-    describe("erroroneous requests", () => {
-      it("should send parse error", done => {
-        const socket = new net.Socket();
-        socket.connect({ host: "127.0.0.1", port: 6969 });
-        socket.setEncoding("utf8");
-        let message = "";
-        socket.write(
+    it("should send 'parse error'", done => {
+      let message = "";
+      socket.write("test");
+      socket.on("data", data => {
+        message += data;
+        expect(message).to.eql(
           JSON.stringify({
             jsonrpc: "2.0",
-            method: "add",
-            params: "",
-            id: 99
-          }) + "[]\r\n"
+            error: { code: -32700, message: "Parse Error" },
+            id: null
+          }) + "\r\n"
         );
-        socket.on("data", data => {
-          message += data.trimLeft();
-          const messages = message.split("\r\n");
-          for (let chunk of messages) {
-            if (chunk !== "") {
-              expect(chunk).to.eql(
-                JSON.stringify({
-                  jsonrpc: "2.0",
-                  error: { code: -32700, message: "Parse Error" },
-                  id: null
-                })
-              );
-              socket.end(() => {
-                done();
-              });
-            }
-          }
-        });
+        socket.destroy();
+      });
+      socket.on("close", () => {
+        done();
       });
     });
   });

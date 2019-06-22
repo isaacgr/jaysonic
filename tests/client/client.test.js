@@ -7,6 +7,12 @@ const client = new Jaysonic.client.tcp({ host: "127.0.0.1", port: 8100 });
 
 // basing tests off of https://www.jsonrpc.org/specification
 
+before(done => {
+  server.listen().then(() => {
+    done();
+  });
+});
+
 beforeEach(done => {
   client.connect().then(() => {
     done();
@@ -46,11 +52,11 @@ describe("TCP Client", () => {
       });
     });
     it("should receive response for named params", done => {
-      const request = client.request("object", { name: "Isaac", age: 27 });
+      const request = client.request("greeting", { name: "Isaac" });
       request.then(response => {
         expect(response).to.eql({
           jsonrpc: "2.0",
-          result: { name: "Isaac", age: 27 },
+          result: "Hello Isaac",
           id: 2
         });
         done();
@@ -68,7 +74,7 @@ describe("TCP Client", () => {
       });
     });
     it("should handle 'invalid params' error", done => {
-      const request = client.request("object", []);
+      const request = client.request("typeerror", []);
       request.catch(error => {
         expect(error).to.eql({
           jsonrpc: "2.0",
