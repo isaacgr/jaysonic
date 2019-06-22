@@ -1,6 +1,7 @@
 const Server = require(".");
 const _ = require("lodash");
 const net = require("net");
+
 const { formatResponse } = require("../functions");
 
 /**
@@ -60,10 +61,10 @@ class TCPServer extends Server {
               client.write(error["message"] + this.options.delimiter);
               client.pipe(client);
             });
-          client.on("close", () => {
-            this.emit("clientDisconnected", client);
-          });
         }
+      });
+      client.on("close", () => {
+        this.emit("clientDisconnected", client);
       });
     });
   }
@@ -93,14 +94,18 @@ class TCPServer extends Server {
     });
   }
   // only available for TCP server
-  // notifications have no id
   notify(notification) {
     const { method, params } = notification;
     const response = formatResponse({ jsonrpc: "2.0" }, { method, params });
-    this.connectedClients.forEach(client => {
-      client.write(response + this.options.delimiter);
-      client.pipe(client);
-    });
+    try {
+      this.connectedClients.forEach(client => {
+        client.write(response + this.options.delimiter);
+        client.pipe(client);
+      });
+    } catch (e) {
+      // was unable to send data to client, possibly disconnected
+      this.emit("error", e);
+    }
   }
 }
 

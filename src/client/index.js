@@ -78,7 +78,7 @@ class Client {
   }
 
   end() {
-    return Promise.resolve(this.client.end());
+    this.client.end();
   }
 
   request(method, params) {

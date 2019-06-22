@@ -8,12 +8,14 @@ const client = new Jaysonic.client.tcp({ host: "127.0.0.1", port: 8100 });
 // basing tests off of https://www.jsonrpc.org/specification
 
 beforeEach(done => {
-  client.connect();
-  done();
+  client.connect().then(() => {
+    done();
+  });
 });
 
 after(() => {
   server.close();
+  client.end();
 });
 
 describe("TCP Client", () => {
@@ -78,18 +80,16 @@ describe("TCP Client", () => {
   });
   describe("notifications", () => {
     it("should handle receiving a notification", done => {
-      setTimeout(() => {
-        server.notify({
-          method: "notification",
-          params: []
-        });
-      }, 1000);
       client.subscribe("notification", message => {
         expect(message).to.eql({
           jsonrpc: "2.0",
           method: "notification",
           params: []
         });
+      });
+      server.notify({
+        method: "notification",
+        params: []
       });
       done();
     });

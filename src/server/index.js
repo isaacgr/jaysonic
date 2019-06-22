@@ -44,6 +44,7 @@ class Server {
       this.server.listen({ host, port, exclusive });
       this.server.on("listening", () => {
         this.handleData();
+        this.handleError();
         resolve({
           host: this.server.address().address,
           port: this.server.address().port
@@ -143,6 +144,12 @@ class Server {
 
   clientDisconnected() {
     throw new Error("function must be overwritten in subsclass");
+  }
+
+  handleError(error) {
+    this.on("error", error => {
+      console.log(`Received error: ${error["message"]}`);
+    });
   }
 
   send_error(id, code, message = null) {
