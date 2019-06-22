@@ -1,4 +1,4 @@
-const server = require("../server");
+const server = require("../server.js");
 
 const Jaysonic = require("../../src");
 const expect = require("chai").expect;
@@ -14,8 +14,9 @@ beforeEach(done => {
 });
 
 after(() => {
-  server.close();
-  client.end();
+  client.end().then(() => {
+    server.close();
+  });
 });
 
 describe("TCP Client", () => {

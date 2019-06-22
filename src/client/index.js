@@ -78,7 +78,14 @@ class Client {
   }
 
   end() {
-    this.client.end();
+    return new Promise((resolve, reject) => {
+      this.client.end(error => {
+        if (error) {
+          reject();
+        }
+        resolve();
+      });
+    });
   }
 
   request(method, params) {
