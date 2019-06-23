@@ -1,4 +1,4 @@
-const Client = require('.');
+const Client = require(".");
 
 /**
  * Constructor for Jsonic TCP client
@@ -15,7 +15,7 @@ class TCPClient extends Client {
      * @params {String} [method] method to subscribe to
      * @params {Function} [cb] callback function to invoke on notify
      */
-    this.on('notify', (message) => {
+    this.on("notify", (message) => {
       if (message.method === method) {
         cb(message);
       }

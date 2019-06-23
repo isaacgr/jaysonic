@@ -1,7 +1,7 @@
-const _ = require('lodash');
-const events = require('events');
-const net = require('net');
-const { formatRequest } = require('../functions');
+const _ = require("lodash");
+const events = require("events");
+const net = require("net");
+const { formatRequest } = require("../functions");
 
 /**
  * @class Client
@@ -19,28 +19,29 @@ const ERR_CODES = {
   invalidRequest: -32600,
   methodNotFound: -32601,
   invalidParams: -32602,
-  internal: -32603,
+  internal: -32603
 };
 
 const ERR_MSGS = {
-  parseError: 'Parse Error',
-  invalidRequest: 'Invalid Request',
-  methodNotFound: 'Method not found',
-  invalidParams: 'Invalid parameters',
+  parseError: "Parse Error",
+  invalidRequest: "Invalid Request",
+  methodNotFound: "Method not found",
+  invalidParams: "Invalid parameters"
 };
 
 class Client {
-  constructor(server, options) {
+  constructor(options) {
     if (!(this instanceof Client)) {
       return new Client(options);
     }
 
     const defaults = {
-      version: '2.0',
-      delimiter: '\r\n',
+      version: "2.0",
+      delimiter: "\r\n"
     };
 
-    this.server = server;
+    const { host, port } = options;
+    this.server = { host, port };
     this.message_id = 1;
     this.serving_message_id = 1;
     this.pendingCalls = {};
@@ -52,7 +53,7 @@ class Client {
      *
      * partial message: {"jsonrpc": 2.0, "params"
      */
-    this.messageBuffer = '';
+    this.messageBuffer = "";
     this.responseQueue = {};
     this.options = _.merge(defaults, options || {});
   }
@@ -61,8 +62,8 @@ class Client {
     return new Promise((resolve, reject) => {
       this.client = new net.Socket();
       this.client.connect(this.server);
-      this.client.setEncoding('utf8');
-      this.client.on('connect', () => {
+      this.client.setEncoding("utf8");
+      this.client.on("connect", () => {
         /**
          * start listeners, response handlers and error handlers
          */
@@ -71,7 +72,7 @@ class Client {
         this.handleError();
         resolve(this.server);
       });
-      this.client.on('error', (error) => {
+      this.client.on("error", (error) => {
         reject(error);
       });
     });
@@ -94,7 +95,7 @@ class Client {
         method,
         params,
         this.message_id,
-        this.options,
+        this.options
       );
       this.pendingCalls[this.message_id] = { resolve, reject };
       this.message_id += 1;
@@ -105,11 +106,11 @@ class Client {
   }
 
   subscribe() {
-    throw new Error('function must be overwritten in subsclass');
+    throw new Error("function must be overwritten in subsclass");
   }
 
   handleResponse() {
-    this.on('response', (id) => {
+    this.on("response", (id) => {
       if (!(this.pendingCalls[id] === undefined)) {
         this.pendingCalls[id].resolve(this.responseQueue[id]);
         delete this.responseQueue[id];
@@ -132,20 +133,20 @@ class Client {
             message.jsonrpc,
             message.id,
             message.error.code,
-            message.error.message,
+            message.error.message
           );
         }
 
         if (!message.id) {
           // no id, so notification
-          this.emit('notify', message);
+          this.emit("notify", message);
         }
 
         // no method, so response
         if (!message.method) {
           this.serving_message_id = message.id;
           this.responseQueue[this.serving_message_id] = message;
-          this.emit('response', this.serving_message_id);
+          this.emit("response", this.serving_message_id);
         }
       } catch (e) {
         if (e instanceof SyntaxError) {
@@ -154,7 +155,7 @@ class Client {
             this.sendError(
               this.serving_message_id,
               ERR_CODES.parseError,
-              ERR_MSGS.parseError,
+              ERR_MSGS.parseError
             );
           }
         }
@@ -163,21 +164,21 @@ class Client {
   }
 
   listen() {
-    this.client.on('data', (data) => {
+    this.client.on("data", (data) => {
       this.messageBuffer += data.trimLeft();
       this.verifyData();
     });
-    this.client.on('end', () => {
-      this.emit('serverDisconnected');
+    this.client.on("end", () => {
+      this.emit("serverDisconnected");
     });
   }
 
   serverDisconnected(cb) {
-    this.on('serverDisconnected', () => cb());
+    this.on("serverDisconnected", () => cb());
   }
 
   handleError() {
-    this.on('error', (error) => {
+    this.on("error", (error) => {
       this.pendingCalls[error.id].reject(error);
     });
   }
@@ -185,13 +186,13 @@ class Client {
   sendError(jsonrpc = this.options.version, id, code, message = null) {
     const response = {
       jsonrpc,
-      error: { code, message: message || 'Unknown Error' },
-      id,
+      error: { code, message: message || "Unknown Error" },
+      id
     };
-    this.emit('error', response);
+    this.emit("error", response);
   }
 }
-require('util').inherits(Client, events.EventEmitter);
+require("util").inherits(Client, events.EventEmitter);
 
 module.exports = Client;
 
@@ -200,11 +201,11 @@ module.exports = Client;
  * @type ClientTcp
  * @static
  */
-Client.tcp = require('./tcp');
+Client.tcp = require("./tcp");
 
 /**
  * HTTP client constructor
  * @type ClientHTTP
  * @static
  */
-Client.http = require('./http');
+Client.http = require("./http");

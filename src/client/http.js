@@ -1,7 +1,7 @@
-const _ = require('lodash');
-const http = require('http');
-const Client = require('.');
-const { formatRequest } = require('../functions');
+const _ = require("lodash");
+const http = require("http");
+const Client = require(".");
+const { formatRequest } = require("../functions");
 
 /**
  * Constructor for Jsonic HTTP client
@@ -17,19 +17,19 @@ class HTTPClient extends Client {
     super(server, options);
 
     const defaults = {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Length': Buffer.byteLength(
+        "Content-Length": Buffer.byteLength(
           this.messageBuffer,
           this.options.encoding,
         ),
-        'Content-Type': 'application/json; charset=utf-8',
-        Accept: 'application/json',
+        "Content-Type": "application/json; charset=utf-8",
+        Accept: "application/json",
       },
-      path: '/',
+      path: "/",
     };
 
-    this.messageBuffer = '';
+    this.messageBuffer = "";
 
     this.options = _.merge(defaults, options || {});
   }
@@ -63,11 +63,11 @@ class HTTPClient extends Client {
 
   httpRequest(options) {
     return http.request(options, (res) => {
-      res.on('data', (data) => {
+      res.on("data", (data) => {
         this.messageBuffer += data;
         this.verifyData();
       });
-      res.on('end', () => {
+      res.on("end", () => {
 
       });
     });

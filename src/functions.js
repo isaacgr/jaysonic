@@ -1,7 +1,7 @@
-const isString = require('lodash/isString');
-const isUndefined = require('lodash/isUndefined');
-const isObject = require('lodash/isObject');
-const isArray = require('lodash/isArray');
+const isString = require("lodash/isString");
+const isUndefined = require("lodash/isUndefined");
+const isObject = require("lodash/isObject");
+const isArray = require("lodash/isArray");
 
 const formatRequest = (method, params, id, options) => {
   if (!isString(method)) {
@@ -9,12 +9,12 @@ const formatRequest = (method, params, id, options) => {
   }
 
   const request = {
-    method,
+    method
   };
 
   // assume 2.0 request unless otherwise specified
-  if (!options.version || options.version !== '1') {
-    request.jsonrpc = '2.0';
+  if (!options.version || options.version !== 1) {
+    request.jsonrpc = "2.0";
   }
 
   if (params) {
@@ -25,7 +25,7 @@ const formatRequest = (method, params, id, options) => {
   }
 
   if (isUndefined(id)) {
-    throw new TypeError('id must be defined');
+    throw new TypeError("id must be defined");
   } else {
     request.id = id;
   }
@@ -36,19 +36,20 @@ const formatRequest = (method, params, id, options) => {
 
 const formatResponse = (message, result) => {
   const { jsonrpc, id } = message;
-  let response = {};
-  if (!id) {
-    // notifcation
-    response = {
-      jsonrpc,
-      ...result,
-    };
+  const response = {};
+
+  response.result = result;
+
+  if (!jsonrpc) {
+    // 1.0 response
+    response.error = null;
   } else {
-    response = {
-      jsonrpc,
-      id,
-      result,
-    };
+    // 2.0 response, dont include null error and include jsonrpc version
+    response.jsonrpc = "2.0";
+  }
+
+  if (id) {
+    response.id = id;
   }
 
   return JSON.stringify(response);
@@ -56,5 +57,5 @@ const formatResponse = (message, result) => {
 
 module.exports = {
   formatRequest,
-  formatResponse,
+  formatResponse
 };

@@ -1,5 +1,5 @@
-const http = require('http');
-const Server = require('.');
+const http = require("http");
+const Server = require(".");
 
 /**
  * Constructor for Jsonic HTTP server
@@ -24,17 +24,17 @@ class HTTPServer extends Server {
   }
 
   handleData() {
-    this.server.on('connection', (client) => {
+    this.server.on("connection", (client) => {
       this.connectedClients.push(client);
-      this.server.on('request', (request, response) => {
+      this.server.on("request", (request, response) => {
         request
-          .on('data', (data) => {
+          .on("data", (data) => {
             this.messageBuffer += data;
           })
-          .on('end', () => {
+          .on("end", () => {
             const message = this.messageBuffer.split(this.options.delimiter)[0];
-            this.messageBuffer = '';
-            response.writeHead(200, { 'Content-Type': 'application/json' });
+            this.messageBuffer = "";
+            response.writeHead(200, { "Content-Type": "application/json" });
             this.validateRequest(message)
               .then(() => {
                 this.getResult(message).then((result) => {
@@ -49,25 +49,25 @@ class HTTPServer extends Server {
                 });
               });
           });
-        client.on('end', () => {
-          this.emit('clientDisconnected');
+        client.on("end", () => {
+          this.emit("clientDisconnected");
         });
       });
     });
   }
 
   clientConnected(cb) {
-    this.on('clientConnected', client => cb({
+    this.on("clientConnected", client => cb({
       host: client.remoteAddress,
       port: client.remotePort,
     }));
   }
 
   clientDisconnected(cb) {
-    this.on('clientDisconnected', (client) => {
+    this.on("clientDisconnected", (client) => {
       const clientIndex = this.connectedClients.findIndex(c => client === c);
       if (clientIndex === -1) {
-        return 'unknown';
+        return "unknown";
       }
       const [deletedClient] = this.connectedClients.splice(clientIndex, 1);
       return cb({
