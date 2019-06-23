@@ -10,11 +10,11 @@ const Jaysonic = module.exports;
  * @type Client
  */
 
-Jaysonic.client = Jaysonic.client = require("./client");
+Jaysonic.client = require('./client');
 
 /**
  * @static
  * @type Server
  */
 
-Jaysonic.server = Jaysonic.server = require("./server");
+Jaysonic.server = require('./server');

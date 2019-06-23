@@ -1,5 +1,4 @@
-const Client = require(".");
-const _ = require("lodash");
+const Client = require('.');
 
 /**
  * Constructor for Jsonic TCP client
@@ -11,8 +10,16 @@ const _ = require("lodash");
  */
 
 class TCPClient extends Client {
-  constructor(server, options) {
-    super(server, options);
+  subscribe(method, cb) {
+    /**
+     * @params {String} [method] method to subscribe to
+     * @params {Function} [cb] callback function to invoke on notify
+     */
+    this.on('notify', (message) => {
+      if (message.method === method) {
+        cb(message);
+      }
+    });
   }
 }
 

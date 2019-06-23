@@ -1,31 +1,31 @@
-const isString = require("lodash/isString");
-const isUndefined = require("lodash/isUndefined");
-const isObject = require("lodash/isObject");
-const isArray = require("lodash/isArray");
+const isString = require('lodash/isString');
+const isUndefined = require('lodash/isUndefined');
+const isObject = require('lodash/isObject');
+const isArray = require('lodash/isArray');
 
 const formatRequest = (method, params, id, options) => {
   if (!isString(method)) {
-    throw new TypeError(method + " must be a string");
+    throw new TypeError(`${method} must be a string`);
   }
 
   const request = {
-    method
+    method,
   };
 
   // assume 2.0 request unless otherwise specified
-  if (!options.version || options.version !== "1") {
-    request.jsonrpc = "2.0";
+  if (!options.version || options.version !== '1') {
+    request.jsonrpc = '2.0';
   }
 
   if (params) {
     if (!isObject(params) && !isArray(params)) {
-      throw new TypeError(params + " must be an object or array");
+      throw new TypeError(`${params} must be an object or array`);
     }
     request.params = params;
   }
 
   if (isUndefined(id)) {
-    throw new TypeError("id must be defined");
+    throw new TypeError('id must be defined');
   } else {
     request.id = id;
   }
@@ -41,13 +41,13 @@ const formatResponse = (message, result) => {
     // notifcation
     response = {
       jsonrpc,
-      ...result
+      ...result,
     };
   } else {
     response = {
       jsonrpc,
       id,
-      result
+      result,
     };
   }
 
@@ -56,5 +56,5 @@ const formatResponse = (message, result) => {
 
 module.exports = {
   formatRequest,
-  formatResponse
+  formatResponse,
 };

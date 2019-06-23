@@ -1,22 +1,22 @@
-const events = require("events");
-const _ = require("lodash");
-const isObject = require("lodash/isObject");
-const isArray = require("lodash/isArray");
-const { formatResponse } = require("../functions");
+const events = require('events');
+const _ = require('lodash');
+const isObject = require('lodash/isObject');
+const isArray = require('lodash/isArray');
+const { formatResponse } = require('../functions');
 
-ERR_CODES = {
+const ERR_CODES = {
   parseError: -32700,
   invalidRequest: -32600,
   methodNotFound: -32601,
   invalidParams: -32602,
-  internal: -32603
+  internal: -32603,
 };
 
-ERR_MSGS = {
-  parseError: "Parse Error",
-  invalidRequest: "Invalid Request",
-  methodNotFound: "Method not found",
-  invalidParams: "Invalid parameters"
+const ERR_MSGS = {
+  parseError: 'Parse Error',
+  invalidRequest: 'Invalid Request',
+  methodNotFound: 'Method not found',
+  invalidParams: 'Invalid Parameters',
 };
 
 class Server {
@@ -26,15 +26,15 @@ class Server {
     }
 
     const defaults = {
-      host: "localhost",
+      host: 'localhost',
       port: 8100,
       exclusive: false,
-      version: "2.0",
-      delimiter: "\r\n"
+      version: '2.0',
+      delimiter: '\r\n',
     };
 
     this.options = _.merge(defaults, options || {});
-    this.messageBuffer = "";
+    this.messageBuffer = '';
     this.methods = {};
   }
 
@@ -42,21 +42,21 @@ class Server {
     return new Promise((resolve, reject) => {
       const { host, port, exclusive } = this.options;
       this.server.listen({ host, port, exclusive });
-      this.server.on("listening", () => {
+      this.server.on('listening', () => {
         this.handleData();
         this.handleError();
         resolve({
           host: this.server.address().address,
-          port: this.server.address().port
+          port: this.server.address().port,
         });
       });
-      this.server.on("error", error => reject(error));
+      this.server.on('error', error => reject(error));
     });
   }
 
   close() {
     return new Promise((resolve, reject) => {
-      this.server.close(error => {
+      this.server.close((error) => {
         if (error) {
           reject();
         }
@@ -70,38 +70,41 @@ class Server {
     this.methods[name] = cb;
   }
 
+  handleData() {
+    throw new Error('function must be overwritten in subsclass');
+  }
+
   validateRequest(message) {
     return new Promise((resolve, reject) => {
       try {
         // throws error if json invalid
         const json = JSON.parse(message);
-        const method = this.methods[json.method];
         if (!json.id) {
           reject(
-            this.send_error(
+            this.sendError(
               null,
-              ERR_CODES["invalidRequest"],
-              ERR_MSGS["invalidRequest"]
-            )
+              ERR_CODES.invalidRequest,
+              ERR_MSGS.invalidRequest,
+            ),
           );
         }
         if (!this.methods[json.method]) {
           reject(
-            this.send_error(
+            this.sendError(
               json.id,
-              ERR_CODES["methodNotFound"],
-              ERR_MSGS["methodNotFound"]
-            )
+              ERR_CODES.methodNotFound,
+              ERR_MSGS.methodNotFound,
+            ),
           );
         }
 
         if (!isArray(json.params) && !isObject(json.params)) {
           reject(
-            this.send_error(
+            this.sendError(
               json.id,
-              ERR_CODES["invalidParams"],
-              ERR_MSGS["invalidParams"]
-            )
+              ERR_CODES.invalidParams,
+              ERR_MSGS.invalidParams,
+            ),
           );
         }
 
@@ -110,34 +113,26 @@ class Server {
       } catch (e) {
         if (e instanceof SyntaxError) {
           reject(
-            this.send_error(
-              null,
-              ERR_CODES["parseError"],
-              ERR_MSGS["parseError"]
-            )
+            this.sendError(null, ERR_CODES.parseError, ERR_MSGS.parseError),
           );
         }
       }
     });
   }
 
-  handleData() {
-    throw new Error("function must be overwritten in subsclass");
-  }
-
   getResult(message) {
-    const params = message.params;
+    const { params } = message;
     return new Promise((resolve, reject) => {
       try {
         const result = this.methods[message.method](params);
         resolve(formatResponse(message, result));
       } catch (e) {
-        let error = this.send_error(message.id, ERR_CODES["internal"]);
+        let error = this.sendError(message.id, ERR_CODES.internal);
         if (e instanceof TypeError) {
-          error = this.send_error(
+          error = this.sendError(
             message.id,
-            ERR_CODES["invalidParams"],
-            ERR_MSGS["invalidParams"]
+            ERR_CODES.invalidParams,
+            ERR_MSGS.invalidParams,
           );
         }
         reject(error);
@@ -146,29 +141,27 @@ class Server {
   }
 
   clientConnected() {
-    throw new Error("function must be overwritten in subclass");
+    throw new Error('function must be overwritten in subclass');
   }
 
   clientDisconnected() {
-    throw new Error("function must be overwritten in subsclass");
+    throw new Error('function must be overwritten in subsclass');
   }
 
-  handleError(error) {
-    this.on("error", error => {
-      console.log(`Received error: ${error["message"]}`);
-    });
+  handleError() {
+    this.on('error', error => error);
   }
 
-  send_error(id, code, message = null) {
+  sendError(id, code, message = null) {
     const response = {
       jsonrpc: this.options.version,
-      error: { code: code, message: message || "Unknown Error" },
-      id: id
+      error: { code, message: message || 'Unknown Error' },
+      id,
     };
     return response;
   }
 }
-require("util").inherits(Server, events.EventEmitter);
+require('util').inherits(Server, events.EventEmitter);
 
 module.exports = Server;
 
@@ -177,11 +170,11 @@ module.exports = Server;
  * @type ServerHTTP
  * @static
  */
-Server.http = require("./http");
+Server.http = require('./http');
 
 /**
  * TCP server constructor
  * @type ServerTCP
  * @static
  */
-Server.tcp = require("./tcp");
+Server.tcp = require('./tcp');

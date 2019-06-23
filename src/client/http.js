@@ -1,7 +1,7 @@
-const Client = require(".");
-const _ = require("lodash");
-const http = require("http");
-const { formatRequest } = require("../functions");
+const _ = require('lodash');
+const http = require('http');
+const Client = require('.');
+const { formatRequest } = require('../functions');
 
 /**
  * Constructor for Jsonic HTTP client
@@ -17,58 +17,58 @@ class HTTPClient extends Client {
     super(server, options);
 
     const defaults = {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Length": Buffer.byteLength(
+        'Content-Length': Buffer.byteLength(
           this.messageBuffer,
-          this.options.encoding
+          this.options.encoding,
         ),
-        "Content-Type": "application/json; charset=utf-8",
-        Accept: "application/json"
+        'Content-Type': 'application/json; charset=utf-8',
+        Accept: 'application/json',
       },
-      path: "/"
+      path: '/',
     };
 
-    this.messageBuffer = "";
+    this.messageBuffer = '';
 
     this.options = _.merge(defaults, options || {});
   }
 
   request(method, params) {
-    const req_promise = new Promise((resolve, reject) => {
+    const requestPromise = new Promise((resolve, reject) => {
       const clientMessage = formatRequest(
         method,
         params,
         this.message_id,
-        this.options
+        this.options,
       );
       const reqOptions = {
         hostname: this.server.host,
         port: 80 || this.server.port,
         path: this.options.path,
         method: this.options.method,
-        headers: this.options.headers
+        headers: this.options.headers,
       };
       const options = _.merge(reqOptions, this.options || {});
 
       this.pendingCalls[this.message_id] = { resolve, reject };
       this.message_id += 1;
-      const req = this._http_request(options);
+      const req = this.httpRequest(options);
       req.write(clientMessage);
       req.end();
     });
 
-    return req_promise;
+    return requestPromise;
   }
 
-  _http_request(options) {
-    return http.request(options, res => {
-      res.on("data", data => {
+  httpRequest(options) {
+    return http.request(options, (res) => {
+      res.on('data', (data) => {
         this.messageBuffer += data;
-        this._verifyData();
+        this.verifyData();
       });
-      res.on("end", () => {
-        console.log("end");
+      res.on('end', () => {
+
       });
     });
   }

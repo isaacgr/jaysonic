@@ -1,7 +1,7 @@
-const _ = require("lodash");
-const events = require("events");
-const net = require("net");
-const { formatRequest } = require("../functions");
+const _ = require('lodash');
+const events = require('events');
+const net = require('net');
+const { formatRequest } = require('../functions');
 
 /**
  * @class Client
@@ -14,19 +14,19 @@ const { formatRequest } = require("../functions");
  * @return {Client}
  */
 
-ERR_CODES = {
+const ERR_CODES = {
   parseError: -32700,
   invalidRequest: -32600,
   methodNotFound: -32601,
   invalidParams: -32602,
-  internal: -32603
+  internal: -32603,
 };
 
-ERR_MSGS = {
-  parseError: "Parse Error",
-  invalidRequest: "Invalid Request",
-  methodNotFound: "Method not found",
-  invalidParams: "Invalid parameters"
+const ERR_MSGS = {
+  parseError: 'Parse Error',
+  invalidRequest: 'Invalid Request',
+  methodNotFound: 'Method not found',
+  invalidParams: 'Invalid parameters',
 };
 
 class Client {
@@ -36,8 +36,8 @@ class Client {
     }
 
     const defaults = {
-      version: "2.0",
-      delimiter: "\r\n"
+      version: '2.0',
+      delimiter: '\r\n',
     };
 
     this.server = server;
@@ -52,7 +52,7 @@ class Client {
      *
      * partial message: {"jsonrpc": 2.0, "params"
      */
-    this.messageBuffer = "";
+    this.messageBuffer = '';
     this.responseQueue = {};
     this.options = _.merge(defaults, options || {});
   }
@@ -61,17 +61,17 @@ class Client {
     return new Promise((resolve, reject) => {
       this.client = new net.Socket();
       this.client.connect(this.server);
-      this.client.setEncoding("utf8");
-      this.client.on("connect", () => {
+      this.client.setEncoding('utf8');
+      this.client.on('connect', () => {
         /**
          * start listeners, response handlers and error handlers
          */
-        this._listen();
-        this._handleResponse();
-        this._handle_error();
+        this.listen();
+        this.handleResponse();
+        this.handleError();
         resolve(this.server);
       });
-      this.client.on("error", error => {
+      this.client.on('error', (error) => {
         reject(error);
       });
     });
@@ -79,7 +79,7 @@ class Client {
 
   end() {
     return new Promise((resolve, reject) => {
-      this.client.end(error => {
+      this.client.end((error) => {
         if (error) {
           reject();
         }
@@ -89,35 +89,27 @@ class Client {
   }
 
   request(method, params) {
-    const req_promise = new Promise((resolve, reject) => {
+    const requestPromise = new Promise((resolve, reject) => {
       const clientMessage = formatRequest(
         method,
         params,
         this.message_id,
-        this.options
+        this.options,
       );
       this.pendingCalls[this.message_id] = { resolve, reject };
       this.message_id += 1;
       this.client.write(clientMessage);
     });
 
-    return req_promise;
+    return requestPromise;
   }
 
-  subscribe(method, cb) {
-    /**
-     * @params {String} [method] method to subscribe to
-     * @params {Function} [cb] callback function to invoke on notify
-     */
-    this.on("notify", message => {
-      if (message.method === method) {
-        cb(message, error);
-      }
-    });
+  subscribe() {
+    throw new Error('function must be overwritten in subsclass');
   }
 
-  _handleResponse() {
-    this.on("response", id => {
+  handleResponse() {
+    this.on('response', (id) => {
       if (!(this.pendingCalls[id] === undefined)) {
         this.pendingCalls[id].resolve(this.responseQueue[id]);
         delete this.responseQueue[id];
@@ -125,44 +117,44 @@ class Client {
     });
   }
 
-  _verifyData() {
+  verifyData() {
     /**
      * want to search for whole messages by matching the delimiter from the start of the buffer
      */
     const messages = this.messageBuffer.split(this.options.delimiter);
-    for (let chunk of messages) {
+    for (const chunk of messages) {
       try {
         // will throw an error if not valid json
         const message = JSON.parse(chunk);
         if (message.error) {
           // got an error back
-          this.send_error(
+          this.sendError(
             message.jsonrpc,
             message.id,
             message.error.code,
-            message.error.message
+            message.error.message,
           );
         }
 
         if (!message.id) {
           // no id, so notification
-          this.emit("notify", message);
+          this.emit('notify', message);
         }
 
         // no method, so response
         if (!message.method) {
           this.serving_message_id = message.id;
           this.responseQueue[this.serving_message_id] = message;
-          this.emit("response", this.serving_message_id);
+          this.emit('response', this.serving_message_id);
         }
       } catch (e) {
         if (e instanceof SyntaxError) {
           // if we've gotten all chunks, and json is still invalid throw error
           if (this.messageBuffer.indexOf(chunk) === this.messageBuffer.length) {
-            this.send_error(
+            this.sendError(
               this.serving_message_id,
-              ERR_CODES["parseError"],
-              ERR_MSGS["parseError"]
+              ERR_CODES.parseError,
+              ERR_MSGS.parseError,
             );
           }
         }
@@ -170,32 +162,36 @@ class Client {
     }
   }
 
-  _handle_error() {
-    this.on("error", error => {
+  listen() {
+    this.client.on('data', (data) => {
+      this.messageBuffer += data.trimLeft();
+      this.verifyData();
+    });
+    this.client.on('end', () => {
+      this.emit('serverDisconnected');
+    });
+  }
+
+  serverDisconnected(cb) {
+    this.on('serverDisconnected', () => cb());
+  }
+
+  handleError() {
+    this.on('error', (error) => {
       this.pendingCalls[error.id].reject(error);
     });
   }
 
-  _listen() {
-    this.client.on("data", data => {
-      this.messageBuffer += data.trimLeft();
-      this._verifyData();
-    });
-    this.client.on("end", () => {
-      console.warn("Other side closed connection");
-    });
-  }
-
-  send_error(jsonrpc = this.options.version, id, code, message = null) {
+  sendError(jsonrpc = this.options.version, id, code, message = null) {
     const response = {
-      jsonrpc: jsonrpc,
-      error: { code: code, message: message || "Unknown Error" },
-      id: id
+      jsonrpc,
+      error: { code, message: message || 'Unknown Error' },
+      id,
     };
-    this.emit("error", response);
+    this.emit('error', response);
   }
 }
-require("util").inherits(Client, events.EventEmitter);
+require('util').inherits(Client, events.EventEmitter);
 
 module.exports = Client;
 
@@ -204,11 +200,11 @@ module.exports = Client;
  * @type ClientTcp
  * @static
  */
-Client.tcp = require("./tcp");
+Client.tcp = require('./tcp');
 
 /**
  * HTTP client constructor
  * @type ClientHTTP
  * @static
  */
-Client.http = require("./http");
+Client.http = require('./http');
