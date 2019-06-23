@@ -16,6 +16,8 @@ module.exports = {
   rules: {
     "new-cap": "off",
     "class-methods-use-this": "off",
+    "comma-dangle": "off",
+    quotes: ["error", "double"],
     "no-restricted-syntax": [
       "off",
       {

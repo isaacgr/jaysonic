@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha tests/**/*test.js --exit",
-    "lint": "./node_modules/eslint/bin/eslint.js --fix .",
+    "lint": "./node_modules/eslint/bin/eslint.js .",
+    "lint-fix": "./node_modules/eslint/bin/eslint.js --fix .",
     "build": "./node_modules/.bin/babel src --out-dir lib",
     "prepare": "npm run lint && npm run build"
   },
