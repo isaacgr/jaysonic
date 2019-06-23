@@ -2,13 +2,33 @@ const Jaysonic = require("../../src");
 const expect = require("chai").expect;
 
 const server = new Jaysonic.server.tcp({ host: "127.0.0.1", port: 6969 });
-const { client, socket } = require("../client.js");
+const server2 = new Jaysonic.server.tcp({ host: "127.0.0.1", port: 7070 });
+
+const { client, socket, sock } = require("../client.js");
+
+server.method("add", ([a, b]) => {
+  return a + b;
+});
+
+server.method("greeting", ({ name }) => {
+  return `Hello ${name}`;
+});
+
+server.method("typeerror", ([]) => {
+  throw new TypeError();
+});
 
 // basing tests off of https://www.jsonrpc.org/specification
 
 before(done => {
   server.listen().then(() => {
-    done();
+    socket.connect(6969, "127.0.0.1", () => {
+      server2.listen().then(() => {
+        sock.connect(7070, "127.0.0.1", () => {
+          done();
+        });
+      });
+    });
   });
 });
 
@@ -21,18 +41,14 @@ beforeEach(done => {
 after(() => {
   client.end().then(() => {
     server.close();
+    server2.close();
+    socket.destroy();
+    sock.destroy();
   });
 });
 
 describe("TCP Server", () => {
   describe("connection", () => {
-    it("should listen for connections", done => {
-      const conn = server.listen();
-      conn.then(result => {
-        expect(result).to.eql({ host: "127.0.0.1", port: 6969 });
-        done();
-      });
-    });
     it("should accept incoming connections", done => {
       server.clientConnected(conn => {
         expect(conn).to.have.all.keys("host", "port");
@@ -54,14 +70,12 @@ describe("TCP Server", () => {
     it("should handle call with positional params", done => {
       const req = client.request("add", [1, 2]);
       req.then(result => {
-        console.log(result);
-        expect(result)
-          .to.eql({
-            jsonrpc: "2.0",
-            result: 3,
-            id: 1
-          })
-          .finally(done);
+        expect(result).to.eql({
+          jsonrpc: "2.0",
+          result: 3,
+          id: 1
+        });
+        done();
       });
     });
     it("should handle call with named params", done => {
@@ -80,8 +94,8 @@ describe("TCP Server", () => {
     });
     it("should send 'method not found' error", done => {
       const req = client.request("nonexistent", []);
-      req.then(result => {
-        expect(result).to.eqx({
+      req.catch(result => {
+        expect(result).to.eql({
           jsonrpc: "2.0",
           error: { code: -32601, message: "Method not found" },
           id: 3
@@ -90,21 +104,57 @@ describe("TCP Server", () => {
       });
     });
     it("should send 'parse error'", done => {
-      let message = "";
-      socket.write("test");
-      socket.on("data", data => {
-        message += data;
-        expect(message).to.eql(
+      client.end().then(() => {
+        let message = "";
+        socket.write("test");
+        socket.on("data", data => {
+          message += data;
+          message.split("\r\n").forEach(chunk => {
+            try {
+              expect(chunk).to.eql(
+                JSON.stringify({
+                  jsonrpc: "2.0",
+                  error: { code: -32700, message: "Parse Error" },
+                  id: null
+                }) + "\r\n"
+              );
+            } catch (e) {}
+          });
+          socket.destroy();
+        });
+        socket.on("close", () => {
+          done();
+        });
+      });
+    });
+    it("should send 'invalid request' error", done => {
+      client.end().then(() => {
+        let message = "";
+        sock.write(
           JSON.stringify({
             jsonrpc: "2.0",
-            error: { code: -32700, message: "Parse Error" },
-            id: null
+            method: "add",
+            params: []
           }) + "\r\n"
         );
-        socket.destroy();
-      });
-      socket.on("close", () => {
-        done();
+        sock.on("data", data => {
+          message += data;
+          message.split("\r\n").forEach(chunk => {
+            try {
+              expect(chunk).to.eql(
+                JSON.stringify({
+                  jsonrpc: "2.0",
+                  error: { code: -32600, message: "Invalid Request" },
+                  id: null
+                }) + "\r\n"
+              );
+            } catch (e) {}
+          });
+          sock.destroy();
+        });
+        sock.on("close", () => {
+          done();
+        });
       });
     });
   });
