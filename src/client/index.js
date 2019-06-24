@@ -62,7 +62,7 @@ class Client {
   connect() {
     return new Promise((resolve, reject) => {
       if (this.attached) {
-        reject("client already connected");
+        reject(Error("client already connected"));
       }
       this.client = new net.Socket();
       this.client.connect(this.server);

@@ -4,6 +4,7 @@ const isObject = require("lodash/isObject");
 const isArray = require("lodash/isArray");
 const { formatResponse } = require("../functions");
 const { ERR_CODES, ERR_MSGS } = require("../constants");
+
 class Server {
   constructor(options) {
     if (!(this instanceof Server)) {
@@ -27,7 +28,7 @@ class Server {
   listen() {
     return new Promise((resolve, reject) => {
       if (this.listening) {
-        reject("server already listening");
+        reject(Error("server already listening"));
       }
       const { host, port, exclusive } = this.options;
       this.server.listen({ host, port, exclusive });
@@ -160,7 +161,7 @@ class Server {
   handleError() {
     this.on("error", (error) => {
       this.listening = false;
-      error;
+      return error;
     });
   }
 
