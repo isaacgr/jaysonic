@@ -49,6 +49,13 @@ describe("TCP Server", () => {
         done();
       });
     });
+    it("should be unable to listen multiple times", (done) => {
+      const conn = server.listen();
+      conn.catch((error) => {
+        expect(error.message).to.be.a("string");
+        done();
+      });
+    });
   });
   describe("requests", () => {
     it("should handle call with positional params", (done) => {

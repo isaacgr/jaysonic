@@ -39,6 +39,13 @@ describe("TCP Client", () => {
         done();
       });
     });
+    it("should be unable to connect multiple times", (done) => {
+      const conn = client.connect();
+      conn.catch((error) => {
+        expect(error.message).to.be.a("string");
+        done();
+      });
+    });
   });
   describe("requests", () => {
     it("should receive response for positional params", (done) => {
