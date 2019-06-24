@@ -1,3 +1,4 @@
+const EventEmitter = require("events");
 const _ = require("lodash");
 const events = require("events");
 const net = require("net");
@@ -15,8 +16,9 @@ const { ERR_CODES, ERR_MSGS } = require("../constants");
  * @return {Client}
  */
 
-class Client {
+class Client extends EventEmitter {
   constructor(options) {
+    super();
     if (!(this instanceof Client)) {
       return new Client(options);
     }

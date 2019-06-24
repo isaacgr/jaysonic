@@ -1,12 +1,13 @@
-const events = require("events");
+const EventEmitter = require("events");
 const _ = require("lodash");
 const isObject = require("lodash/isObject");
 const isArray = require("lodash/isArray");
 const { formatResponse } = require("../functions");
 const { ERR_CODES, ERR_MSGS } = require("../constants");
 
-class Server {
+class Server extends EventEmitter {
   constructor(options) {
+    super();
     if (!(this instanceof Server)) {
       return new Server(options);
     }
@@ -183,7 +184,6 @@ class Server {
     return response;
   }
 }
-require("util").inherits(Server, events.EventEmitter);
 
 module.exports = Server;
 
