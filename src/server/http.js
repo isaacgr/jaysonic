@@ -1,6 +1,6 @@
 const http = require("http");
 const Server = require(".");
-const { ERR_CODES, ERR_MSGS, errorToStatus } = require("../constants");
+const { errorToStatus } = require("../constants");
 
 /**
  * Constructor for Jsonic HTTP server
@@ -16,7 +16,7 @@ class HTTPServer extends Server {
     super(options);
 
     this.connectedClients = [];
-
+    this.responseBuffer = [];
     this.initserver();
   }
 
@@ -32,57 +32,66 @@ class HTTPServer extends Server {
           this.messageBuffer += data;
         });
         request.on("end", () => {
-          const message = this.messageBuffer;
+          /**
+           * HTTP messages could contain delimited requests
+           * or be batched.
+           *
+           * Delimited requests should be resolved, and then sent back
+           * as a delimited response
+           *
+           * Batched requests get handled individually, results wrapped in a list
+           * and then sent back to client
+           */
+          const messages = this.messageBuffer.split(this.options.delimiter);
           this.messageBuffer = "";
-          // if (messages.length === 1) {
-          //   // split didnt split
-          //   const error = this.sendError(
-          //     null,
-          //     ERR_CODES.parseError,
-          //     ERR_MSGS.parseError
-          //   );
-          //   this.setResponseHeader(response, error.error.code);
-          //   response.write(
-          //     JSON.stringify(error) + this.options.delimiter,
-          //     () => {
-          //       response.end(this.options.delimiter, () => {
-          //         request.destroy();
-          //       });
-          //     }
-          //   );
-          // } else {
-
-          // }
-          // for (let message of messages) {
-
-          // }
-          this.validateRequest(message)
-            .then((message) => {
-              this.getResult(message.json)
-                .then((result) => {
-                  response.write(result + this.options.delimiter, () => {
-                    response.end();
-                  });
-                })
+          if (messages.length > 1) {
+            // delimited request
+            const promises = messages
+              .filter(messageString => messageString !== "")
+              .map(message => this.validateRequest(message)
+                .then(({ json }) => this.getResult(json)
+                  .then((result) => {
+                    this.setResponseHeader(response);
+                    return result;
+                  })
+                  .catch((error) => {
+                    this.setResponseHeader(response, error.error.code);
+                    return JSON.stringify(error);
+                  }))
                 .catch((error) => {
                   this.setResponseHeader(response, error.error.code);
-                  response.write(
-                    JSON.stringify(error) + this.options.delimiter,
-                    () => {
-                      response.end();
-                    }
-                  );
-                });
-            })
-            .catch((error) => {
-              this.setResponseHeader(response, error.error.code);
-              response.write(
-                JSON.stringify(error) + this.options.delimiter,
-                () => {
+                  return JSON.stringify(error);
+                }));
+            Promise.all(promises)
+              .then((result) => {
+                const res = result.join(this.options.delimiter);
+                response.write(res, () => {
                   response.end();
-                }
-              );
-            });
+                });
+              })
+              .catch((error) => {
+                const res = error.join(this.options.delimiter);
+                response.write(res, () => {
+                  response.end();
+                });
+              });
+          } else {
+            // possibly a batch request, check and resolve if so
+            // reject otherwise
+            this.handleBatchRequest(messages)
+              .then((responses) => {
+                const res = JSON.stringify(responses);
+                response.write(res, () => {
+                  response.end();
+                });
+              })
+              .catch((error) => {
+                const res = JSON.stringify(error);
+                response.write(res, () => {
+                  response.end();
+                });
+              });
+          }
         });
       });
       client.on("close", () => {

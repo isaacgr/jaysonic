@@ -73,6 +73,30 @@ class Server extends EventEmitter {
     throw new Error("function must be overwritten in subsclass");
   }
 
+  handleBatchRequest(batch) {
+    return new Promise((resolve, reject) => {
+      try {
+        const requests = JSON.parse(batch);
+        const batchRequests = requests.map(request => this.validateRequest(request)
+          .then(result => result.json)
+          .catch(error => error));
+        Promise.all(batchRequests)
+          .then((result) => {
+            resolve(result);
+          })
+          .catch((error) => {
+            reject(error);
+          });
+      } catch (e) {
+        if (e instanceof SyntaxError) {
+          reject(
+            this.sendError(null, ERR_CODES.parseError, ERR_MSGS.parseError)
+          );
+        }
+      }
+    });
+  }
+
   validateRequest(message) {
     return new Promise((resolve, reject) => {
       try {
