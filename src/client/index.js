@@ -45,6 +45,7 @@ class Client {
     this.message_id = 1;
     this.serving_message_id = 1;
     this.pendingCalls = {};
+    this.attached = false;
 
     /**
      * we can receive whole messages, or parital so we need to buffer
@@ -60,10 +61,14 @@ class Client {
 
   connect() {
     return new Promise((resolve, reject) => {
+      if (this.attached) {
+        reject("client already connected");
+      }
       this.client = new net.Socket();
       this.client.connect(this.server);
       this.client.setEncoding("utf8");
       this.client.on("connect", () => {
+        this.attached = true;
         /**
          * start listeners, response handlers and error handlers
          */
@@ -169,7 +174,13 @@ class Client {
       this.verifyData();
     });
     this.client.on("end", () => {
+      this.attached = false;
+      this.client.removeAllListeners();
       this.emit("serverDisconnected");
+    });
+    this.client.on("close", () => {
+      this.attached = false;
+      this.client.removeAllListeners();
     });
   }
 

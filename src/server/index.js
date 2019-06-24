@@ -3,22 +3,7 @@ const _ = require("lodash");
 const isObject = require("lodash/isObject");
 const isArray = require("lodash/isArray");
 const { formatResponse } = require("../functions");
-
-const ERR_CODES = {
-  parseError: -32700,
-  invalidRequest: -32600,
-  methodNotFound: -32601,
-  invalidParams: -32602,
-  internal: -32603
-};
-
-const ERR_MSGS = {
-  parseError: "Parse Error",
-  invalidRequest: "Invalid Request",
-  methodNotFound: "Method not found",
-  invalidParams: "Invalid Parameters"
-};
-
+const { ERR_CODES, ERR_MSGS } = require("../constants");
 class Server {
   constructor(options) {
     if (!(this instanceof Server)) {
@@ -36,13 +21,18 @@ class Server {
     this.options = _.merge(defaults, options || {});
     this.messageBuffer = "";
     this.methods = {};
+    this.listening = false;
   }
 
   listen() {
     return new Promise((resolve, reject) => {
+      if (this.listening) {
+        reject("server already listening");
+      }
       const { host, port, exclusive } = this.options;
       this.server.listen({ host, port, exclusive });
       this.server.on("listening", () => {
+        this.listening = true;
         this.handleData();
         this.handleError();
         resolve({
@@ -50,11 +40,18 @@ class Server {
           port: this.server.address().port
         });
       });
-      this.server.on("error", (error) => reject(error));
+      this.server.on("error", (error) => {
+        this.listening = false;
+        reject(error);
+      });
+      this.server.on("close", () => {
+        this.listening = false;
+      });
     });
   }
 
   close() {
+    this.listening = false;
     return new Promise((resolve, reject) => {
       this.server.close((error) => {
         if (error) {
@@ -120,7 +117,6 @@ class Server {
             )
           );
         }
-
         // data looks good
         resolve({ valid: true, json });
       } catch (e) {
@@ -162,7 +158,10 @@ class Server {
   }
 
   handleError() {
-    this.on("error", (error) => error);
+    this.on("error", (error) => {
+      this.listening = false;
+      error;
+    });
   }
 
   sendError(id, code, message = null) {
@@ -180,7 +179,6 @@ class Server {
         id
       };
     }
-
     return response;
   }
 }
