@@ -2,6 +2,7 @@ const _ = require("lodash");
 const events = require("events");
 const net = require("net");
 const { formatRequest } = require("../functions");
+const { ERR_CODES, ERR_MSGS } = require("../constants");
 
 /**
  * @class Client
@@ -13,21 +14,6 @@ const { formatRequest } = require("../functions");
  * @param {Boolean} [options.persist=true] persist the connection to server after a request
  * @return {Client}
  */
-
-const ERR_CODES = {
-  parseError: -32700,
-  invalidRequest: -32600,
-  methodNotFound: -32601,
-  invalidParams: -32602,
-  internal: -32603
-};
-
-const ERR_MSGS = {
-  parseError: "Parse Error",
-  invalidRequest: "Invalid Request",
-  methodNotFound: "Method not found",
-  invalidParams: "Invalid parameters"
-};
 
 class Client {
   constructor(options) {
