@@ -41,11 +41,11 @@ server.method("add", ([a, b]) => a + b);
 
 client
   .request("add", [1, 2])
-  .then(result => {
+  .then((result) => {
     console.log(result);
     // {jsonrpc: "2.0", method: "add", result: 3, id: 1}
   })
-  .catch(error => {
+  .catch((error) => {
     console.log(error);
   });
 ```
@@ -58,7 +58,7 @@ const Jaysonic = require("jaysonic");
 const server = new Jaysonic.server.tcp({ host: "127.0.0.1", port: 8100 });
 const client = new Jayson.client.tcp({ host: "127.0.0.1", port: 8100 });
 
-client.subscribe("notification", message => {
+client.subscribe("notification", (message) => {
   console.log(message);
   // {jsonrpc: "2.0", method: "notification", params: []}
 });
@@ -84,11 +84,11 @@ server.method("add", ([a, b]) => a + b);
 
 client
   .request("add", [1, 2])
-  .then(result => {
+  .then((result) => {
     console.log(result);
     // {jsonrpc: "2.0", method: "add", result: 3, id: 1}
   })
-  .catch(error => {
+  .catch((error) => {
     console.log(error);
   });
 ```
@@ -101,6 +101,10 @@ The client and server support changing the JSON-RPC version and the delimiter us
 `port`: The host port to serve from for the server, or to connect to by the client. Default is `8100`. \
 `delimiter`: Delimiter to break requests by. Defaults to `\r\n`. \
 `version`: RPC version to use. Defaults to `2.0`.
+
+The server has an additional option specified by the [NodeJS Docs](https://nodejs.org/api/net.html#net_server_listen_options_callback).
+
+`exclusive`: If exclusive is false (default), then cluster workers will use the same underlying handle, allowing connection handling duties to be shared. When exclusive is true, the handle is not shared, and attempted port sharing results in an error
 
 ```js
 const Jaysonic = require("jaysonic");
