@@ -1,4 +1,5 @@
 const Client = require(".");
+const { formatRequest } = require("../functions");
 
 /**
  * Constructor for Jsonic TCP client
@@ -20,6 +21,10 @@ class TCPClient extends Client {
         cb(message);
       }
     });
+  }
+  notify(notification) {
+    const { method, params } = notification;
+    return this.request().send(method, params);
   }
 }
 

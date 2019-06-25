@@ -24,9 +24,8 @@ const formatRequest = (method, params, id, options) => {
     request.params = params;
   }
 
-  if (isUndefined(id)) {
-    throw new TypeError("id must be defined");
-  } else {
+  // assume notification otherwise
+  if (!isUndefined(id)) {
     request.id = id;
   }
 

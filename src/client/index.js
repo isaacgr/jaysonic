@@ -57,6 +57,7 @@ class Client extends EventEmitter {
       this.client.setEncoding("utf8");
       this.client.on("connect", () => {
         this.attached = true;
+        this.writer = this.client;
         /**
          * start listeners, response handlers and error handlers
          */
@@ -98,7 +99,7 @@ class Client extends EventEmitter {
       send: (method, params) =>
         new Promise((resolve, reject) => {
           this.pendingCalls[this.message_id] = { resolve, reject };
-          this.client.write(this.request().message(method, params));
+          this.writer.write(this.request().message(method, params));
         })
     };
   }
@@ -112,7 +113,7 @@ class Client extends EventEmitter {
     const request = JSON.stringify(requests);
     return new Promise((resolve, reject) => {
       this.pendingCalls[this.message_id] = { resolve, reject };
-      this.client.write(request);
+      this.writer.write(request);
       this.on("batchResponse", (batch) => {
         batch.forEach((message) => {
           if (message.error) {
