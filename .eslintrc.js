@@ -18,6 +18,7 @@ module.exports = {
     "class-methods-use-this": "off",
     "comma-dangle": "off",
     quotes: ["error", "double"],
+    "consistent-return": "off",
     "no-restricted-syntax": [
       "off",
       {
