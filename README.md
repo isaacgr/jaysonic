@@ -48,6 +48,18 @@ The server has an additional option specified by the [NodeJS Docs](https://nodej
 
 `exclusive`: If exclusive is false (default), then cluster workers will use the same underlying handle, allowing connection handling duties to be shared. When exclusive is true, the handle is not shared, and attempted port sharing results in an error.
 
+The HTTP client supports additional options for the HTTP request.
+
+`method`: The method to make the request with. Default is `POST`.
+`headers`: Headers to include in the request. Defaults provided by the spec are:
+
+- `"Content-Length"`
+  - calculated by request message
+- `"Content-Type"`
+  - defaults to `"application/json; charset=utf-8"`
+- `Accept`
+  - defaults to `"application/json"`
+
 ### Code Demos
 
 The default host and port for the server is `localhost:8100`. Based on the node `net.Server()` module.
@@ -77,8 +89,6 @@ const client = new Jaysonic.client.tcp({
 ```
 
 ###### HTTP
-
-The HTTP client supports additional options for the HTTP request.
 
 ```js
 const Jaysonic = require("jaysonic");

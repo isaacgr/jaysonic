@@ -31,18 +31,7 @@ class HTTPClient extends Client {
 
     this.messageBuffer = "";
     this.options = _.merge(defaults, options || {});
-    this.writer = this.httpRequest(this.options);
-  }
-
-  httpRequest(options) {
-    return http.request(options, (res) => {
-      res.on("data", (data) => {
-        this.messageBuffer += data;
-      });
-      res.on("end", () => {
-        console.log(this.messageBuffer);
-      });
-    });
+    this.writer = http.request(this.options);
   }
 }
 
