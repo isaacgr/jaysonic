@@ -11,6 +11,7 @@ A TCP and HTTP server and client that implement the JSON-RPC 2.0 Specification.
 - Promise based
 - Persistent connections
 - Notification subscriptions
+- Batching
 - TCP server/client
 - HTTP server/client
 - auto increments request id
@@ -40,7 +41,8 @@ const client = new Jayson.client.tcp({ host: "127.0.0.1", port: 8100 });
 server.method("add", ([a, b]) => a + b);
 
 client
-  .request("add", [1, 2])
+  .request()
+  .send("add", [1, 2])
   .then((result) => {
     console.log(result);
     // {jsonrpc: "2.0", method: "add", result: 3, id: 1}
@@ -68,6 +70,33 @@ server.notify({
 });
 ```
 
+##### Batching
+
+```js
+const Jaysonic = require("jaysonic");
+
+const server = new Jaysonic.server.tcp({ host: "127.0.0.1", port: 8100 });
+const client = new Jayson.client.tcp({ host: "127.0.0.1", port: 8100 });
+
+server.method("add", ([a, b]) => a + b);
+
+client
+  .batch([
+    // access the message object on the request
+    client.request().message("add", [1, 2]),
+    client.request().message("add", [3, 4])
+  ])
+  .then((result) => {
+    // [
+    //   {jsonrpc: "2.0", method: "add", result: 3, id: 1},
+    //   {jsonrpc: "2.0", method: "add", result: 7, id: 1}
+    // ]
+  })
+  .catch((error) => {
+    console.log(error);
+  });
+```
+
 #### HTTP
 
 > Note: Notifications are not supported by the HTTP client
@@ -83,10 +112,38 @@ const client = new Jayson.client.http({ host: "127.0.0.1", port: 8100 });
 server.method("add", ([a, b]) => a + b);
 
 client
-  .request("add", [1, 2])
+  .request()
+  .send("add", [1, 2])
   .then((result) => {
     console.log(result);
     // {jsonrpc: "2.0", method: "add", result: 3, id: 1}
+  })
+  .catch((error) => {
+    console.log(error);
+  });
+```
+
+##### Batching
+
+```js
+const Jaysonic = require("jaysonic");
+
+const server = new Jaysonic.server.http({ host: "127.0.0.1", port: 8100 });
+const client = new Jayson.client.http({ host: "127.0.0.1", port: 8100 });
+
+server.method("add", ([a, b]) => a + b);
+
+client
+  .batch([
+    // access the message object on the request
+    client.request().message("add", [1, 2]),
+    client.request().message("add", [3, 4])
+  ])
+  .then((result) => {
+    // [
+    //   {jsonrpc: "2.0", method: "add", result: 3, id: 1},
+    //   {jsonrpc: "2.0", method: "add", result: 7, id: 1}
+    // ]
   })
   .catch((error) => {
     console.log(error);
@@ -99,7 +156,7 @@ The client and server support changing the JSON-RPC version and the delimiter us
 
 `host`: The host IP to serve from for the server, or to connect to by the client. Default is `localhost`. \
 `port`: The host port to serve from for the server, or to connect to by the client. Default is `8100`. \
-`delimiter`: Delimiter to break requests by. Defaults to `\r\n`. \
+`delimiter`: Delimiter to break requests by. Defaults to `\n`. \
 `version`: RPC version to use. Defaults to `2.0`.
 
 The server has an additional option specified by the [NodeJS Docs](https://nodejs.org/api/net.html#net_server_listen_options_callback).
