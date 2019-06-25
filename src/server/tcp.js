@@ -1,7 +1,6 @@
 const net = require("net");
 const Server = require(".");
 const { formatResponse } = require("../functions");
-const { ERR_CODES, ERR_MSGS } = require("../constants");
 
 /**
  * Constructor for Jsonic TCP client
@@ -37,12 +36,11 @@ class TCPServer extends Server {
           // delimited requests
           for (const chunk of messages) {
             if (chunk !== "") {
-              const validRequest = () =>
-                this.validateRequest(chunk)
-                  .then((result) => result)
-                  .catch((error) => {
-                    throw new Error(JSON.stringify(error));
-                  });
+              const validRequest = () => this.validateRequest(chunk)
+                .then(result => result)
+                .catch((error) => {
+                  throw new Error(JSON.stringify(error));
+                });
 
               validRequest()
                 .then((message) => {
@@ -67,11 +65,11 @@ class TCPServer extends Server {
           this.handleBatchRequest(messages)
             .then((responses) => {
               const res = JSON.stringify(responses);
-              client.write(res + this.options.delimiter);
+              client.write(res);
             })
             .catch((error) => {
               const res = JSON.stringify(error);
-              client.write(res + this.options.delimiter);
+              client.write(res);
             });
         }
       });
@@ -85,17 +83,15 @@ class TCPServer extends Server {
   }
 
   clientConnected(cb) {
-    this.on("clientConnected", (client) =>
-      cb({
-        host: client.remoteAddress,
-        port: client.remotePort
-      })
-    );
+    this.on("clientConnected", client => cb({
+      host: client.remoteAddress,
+      port: client.remotePort
+    }));
   }
 
   clientDisconnected(cb) {
     this.on("clientDisconnected", (client) => {
-      const clientIndex = this.connectedClients.findIndex((c) => client === c);
+      const clientIndex = this.connectedClients.findIndex(c => client === c);
       if (clientIndex === -1) {
         return "unknown";
       }

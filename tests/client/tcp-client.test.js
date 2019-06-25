@@ -73,19 +73,40 @@ describe("TCP Client", () => {
       ]);
       request.then((response) => {
         expect(response).to.eql([
-          { method: "add", jsonrpc: "2.0", params: [1, 2], id: 3 },
-          { method: "add", jsonrpc: "2.0", params: [3, 4], id: 4 }
+          { result: 3, jsonrpc: "2.0", id: 3 },
+          { result: 7, jsonrpc: "2.0", id: 4 }
         ]);
         done();
       });
     });
+    // it("should receive response for empty array", (done) => {
+    //   const request = client.batch([]);
+    //   request.then((response) => {
+    //     console.log(response);
+    //     expect(response).to.eql([
+    //       {
+    //         method: "add",
+    //         jsonrpc: "2.0",
+    //         params: [1, 2],
+    //         id: 3
+    //       },
+    //       {
+    //         method: "add",
+    //         jsonrpc: "2.0",
+    //         params: [3, 4],
+    //         id: 4
+    //       }
+    //     ]);
+    //     done();
+    //   });
+    // });
     it("should handle 'method not found' error", (done) => {
       const request = client.request().send("nonexistent method", []);
       request.catch((error) => {
         expect(error).to.eql({
           jsonrpc: "2.0",
           error: { code: -32601, message: "Method not found" },
-          id: 6
+          id: 5
         });
         done();
       });
@@ -96,7 +117,7 @@ describe("TCP Client", () => {
         expect(error).to.eql({
           jsonrpc: "2.0",
           error: { code: -32602, message: "Invalid Parameters" },
-          id: 7
+          id: 6
         });
         done();
       });

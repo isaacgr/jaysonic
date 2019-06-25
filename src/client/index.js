@@ -1,6 +1,5 @@
 const EventEmitter = require("events");
 const _ = require("lodash");
-const events = require("events");
 const net = require("net");
 const { formatRequest } = require("../functions");
 const { ERR_CODES, ERR_MSGS } = require("../constants");
@@ -83,6 +82,26 @@ class Client extends EventEmitter {
     });
   }
 
+  request() {
+    return {
+      message: (method, params) => {
+        const request = formatRequest(
+          method,
+          params,
+          this.message_id,
+          this.options
+        );
+        this.message_id += 1;
+        return request;
+      },
+
+      send: (method, params) => new Promise((resolve, reject) => {
+        this.pendingCalls[this.message_id] = { resolve, reject };
+        this.client.write(this.request().message(method, params));
+      })
+    };
+  }
+
   batch(requests) {
     /**
      * should receive a list of request objects
@@ -92,12 +111,15 @@ class Client extends EventEmitter {
     const request = JSON.stringify(requests);
     return new Promise((resolve, reject) => {
       this.pendingCalls[this.message_id] = { resolve, reject };
-      this.message_id += 1;
       this.client.write(request);
       this.on("batchResponse", (batch) => {
         resolve(batch);
       });
     });
+  }
+
+  notify() {
+    throw new Error("function must be overwritten in subsclass");
   }
 
   subscribe() {
@@ -118,39 +140,37 @@ class Client extends EventEmitter {
      * want to search for whole messages by matching the delimiter from the start of the buffer
      */
     const messages = this.messageBuffer.split(this.options.delimiter);
-    for (const chunk of messages) {
-      try {
-        // will throw an error if not valid json
-        const message = JSON.parse(chunk);
-        if (_.isArray(message)) {
-          // batch response
-          this.emit("batchResponse", message);
-        }
-        if (message.error) {
-          // got an error back
-          this.sendError(
-            message.jsonrpc,
-            message.id,
-            message.error.code,
-            message.error.message
-          );
-        }
+    this.messageBuffer = "";
+    if (messages.length > 1) {
+      for (const chunk of messages) {
+        try {
+          if (chunk !== "") {
+            // will throw an error if not valid json
+            const message = JSON.parse(chunk);
+            if (message.error) {
+              // got an error back
+              this.sendError(
+                message.jsonrpc,
+                message.id,
+                message.error.code,
+                message.error.message
+              );
+            }
 
-        if (!message.id) {
-          // no id, so notification
-          this.emit("notify", message);
-        }
+            if (!message.id) {
+              // no id, so notification
+              this.emit("notify", message);
+            }
 
-        // no method, so response
-        if (!message.method) {
-          this.serving_message_id = message.id;
-          this.responseQueue[this.serving_message_id] = message;
-          this.emit("response", this.serving_message_id);
-        }
-      } catch (e) {
-        if (e instanceof SyntaxError) {
-          // if we've gotten all chunks, and json is still invalid throw error
-          if (this.messageBuffer.indexOf(chunk) === this.messageBuffer.length) {
+            // no method, so response
+            if (!message.method) {
+              this.serving_message_id = message.id;
+              this.responseQueue[this.serving_message_id] = message;
+              this.emit("response", this.serving_message_id);
+            }
+          }
+        } catch (e) {
+          if (e instanceof SyntaxError) {
             this.sendError(
               this.serving_message_id,
               ERR_CODES.parseError,
@@ -159,6 +179,11 @@ class Client extends EventEmitter {
           }
         }
       }
+    } else {
+      const s = JSON.parse(messages);
+      const batch = s.map(JSON.parse);
+      // possible batch response
+      this.emit("batchResponse", batch);
     }
   }
 
@@ -197,29 +222,6 @@ class Client extends EventEmitter {
     this.emit("error", response);
   }
 }
-
-Client.prototype.request = function() {
-  return {
-    message: (method, params) => {
-      const request = formatRequest(
-        method,
-        params,
-        this.message_id,
-        this.options
-      );
-      this.message_id += 1;
-      return request;
-    },
-
-    send: (method, params) => {
-      return new Promise((resolve, reject) => {
-        this.pendingCalls[this.message_id] = { resolve, reject };
-        this.client.write(this.request().message(method, params));
-      });
-    }
-  };
-};
-
 module.exports = Client;
 
 /**
