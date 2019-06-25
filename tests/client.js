@@ -8,21 +8,27 @@ const sock = new net.Socket();
 
 // for (let i = 0; i < 20; i++) {
 //   client
-//     .request("add", [1, 2])
+//     .request.send("add", [1,2])
 //     .then((result) => {
 //       console.log(result);
 //     })
 //     .catch((error) => {
 //       console.log(error);
 //     });
-//   client
-//     .request("greeting", { name: "Isaac" })
-//     .then((result) => {
-//       console.log(result);
-//     })
-//     .catch((error) => {
-//       console.log(error);
-//     });
-// }
+
+// client.connect().then(() => {});
+// client
+//   .request()
+//   .send("greeting", { name: "Isaac" })
+//   .then((result) => {
+//     console.log(result);
+//   })
+//   .catch((error) => {
+//     console.log(error);
+//   });
+
+// client.batch([
+//   client.request.message("add", [1,2])
+// ])
 
 module.exports = { client, socket, sock };

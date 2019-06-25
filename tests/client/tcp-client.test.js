@@ -28,7 +28,7 @@ describe("TCP Client", () => {
         done();
       });
     });
-    it("should hanlde a connection refused error", (done) => {
+    it("should handle a connection refused error", (done) => {
       const badClient = new Jaysonic.client.tcp({
         host: "127.0.0.1",
         port: 8101
@@ -49,14 +49,14 @@ describe("TCP Client", () => {
   });
   describe("requests", () => {
     it("should receive response for positional params", (done) => {
-      const request = client.request("add", [1, 2]);
+      const request = client.request().send("add", [1, 2]);
       request.then((response) => {
         expect(response).to.eql({ jsonrpc: "2.0", result: 3, id: 1 });
         done();
       });
     });
     it("should receive response for named params", (done) => {
-      const request = client.request("greeting", { name: "Isaac" });
+      const request = client.request().send("greeting", { name: "Isaac" });
       request.then((response) => {
         expect(response).to.eql({
           jsonrpc: "2.0",
@@ -66,24 +66,37 @@ describe("TCP Client", () => {
         done();
       });
     });
+    it("should receive response for batch request", (done) => {
+      const request = client.batch([
+        client.request().message("add", [1, 2]),
+        client.request().message("add", [3, 4])
+      ]);
+      request.then((response) => {
+        expect(response).to.eql([
+          { method: "add", jsonrpc: "2.0", params: [1, 2], id: 3 },
+          { method: "add", jsonrpc: "2.0", params: [3, 4], id: 4 }
+        ]);
+        done();
+      });
+    });
     it("should handle 'method not found' error", (done) => {
-      const request = client.request("nonexistent method", []);
+      const request = client.request().send("nonexistent method", []);
       request.catch((error) => {
         expect(error).to.eql({
           jsonrpc: "2.0",
           error: { code: -32601, message: "Method not found" },
-          id: 3
+          id: 6
         });
         done();
       });
     });
     it("should handle 'invalid params' error", (done) => {
-      const request = client.request("typeerror", [1]);
+      const request = client.request().send("typeerror", [1]);
       request.catch((error) => {
         expect(error).to.eql({
           jsonrpc: "2.0",
           error: { code: -32602, message: "Invalid Parameters" },
-          id: 4
+          id: 7
         });
         done();
       });

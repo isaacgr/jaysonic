@@ -30,6 +30,7 @@ class Client extends EventEmitter {
 
     const { host, port } = options;
     this.server = { host, port };
+    this.client = undefined;
     this.message_id = 1;
     this.serving_message_id = 1;
     this.pendingCalls = {};
@@ -82,20 +83,21 @@ class Client extends EventEmitter {
     });
   }
 
-  request(method, params) {
-    const requestPromise = new Promise((resolve, reject) => {
-      const clientMessage = formatRequest(
-        method,
-        params,
-        this.message_id,
-        this.options
-      );
+  batch(requests) {
+    /**
+     * should receive a list of request objects
+     * [client.request.message(), client.request.message()]
+     * send a single request with that, server should handle it
+     */
+    const request = JSON.stringify(requests);
+    return new Promise((resolve, reject) => {
       this.pendingCalls[this.message_id] = { resolve, reject };
       this.message_id += 1;
-      this.client.write(clientMessage);
+      this.client.write(request);
+      this.on("batchResponse", (batch) => {
+        resolve(batch);
+      });
     });
-
-    return requestPromise;
   }
 
   subscribe() {
@@ -120,6 +122,10 @@ class Client extends EventEmitter {
       try {
         // will throw an error if not valid json
         const message = JSON.parse(chunk);
+        if (_.isArray(message)) {
+          // batch response
+          this.emit("batchResponse", message);
+        }
         if (message.error) {
           // got an error back
           this.sendError(
@@ -191,7 +197,28 @@ class Client extends EventEmitter {
     this.emit("error", response);
   }
 }
-require("util").inherits(Client, events.EventEmitter);
+
+Client.prototype.request = function() {
+  return {
+    message: (method, params) => {
+      const request = formatRequest(
+        method,
+        params,
+        this.message_id,
+        this.options
+      );
+      this.message_id += 1;
+      return request;
+    },
+
+    send: (method, params) => {
+      return new Promise((resolve, reject) => {
+        this.pendingCalls[this.message_id] = { resolve, reject };
+        this.client.write(this.request().message(method, params));
+      });
+    }
+  };
+};
 
 module.exports = Client;
 

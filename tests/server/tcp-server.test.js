@@ -59,7 +59,7 @@ describe("TCP Server", () => {
   });
   describe("requests", () => {
     it("should handle call with positional params", (done) => {
-      const req = client.request("add", [1, 2]);
+      const req = client.request().send("add", [1, 2]);
       req.then((result) => {
         expect(result).to.eql({
           jsonrpc: "2.0",
@@ -70,7 +70,7 @@ describe("TCP Server", () => {
       });
     });
     it("should handle call with named params", (done) => {
-      const req = client.request("greeting", { name: "Isaac" });
+      const req = client.request().send("greeting", { name: "Isaac" });
       req.then((result) => {
         expect(result).to.eql({
           jsonrpc: "2.0",
@@ -81,7 +81,7 @@ describe("TCP Server", () => {
       });
     });
     it("should send 'method not found' error", (done) => {
-      const req = client.request("nonexistent", []);
+      const req = client.request().send("nonexistent", []);
       req.catch((result) => {
         expect(result).to.eql({
           jsonrpc: "2.0",
@@ -92,7 +92,7 @@ describe("TCP Server", () => {
       });
     });
     it("should send 'invalid params' error", (done) => {
-      const req = client.request("typeerror", [1]);
+      const req = client.request().send("typeerror", [1]);
       req.catch((result) => {
         expect(result).to.eql({
           jsonrpc: "2.0",
