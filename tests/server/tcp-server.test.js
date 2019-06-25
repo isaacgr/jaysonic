@@ -107,7 +107,7 @@ describe("TCP Server", () => {
       socket.write("test");
       socket.on("data", (data) => {
         message += data;
-        const messages = message.split("\r\n");
+        const messages = message.split("\n");
         messages.forEach((chunk) => {
           try {
             expect(chunk).to.eql(
@@ -115,7 +115,7 @@ describe("TCP Server", () => {
                 jsonrpc: "2.0",
                 error: { code: -32700, message: "Parse Error" },
                 id: null
-              })}\r\n`
+              })}\n`
             );
           } catch (e) {
             if (messages.indexOf(chunk) === messages.length) {
@@ -136,11 +136,11 @@ describe("TCP Server", () => {
           jsonrpc: "2.0",
           method: "add",
           params: []
-        })}\r\n`
+        })}\n`
       );
       sock.on("data", (data) => {
         message += data;
-        const messages = message.split("\r\n");
+        const messages = message.split("\n");
         messages.forEach((chunk) => {
           try {
             expect(chunk).to.eql(
@@ -148,7 +148,7 @@ describe("TCP Server", () => {
                 jsonrpc: "2.0",
                 error: { code: -32600, message: "Invalid Request" },
                 id: null
-              })}\r\n`
+              })}\n`
             );
           } catch (e) {
             if (messages.indexOf(chunk) === messages.length) {

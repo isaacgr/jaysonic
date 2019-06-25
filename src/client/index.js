@@ -10,7 +10,7 @@ const { ERR_CODES, ERR_MSGS } = require("../constants");
  * @param {Object} [server] object with host and port of server
  * @param {Object} [options]
  * @param {Number} [options.version=2] JSON-RPC version to use (1|2)
- * @param {String} [options.delimiter="\r\n"] delimiter to use for requests
+ * @param {String} [options.delimiter="\n"] delimiter to use for requests
  * @param {Boolean} [options.persist=true] persist the connection to server after a request
  * @return {Client}
  */
@@ -24,7 +24,7 @@ class Client extends EventEmitter {
 
     const defaults = {
       version: "2.0",
-      delimiter: "\r\n"
+      delimiter: "\n"
     };
 
     const { host, port } = options;

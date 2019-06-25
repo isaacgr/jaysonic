@@ -17,7 +17,7 @@ class Server extends EventEmitter {
       port: 8100,
       exclusive: false,
       version: "2.0",
-      delimiter: "\r\n"
+      delimiter: "\n"
     };
 
     this.options = _.merge(defaults, options || {});
