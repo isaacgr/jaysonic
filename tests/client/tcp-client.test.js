@@ -79,27 +79,19 @@ describe("TCP Client", () => {
         done();
       });
     });
-    // it("should receive response for empty array", (done) => {
-    //   const request = client.batch([]);
-    //   request.then((response) => {
-    //     console.log(response);
-    //     expect(response).to.eql([
-    //       {
-    //         method: "add",
-    //         jsonrpc: "2.0",
-    //         params: [1, 2],
-    //         id: 3
-    //       },
-    //       {
-    //         method: "add",
-    //         jsonrpc: "2.0",
-    //         params: [3, 4],
-    //         id: 4
-    //       }
-    //     ]);
-    //     done();
-    //   });
-    // });
+    it("should receive 'invalid request' error for empty array", (done) => {
+      const request = client.batch([]);
+      request.then((response) => {
+        expect(response).to.eql([
+          {
+            jsonrpc: "2.0",
+            error: { code: -32600, message: "Invalid Request" },
+            id: null
+          }
+        ]);
+        done();
+      });
+    });
     it("should handle 'method not found' error", (done) => {
       const request = client.request().send("nonexistent method", []);
       request.catch((error) => {

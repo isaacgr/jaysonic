@@ -79,7 +79,7 @@ class Server extends EventEmitter {
         const requests = JSON.parse(batch);
         const batchRequests = requests.map(request => this.validateRequest(request)
           .then(message => this.getResult(message.json)
-            .then(result => result)
+            .then(result => JSON.parse(result))
             .catch(error => error))
           .catch(error => error));
         Promise.all(batchRequests)
@@ -148,11 +148,7 @@ class Server extends EventEmitter {
         // data looks good
         resolve({ valid: true, json });
       } catch (e) {
-        if (e instanceof SyntaxError) {
-          reject(
-            this.sendError(null, ERR_CODES.parseError, ERR_MSGS.parseError)
-          );
-        }
+        reject(this.sendError(null, ERR_CODES.parseError, ERR_MSGS.parseError));
       }
     });
   }

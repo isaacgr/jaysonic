@@ -170,19 +170,15 @@ class Client extends EventEmitter {
             }
           }
         } catch (e) {
-          if (e instanceof SyntaxError) {
-            this.sendError(
-              this.serving_message_id,
-              ERR_CODES.parseError,
-              ERR_MSGS.parseError
-            );
-          }
+          this.sendError(
+            this.serving_message_id,
+            ERR_CODES.parseError,
+            ERR_MSGS.parseError
+          );
         }
       }
     } else {
-      const s = JSON.parse(messages);
-      const batch = s.map(JSON.parse);
-      // possible batch response
+      const batch = JSON.parse(messages);
       this.emit("batchResponse", batch);
     }
   }

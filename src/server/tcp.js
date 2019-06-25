@@ -1,6 +1,8 @@
 const net = require("net");
+const _ = require("lodash");
 const Server = require(".");
 const { formatResponse } = require("../functions");
+const { ERR_CODES, ERR_MSGS } = require("../constants");
 
 /**
  * Constructor for Jsonic TCP client
@@ -62,14 +64,35 @@ class TCPServer extends Server {
         } else {
           // possibly a batch request, check and resolve if so
           // reject otherwise
+          try {
+            JSON.parse(messages);
+          } catch (e) {
+            const error = this.sendError(
+              null,
+              ERR_CODES.parseError,
+              ERR_MSGS.parseError
+            );
+            return client.write(JSON.stringify([error]));
+          }
+          if (
+            _.isArray(JSON.parse(messages))
+            && _.isEmpty(JSON.parse(messages))
+          ) {
+            const error = this.sendError(
+              null,
+              ERR_CODES.invalidRequest,
+              ERR_MSGS.invalidRequest
+            );
+            return client.write(JSON.stringify([error]));
+          }
           this.handleBatchRequest(messages)
             .then((responses) => {
               const res = JSON.stringify(responses);
-              client.write(res);
+              return client.write(res);
             })
             .catch((error) => {
               const res = JSON.stringify(error);
-              client.write(res);
+              return client.write(res);
             });
         }
       });
