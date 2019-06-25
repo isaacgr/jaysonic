@@ -81,7 +81,7 @@ describe("TCP Client", () => {
     });
     it("should receive 'invalid request' error for empty array", (done) => {
       const request = client.batch([]);
-      request.then((response) => {
+      request.catch((response) => {
         expect(response).to.eql([
           {
             jsonrpc: "2.0",

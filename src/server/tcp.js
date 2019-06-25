@@ -38,11 +38,12 @@ class TCPServer extends Server {
           // delimited requests
           for (const chunk of messages) {
             if (chunk !== "") {
-              const validRequest = () => this.validateRequest(chunk)
-                .then(result => result)
-                .catch((error) => {
-                  throw new Error(JSON.stringify(error));
-                });
+              const validRequest = () =>
+                this.validateRequest(chunk)
+                  .then((result) => result)
+                  .catch((error) => {
+                    throw new Error(JSON.stringify(error));
+                  });
 
               validRequest()
                 .then((message) => {
@@ -72,11 +73,11 @@ class TCPServer extends Server {
               ERR_CODES.parseError,
               ERR_MSGS.parseError
             );
-            return client.write(JSON.stringify([error]));
+            return client.write(JSON.stringify(error) + this.options.delimiter);
           }
           if (
-            _.isArray(JSON.parse(messages))
-            && _.isEmpty(JSON.parse(messages))
+            _.isArray(JSON.parse(messages)) &&
+            _.isEmpty(JSON.parse(messages))
           ) {
             const error = this.sendError(
               null,
@@ -106,15 +107,17 @@ class TCPServer extends Server {
   }
 
   clientConnected(cb) {
-    this.on("clientConnected", client => cb({
-      host: client.remoteAddress,
-      port: client.remotePort
-    }));
+    this.on("clientConnected", (client) =>
+      cb({
+        host: client.remoteAddress,
+        port: client.remotePort
+      })
+    );
   }
 
   clientDisconnected(cb) {
     this.on("clientDisconnected", (client) => {
-      const clientIndex = this.connectedClients.findIndex(c => client === c);
+      const clientIndex = this.connectedClients.findIndex((c) => client === c);
       if (clientIndex === -1) {
         return "unknown";
       }

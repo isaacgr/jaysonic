@@ -95,10 +95,11 @@ class Client extends EventEmitter {
         return request;
       },
 
-      send: (method, params) => new Promise((resolve, reject) => {
-        this.pendingCalls[this.message_id] = { resolve, reject };
-        this.client.write(this.request().message(method, params));
-      })
+      send: (method, params) =>
+        new Promise((resolve, reject) => {
+          this.pendingCalls[this.message_id] = { resolve, reject };
+          this.client.write(this.request().message(method, params));
+        })
     };
   }
 
@@ -113,7 +114,16 @@ class Client extends EventEmitter {
       this.pendingCalls[this.message_id] = { resolve, reject };
       this.client.write(request);
       this.on("batchResponse", (batch) => {
+        batch.forEach((message) => {
+          if (message.error) {
+            // reject the whole message if there are any errors
+            reject(batch);
+          }
+        });
         resolve(batch);
+      });
+      this.on("batchError", (error) => {
+        reject(error);
       });
     });
   }
@@ -149,12 +159,13 @@ class Client extends EventEmitter {
             const message = JSON.parse(chunk);
             if (message.error) {
               // got an error back
-              this.sendError(
+              const error = this.sendError(
                 message.jsonrpc,
                 message.id,
                 message.error.code,
                 message.error.message
               );
+              this.emit("error", error);
             }
 
             if (!message.id) {
@@ -170,16 +181,27 @@ class Client extends EventEmitter {
             }
           }
         } catch (e) {
-          this.sendError(
+          const error = this.sendError(
             this.serving_message_id,
             ERR_CODES.parseError,
             ERR_MSGS.parseError
           );
+          this.emit("error", error);
         }
       }
     } else {
-      const batch = JSON.parse(messages);
-      this.emit("batchResponse", batch);
+      // possibly a batch request
+      try {
+        const batch = JSON.parse(messages);
+        this.emit("batchResponse", batch);
+      } catch (e) {
+        const error = this.sendError(
+          this.serving_message_id,
+          ERR_CODES.parseError,
+          ERR_MSGS.parseError
+        );
+        this.emit("batchError", error);
+      }
     }
   }
 
@@ -215,7 +237,7 @@ class Client extends EventEmitter {
       error: { code, message: message || "Unknown Error" },
       id
     };
-    this.emit("error", response);
+    return response;
   }
 }
 module.exports = Client;
