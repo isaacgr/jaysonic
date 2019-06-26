@@ -155,8 +155,6 @@ Clients can send notifications to the server.
 
 > Not sure how to do this yet
 
-````
-
 ##### Batching
 
 ```js
@@ -182,7 +180,7 @@ client
   .catch((error) => {
     console.log(error);
   });
-````
+```
 
 ### Contributing
 
