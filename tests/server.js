@@ -26,14 +26,14 @@ serverHttp.method("typeerror", ([a]) => {
   }
 });
 
-serverHttp
-  .listen()
-  .then(() => {
-    console.log("server up");
-  })
-  .catch((error) => {
-    console.log(error);
-  });
+// serverHttp
+//   .listen()
+//   .then(() => {
+//     console.log("server up");
+//   })
+//   .catch((error) => {
+//     console.log(error);
+//   });
 
 // server
 //   .listen()
