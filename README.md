@@ -32,7 +32,7 @@ const server = new Jaysonic.server.tcp();
 const client = new Jayson.client.tcp();
 // HTTP
 const server = new Jaysonic.server.http();
-const client = new Jayson.client.http();
+const client = new Jaysonic.client.http();
 ```
 
 ### Options
@@ -111,7 +111,7 @@ const client = new Jaysonic.client.http({
 const Jaysonic = require("jaysonic");
 
 const server = new Jaysonic.server.tcp({ host: "127.0.0.1", port: 8100 });
-const client = new Jayson.client.tcp({ host: "127.0.0.1", port: 8100 });
+const client = new Jaysonic.client.tcp({ host: "127.0.0.1", port: 8100 });
 
 server.method("add", ([a, b]) => a + b);
 
@@ -137,7 +137,7 @@ Clients can subscribe to notifications from the server.
 const Jaysonic = require("jaysonic");
 
 const server = new Jaysonic.server.tcp({ host: "127.0.0.1", port: 8100 });
-const client = new Jayson.client.tcp({ host: "127.0.0.1", port: 8100 });
+const client = new Jaysonic.client.tcp({ host: "127.0.0.1", port: 8100 });
 
 client.subscribe("notification", (message) => {
   console.log(message);
@@ -153,21 +153,9 @@ server.notify({
 
 Clients can send notifications to the server.
 
-```js
-const Jaysonic = require("jaysonic");
+> Not sure how to do this yet
 
-const server = new Jaysonic.server.tcp({ host: "127.0.0.1", port: 8100 });
-const client = new Jayson.client.tcp({ host: "127.0.0.1", port: 8100 });
-
-client.notify("notification", (message) => {
-  console.log(message);
-  // {jsonrpc: "2.0", method: "notification", params: []}
-});
-server.subscribe({
-  method: "notification",
-  params: []
-});
-```
+````
 
 ##### Batching
 
@@ -175,7 +163,7 @@ server.subscribe({
 const Jaysonic = require("jaysonic");
 
 const server = new Jaysonic.server.tcp({ host: "127.0.0.1", port: 8100 });
-const client = new Jayson.client.tcp({ host: "127.0.0.1", port: 8100 });
+const client = new Jaysonic.client.tcp({ host: "127.0.0.1", port: 8100 });
 
 server.method("add", ([a, b]) => a + b);
 
@@ -194,7 +182,7 @@ client
   .catch((error) => {
     console.log(error);
   });
-```
+````
 
 ### Contributing
 
