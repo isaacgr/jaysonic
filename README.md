@@ -153,7 +153,27 @@ server.notify({
 
 Clients can send notifications to the server.
 
-> Not sure how to do this yet
+The server can accept a notification on a method, so that clients can still send a request and get a response.
+
+The server can also listen for all notifications not tied to methods and handle accordingly.
+
+```js
+client.notify("add", [1, 2]);
+client.notify("notify", []);
+
+server
+  .method("add", ([a, b]) => {
+    return a + b;
+  })
+  .onNotify((result) => {
+    // do something with result of method notification
+  });
+
+server.onNotify("notify", (message) => {
+  console.log(message);
+  // {jsonrpc: "2.0", method: "notify", params: []}
+});
+```
 
 ##### Batching
 
