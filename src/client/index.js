@@ -1,6 +1,5 @@
 const EventEmitter = require("events");
 const _ = require("lodash");
-const net = require("net");
 const { formatRequest } = require("../functions");
 const { ERR_CODES, ERR_MSGS } = require("../constants");
 
@@ -48,28 +47,7 @@ class Client extends EventEmitter {
   }
 
   connect() {
-    return new Promise((resolve, reject) => {
-      if (this.attached) {
-        reject(Error("client already connected"));
-      }
-      this.client = new net.Socket();
-      this.client.connect(this.server);
-      this.client.setEncoding("utf8");
-      this.client.on("connect", () => {
-        this.attached = true;
-        this.writer = this.client;
-        /**
-         * start listeners, response handlers and error handlers
-         */
-        this.listen();
-        this.handleResponse();
-        this.handleError();
-        resolve(this.server);
-      });
-      this.client.on("error", (error) => {
-        reject(error);
-      });
-    });
+    throw new Error("function must be overwritten in subclass");
   }
 
   end() {

@@ -77,11 +77,15 @@ class Server extends EventEmitter {
     return new Promise((resolve, reject) => {
       try {
         const requests = JSON.parse(batch);
-        const batchRequests = requests.map(request => this.validateRequest(request)
-          .then(message => this.getResult(message.json)
-            .then(result => JSON.parse(result))
-            .catch(error => error))
-          .catch(error => error));
+        const batchRequests = requests.map((request) =>
+          this.validateRequest(request)
+            .then((message) =>
+              this.getResult(message.json)
+                .then((result) => JSON.parse(result))
+                .catch((error) => error)
+            )
+            .catch((error) => error)
+        );
         Promise.all(batchRequests)
           .then((result) => {
             resolve(result);

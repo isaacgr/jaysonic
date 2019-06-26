@@ -31,7 +31,6 @@ class HTTPClient extends Client {
 
     this.messageBuffer = "";
     this.options = _.merge(defaults, options || {});
-    this.writer = http.request(this.options);
   }
 }
 
