@@ -1,34 +1,39 @@
-const net = require("net");
 const Jayson = require("../src");
 
-const client = new Jayson.client.tcp({ host: "127.0.0.1", port: 6969 });
-const socket = new net.Socket();
-const sock = new net.Socket();
-// client.connect().then(() => {});
+const client = new Jayson.client.tcp({
+  host: "172.16.107.117",
+  port: 9102
+});
 
-// for (let i = 0; i < 20; i++) {
-//   client
-//     .request.send("add", [1,2])
-//     .then((result) => {
-//       console.log(result);
-//     })
-//     .catch((error) => {
-//       console.log(error);
-//     });
+client
+  .connect()
+  .then(() => {
+    console.log("connected");
+    getDevices();
+    getConfigs();
+  })
+  .catch((error) => {
+    console.log(`Client Error: ${error}`);
+  });
 
-// client.connect().then(() => {});
-// client
-//   .request()
-//   .send("greeting", { name: "Isaac" })
-//   .then((result) => {
-//     console.log(result);
-//   })
-//   .catch((error) => {
-//     console.log(error);
-//   });
+const getDevices = () =>
+  client
+    .request()
+    .send("get_devices")
+    .then((result) => {
+      console.log(result);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
 
-// client.batch([
-//   client.request.message("add", [1,2])
-// ])
-
-module.exports = { client, socket, sock };
+const getConfigs = () =>
+  client
+    .request()
+    .send("get_configs")
+    .then((result) => {
+      console.log(result);
+    })
+    .catch((error) => {
+      console.log(error);
+    });

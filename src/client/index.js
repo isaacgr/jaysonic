@@ -23,7 +23,8 @@ class Client extends EventEmitter {
 
     const defaults = {
       version: "2.0",
-      delimiter: "\n"
+      delimiter: "\n",
+      timeout: 30
     };
 
     const { host, port } = options;
@@ -44,6 +45,7 @@ class Client extends EventEmitter {
     this.messageBuffer = "";
     this.responseQueue = {};
     this.options = _.merge(defaults, options || {});
+    this.options.timeout = this.options.timeout * 1000;
   }
 
   connect() {
@@ -76,8 +78,20 @@ class Client extends EventEmitter {
 
       send: (method, params) =>
         new Promise((resolve, reject) => {
-          this.pendingCalls[this.message_id] = { resolve, reject };
+          const requestId = this.message_id;
+          this.pendingCalls[requestId] = { resolve, reject };
           this.writer.write(this.request().message(method, params));
+          setTimeout(() => {
+            if (this.pendingCalls[requestId]) {
+              const error = this.sendError({
+                id: requestId,
+                code: ERR_CODES["timeout"],
+                message: ERR_MSGS["timeout"]
+              });
+              delete this.pendingCalls[requestId];
+              reject(error);
+            }
+          }, this.options.timeout);
         })
     };
   }
@@ -136,50 +150,50 @@ class Client extends EventEmitter {
           if (chunk !== "") {
             // will throw an error if not valid json
             const message = JSON.parse(chunk);
-            if (message.error) {
-              // got an error back
-              const error = this.sendError(
-                message.jsonrpc,
-                message.id,
-                message.error.code,
-                message.error.message
-              );
-              this.emit("error", error);
-            }
-
             if (!message.id) {
               // no id, so notification
-              this.emit("notify", message);
+              return this.emit("notify", message);
+            }
+
+            if (message.error) {
+              // got an error back
+              const error = this.sendError({
+                jsonrpc: message.jsonrpc,
+                id: message.id,
+                code: message.error.code,
+                message: message.error.message
+              });
+              return this.emit("messageError", error);
             }
 
             // no method, so response
             if (!message.method) {
               this.serving_message_id = message.id;
               this.responseQueue[this.serving_message_id] = message;
-              this.emit("response", this.serving_message_id);
+              return this.emit("response", this.serving_message_id);
             }
           }
         } catch (e) {
-          const error = this.sendError(
-            this.serving_message_id,
-            ERR_CODES.parseError,
-            ERR_MSGS.parseError
-          );
-          this.emit("error", error);
+          const error = this.sendError({
+            id: this.serving_message_id,
+            code: ERR_CODES.parseError,
+            message: ERR_MSGS.parseError
+          });
+          return this.emit("messageError", error);
         }
       }
     } else {
       // possibly a batch request
       try {
         const batch = JSON.parse(messages);
-        this.emit("batchResponse", batch);
+        return this.emit("batchResponse", batch);
       } catch (e) {
-        const error = this.sendError(
-          this.serving_message_id,
-          ERR_CODES.parseError,
-          ERR_MSGS.parseError
-        );
-        this.emit("batchError", error);
+        const error = this.sendError({
+          id: this.serving_message_id,
+          code: ERR_CODES.parseError,
+          message: ERR_MSGS.parseError
+        });
+        return this.emit("batchError", error);
       }
     }
   }
@@ -205,14 +219,14 @@ class Client extends EventEmitter {
   }
 
   handleError() {
-    this.on("error", (error) => {
+    this.on("messageError", (error) => {
       this.pendingCalls[error.id].reject(error);
     });
   }
 
-  sendError(jsonrpc = this.options.version, id, code, message = null) {
+  sendError({ jsonrpc, id, code, message }) {
     const response = {
-      jsonrpc,
+      jsonrpc: jsonrpc || this.options.version,
       error: { code, message: message || "Unknown Error" },
       id
     };

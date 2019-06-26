@@ -1,4 +1,4 @@
-const Jaysonic = require("../src/");
+const Jaysonic = require("../src");
 
 const server = new Jaysonic.server.tcp({ host: "127.0.0.1", port: 8100 });
 const serverHttp = new Jaysonic.server.http({
@@ -25,27 +25,5 @@ serverHttp.method("typeerror", ([a]) => {
     throw new TypeError();
   }
 });
-
-// serverHttp
-//   .listen()
-//   .then(() => {
-//     console.log("server up");
-//   })
-//   .catch((error) => {
-//     console.log(error);
-//   });
-
-// server
-//   .listen()
-//   .then(() => {
-//     console.log("server up");
-//   })
-//   .catch((error) => {
-//     console.log(error);
-//   });
-
-// server.clientDisconnected((conn) => {
-//   console.log("discon");
-// });
 
 module.exports = { server, serverHttp };

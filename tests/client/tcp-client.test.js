@@ -1,6 +1,6 @@
 const { expect } = require("chai");
 
-const { server } = require("../server.js");
+const { server } = require("../test-server.js");
 const Jaysonic = require("../../src");
 
 const client = new Jaysonic.client.tcp({ host: "127.0.0.1", port: 8100 });
