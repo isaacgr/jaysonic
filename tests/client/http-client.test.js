@@ -2,6 +2,7 @@ const { expect } = require("chai");
 const Jaysonic = require("../../src");
 
 const { serverHttp } = require("../test-server");
+
 const clienthttp = new Jaysonic.client.http({ port: 8800 });
 
 before((done) => {

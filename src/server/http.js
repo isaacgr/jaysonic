@@ -1,5 +1,4 @@
 const http = require("http");
-const _ = require("lodash");
 const Server = require(".");
 const { ERR_CODES, ERR_MSGS, errorToStatus } = require("../constants");
 
@@ -37,15 +36,14 @@ class HTTPServer extends Server {
           this.messageBuffer = "";
           try {
             messages
-              .filter((messageString) => messageString !== "")
+              .filter(messageString => messageString !== "")
               .map((chunk) => {
-                const validRequest = () =>
-                  this.validateRequest(chunk)
-                    .then((result) => result)
-                    .catch((error) => {
-                      throw new Error(JSON.stringify(error));
-                    });
-                validRequest()
+                const validRequest = () => this.validateRequest(chunk)
+                  .then(result => result)
+                  .catch((error) => {
+                    throw new Error(JSON.stringify(error));
+                  });
+                return validRequest()
                   .then((message) => {
                     if (message.batch) {
                       this.setResponseHeader(response);
@@ -70,11 +68,9 @@ class HTTPServer extends Server {
                         });
                       });
                   })
-                  .catch((error) =>
-                    response.write(error.message, () => {
-                      response.end();
-                    })
-                  );
+                  .catch(error => response.write(error.message, () => {
+                    response.end();
+                  }));
               });
           } catch (e) {
             const error = this.sendError(
@@ -125,7 +121,7 @@ class HTTPServer extends Server {
 
   clientDisconnected(cb) {
     this.on("clientDisconnected", (client) => {
-      const clientIndex = this.connectedClients.findIndex((c) => client === c);
+      const clientIndex = this.connectedClients.findIndex(c => client === c);
       if (clientIndex === -1) {
         return "unknown";
       }
