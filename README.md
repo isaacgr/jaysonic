@@ -39,10 +39,11 @@ const client = new Jaysonic.client.http();
 
 The client and server support changing the JSON-RPC version and the delimiter used. Just pass them in the same object as the host and port to override the defaults.
 
-`host`: The host IP to serve from for the server, or to connect to by the client. Default is `localhost`. \
+`host`: The host IP to serve from for the server, or to connect to by the client. Default is `127.0.0.1`. \
 `port`: The host port to serve from for the server, or to connect to by the client. Default is `8100`. \
 `delimiter`: Delimiter to break requests by. Defaults to `\n`. \
-`version`: RPC version to use. Defaults to `2.0`.
+`version`: RPC version to use. Defaults to `2.0`. \
+`timeout`: The amount of time before a request times out. Will return a `-32000` error code. The default value is `30` (in seconds).
 
 The server has an additional option specified by the [NodeJS Docs](https://nodejs.org/api/net.html#net_server_listen_options_callback).
 
@@ -51,6 +52,7 @@ The server has an additional option specified by the [NodeJS Docs](https://nodej
 The HTTP client supports additional options for the HTTP request.
 
 `method`: The method to make the request with. Default is `POST`.
+`path`: The path to send the request to. Default is `/`.
 `headers`: Headers to include in the request. Defaults provided by the spec are:
 
 - `"Content-Length"`
@@ -62,9 +64,11 @@ The HTTP client supports additional options for the HTTP request.
 
 ### Code Demos
 
-The default host and port for the server is `localhost:8100`. Based on the node `net.Server()` module.
+The default host and port for the server is `127.0.0.1:8100`. Based on the node `net.Server()` module.
 
-The client is based on the node `net.Socket()` module.
+The default host and port for the TCP client is `127.0.0.1:8100`. Based on the node `net.Socket()` module.
+
+The default host and port for the HTTP client is `127.0.0.1:80/`. Based on the node `http.ClientRequest` module.
 
 The default options will be used when instantiating the client or the server. Overrides can be provided by passing an object with the modifications.
 
@@ -74,13 +78,6 @@ The default options will be used when instantiating the client or the server. Ov
 const Jaysonic = require("jaysonic");
 
 const server = new Jaysonic.server.tcp({
-  host: "127.0.0.1",
-  port: 8100,
-  delimiter: "\n",
-  version: 1
-});
-
-const client = new Jaysonic.client.tcp({
   host: "127.0.0.1",
   port: 8100,
   delimiter: "\n",
@@ -105,26 +102,77 @@ const client = new Jaysonic.client.http({
 });
 ```
 
-##### Methods
+#### Server side
+
+##### Listening
 
 ```js
 const Jaysonic = require("jaysonic");
 
 const server = new Jaysonic.server.tcp({ host: "127.0.0.1", port: 8100 });
-const client = new Jaysonic.client.tcp({ host: "127.0.0.1", port: 8100 });
 
-server.method("add", ([a, b]) => a + b);
-
-client
-  .request()
-  .send("add", [1, 2])
-  .then((result) => {
-    console.log(result);
-    // {jsonrpc: "2.0", method: "add", result: 3, id: 1}
+server
+  .listen()
+  .then(({ host, port }) => {
+    console.log(`Server listening on ${host}:${port}`);
   })
   .catch((error) => {
-    console.log(error);
+    console.log(`Unable to start server, ${error}`);
   });
+```
+
+##### Adding Methods
+
+```js
+server.method("add", ([a, b]) => a + b);
+```
+
+> The same syntax is used for the HTTP server
+
+#### Client Side
+
+##### Connecting
+
+```js
+const Jaysonic = require("jaysonic");
+const client = new Jaysonic.client.tcp({ host: "127.0.0.1", port: 8100 });
+
+client
+  .connect()
+  .then(({ host, port }) => {
+    console.log(`Client connected on ${host}:${port}`);
+  })
+  .catch((error) => {
+    console.log(`Client unable to connect, ${error}`);
+  });
+```
+
+##### Making requests
+
+Requests can only be made once connection is established.
+
+```js
+client
+  .connect()
+  .then(({ host, port }) => {
+    add();
+  })
+  .catch((error) => {
+    console.log(`Client unable to connect, ${error}`);
+  });
+
+const add = () => {
+  client
+    .request()
+    .send("add", [1, 2])
+    .then((result) => {
+      console.log(result);
+      // 3
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+};
 ```
 
 ##### Subscriptions
@@ -134,11 +182,6 @@ Clients can subscribe to notifications from the server.
 > Note: Subscriptions are not supported by the HTTP server/client
 
 ```js
-const Jaysonic = require("jaysonic");
-
-const server = new Jaysonic.server.tcp({ host: "127.0.0.1", port: 8100 });
-const client = new Jaysonic.client.tcp({ host: "127.0.0.1", port: 8100 });
-
 client.subscribe("notification", (message) => {
   console.log(message);
   // {jsonrpc: "2.0", method: "notification", params: []}
@@ -149,7 +192,60 @@ server.notify({
 });
 ```
 
-##### Notifications
+##### Batch Requests
+
+```js
+client
+  .connect()
+  .then(({ host, port }) => {
+    add();
+  })
+  .catch((error) => {
+    console.log(`Client unable to connect, ${error}`);
+  });
+
+const add = () =>
+  client
+    .batch([
+      // access the message object on the request
+      client.request().message("add", [1, 2]),
+      client.request().message("add", [3, 4])
+    ])
+    .then((result) => {
+      // [
+      //   {jsonrpc: "2.0", method: "add", result: 3, id: 1},
+      //   {jsonrpc: "2.0", method: "add", result: 7, id: 1}
+      // ]
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+```
+
+> The same syntax is used for the HTTP client
+
+The HTTP Client will include additional information about the response, as per nodes `http.IncomingMessage` method. See more [here](https://nodejs.org/api/http.html#http_class_http_incomingmessage).
+
+The HTTP client response is an object with a `body` property, which contains the json response from the server, as well as the `http.IncomingMessage` instance. Which contains things like the header and statusCode. All methods can be found [here](https://www.w3schools.com/nodejs/obj_http_incomingmessage.asp).
+
+Ex.
+
+```js
+client
+  .request()
+  .send("add", [1, 2])
+  .then((result) => {
+    console.log(result.body);
+    // 3
+    console.log(result.statusCode);
+    // 200
+  })
+  .catch((error) => {
+    console.log(error);
+  });
+```
+
+<!-- ##### Notifications
 
 Clients can send notifications to the server.
 
@@ -158,49 +254,13 @@ The server can accept a notification on a method, so that clients can still send
 The server can also listen for all notifications not tied to methods and handle accordingly.
 
 ```js
-client.notify("add", [1, 2]);
 client.notify("notify", []);
-
-server
-  .method("add", ([a, b]) => {
-    return a + b;
-  })
-  .onNotify((result) => {
-    // do something with result of method notification
-  });
 
 server.onNotify("notify", (message) => {
   console.log(message);
   // {jsonrpc: "2.0", method: "notify", params: []}
 });
-```
-
-##### Batching
-
-```js
-const Jaysonic = require("jaysonic");
-
-const server = new Jaysonic.server.tcp({ host: "127.0.0.1", port: 8100 });
-const client = new Jaysonic.client.tcp({ host: "127.0.0.1", port: 8100 });
-
-server.method("add", ([a, b]) => a + b);
-
-client
-  .batch([
-    // access the message object on the request
-    client.request().message("add", [1, 2]),
-    client.request().message("add", [3, 4])
-  ])
-  .then((result) => {
-    // [
-    //   {jsonrpc: "2.0", method: "add", result: 3, id: 1},
-    //   {jsonrpc: "2.0", method: "add", result: 7, id: 1}
-    // ]
-  })
-  .catch((error) => {
-    console.log(error);
-  });
-```
+``` -->
 
 ### Contributing
 
