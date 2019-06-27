@@ -69,29 +69,8 @@ class Client extends EventEmitter {
     throw new Error("function must be overwritten in subclass");
   }
 
-  batch(requests) {
-    /**
-     * should receive a list of request objects
-     * [client.request.message(), client.request.message()]
-     * send a single request with that, server should handle it
-     */
-    const request = JSON.stringify(requests);
-    return new Promise((resolve, reject) => {
-      this.pendingCalls[this.message_id] = { resolve, reject };
-      this.client.write(request);
-      this.on("batchResponse", (batch) => {
-        batch.forEach((message) => {
-          if (message.error) {
-            // reject the whole message if there are any errors
-            reject(batch);
-          }
-        });
-        resolve(batch);
-      });
-      this.on("batchError", (error) => {
-        reject(error);
-      });
-    });
+  batch() {
+    throw new Error("function must be overwritten in subclass");
   }
 
   notify() {
@@ -213,9 +192,7 @@ class Client extends EventEmitter {
     });
   }
 
-  sendError({
-    jsonrpc, id, code, message
-  }) {
+  sendError({ jsonrpc, id, code, message }) {
     const response = {
       jsonrpc: jsonrpc || this.options.version,
       error: { code, message: message || "Unknown Error" },

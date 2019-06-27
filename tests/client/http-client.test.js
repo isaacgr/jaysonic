@@ -63,5 +63,31 @@ describe("HTTP Client", () => {
         done();
       });
     });
+    it("should receive response for batch request", (done) => {
+      const request = clienthttp.batch([
+        clienthttp.request().message("add", [1, 2]),
+        clienthttp.request().message("add", [3, 4])
+      ]);
+      request.then((response) => {
+        expect(response).to.eql([
+          { result: 3, jsonrpc: "2.0", id: 5 },
+          { result: 7, jsonrpc: "2.0", id: 6 }
+        ]);
+        done();
+      });
+    });
+    it("should receive 'invalid request' error for non empty array", (done) => {
+      const request = clienthttp.batch([1]);
+      request.catch((response) => {
+        expect(response).to.eql([
+          {
+            jsonrpc: "2.0",
+            error: { code: -32600, message: "Invalid Request" },
+            id: null
+          }
+        ]);
+        done();
+      });
+    });
   });
 });

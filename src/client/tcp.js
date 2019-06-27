@@ -51,23 +51,49 @@ class TCPClient extends Client {
         return request;
       },
 
-      send: (method, params) => new Promise((resolve, reject) => {
-        const requestId = this.message_id;
-        this.pendingCalls[requestId] = { resolve, reject };
-        this.client.write(this.request().message(method, params));
-        setTimeout(() => {
-          if (this.pendingCalls[requestId]) {
-            const error = this.sendError({
-              id: requestId,
-              code: ERR_CODES.timeout,
-              message: ERR_MSGS.timeout
-            });
-            delete this.pendingCalls[requestId];
-            reject(error);
-          }
-        }, this.options.timeout);
-      })
+      send: (method, params) =>
+        new Promise((resolve, reject) => {
+          const requestId = this.message_id;
+          this.pendingCalls[requestId] = { resolve, reject };
+          this.client.write(this.request().message(method, params));
+          setTimeout(() => {
+            if (this.pendingCalls[requestId]) {
+              const error = this.sendError({
+                id: requestId,
+                code: ERR_CODES.timeout,
+                message: ERR_MSGS.timeout
+              });
+              delete this.pendingCalls[requestId];
+              reject(error);
+            }
+          }, this.options.timeout);
+        })
     };
+  }
+
+  batch(requests) {
+    /**
+     * should receive a list of request objects
+     * [client.request.message(), client.request.message()]
+     * send a single request with that, server should handle it
+     */
+    const request = JSON.stringify(requests);
+    return new Promise((resolve, reject) => {
+      this.pendingCalls[this.message_id] = { resolve, reject };
+      this.client.write(request);
+      this.on("batchResponse", (batch) => {
+        batch.forEach((message) => {
+          if (message.error) {
+            // reject the whole message if there are any errors
+            reject(batch);
+          }
+        });
+        resolve(batch);
+      });
+      this.on("batchError", (error) => {
+        reject(error);
+      });
+    });
   }
 
   subscribe(method, cb) {
