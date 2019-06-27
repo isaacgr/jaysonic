@@ -38,7 +38,7 @@ describe("HTTP Server", () => {
     it("should hanlde call with positional params", (done) => {
       const request = clienthttp.request().send("add", [1, 2]);
       request.then((response) => {
-        expect(response).to.be.eql({
+        expect(response.body).to.be.eql({
           result: 3,
           jsonrpc: "2.0",
           id: 1
@@ -49,7 +49,7 @@ describe("HTTP Server", () => {
     it("should hanlde call with named params", (done) => {
       const request = clienthttp.request().send("greeting", { name: "Isaac" });
       request.then((response) => {
-        expect(response).to.be.eql({
+        expect(response.body).to.be.eql({
           result: "Hello Isaac",
           jsonrpc: "2.0",
           id: 2
@@ -60,7 +60,7 @@ describe("HTTP Server", () => {
     it("should respond with 'invalid params' error", (done) => {
       const request = clienthttp.request().send("add", {});
       request.catch((response) => {
-        expect(response).to.be.eql({
+        expect(response.body).to.be.eql({
           jsonrpc: "2.0",
           error: {
             code: -32602,
@@ -74,7 +74,7 @@ describe("HTTP Server", () => {
     it("should respond with 'method not found' error", (done) => {
       const request = clienthttp.request().send("nonexistent", {});
       request.catch((response) => {
-        expect(response).to.be.eql({
+        expect(response.body).to.be.eql({
           jsonrpc: "2.0",
           error: {
             code: -32601,

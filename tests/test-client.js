@@ -6,4 +6,6 @@ const clienthttp = new Jayson.client.http({ host: "127.0.0.1", port: 8000 });
 const socket = new net.Socket();
 const sock = new net.Socket();
 
-module.exports = { client, clienthttp, socket, sock };
+module.exports = {
+  client, clienthttp, socket, sock
+};

@@ -1,5 +1,4 @@
 const net = require("net");
-const _ = require("lodash");
 const Server = require(".");
 const { formatResponse } = require("../functions");
 const { ERR_CODES, ERR_MSGS } = require("../constants");
@@ -38,12 +37,11 @@ class TCPServer extends Server {
           try {
             if (chunk !== "") {
               // normal request otherwise
-              const validRequest = () =>
-                this.validateRequest(chunk)
-                  .then((result) => result)
-                  .catch((error) => {
-                    throw new Error(JSON.stringify(error));
-                  });
+              const validRequest = () => this.validateRequest(chunk)
+                .then(result => result)
+                .catch((error) => {
+                  throw new Error(JSON.stringify(error));
+                });
 
               validRequest()
                 .then((message) => {
@@ -51,18 +49,12 @@ class TCPServer extends Server {
                     return client.write(JSON.stringify(message.batch));
                   }
                   this.getResult(message.json)
-                    .then((json) => {
-                      return client.write(json + this.options.delimiter);
-                    })
-                    .catch((error) => {
-                      return client.write(
-                        JSON.stringify(error) + this.options.delimiter
-                      );
-                    });
+                    .then(json => client.write(json + this.options.delimiter))
+                    .catch(error => client.write(
+                      JSON.stringify(error) + this.options.delimiter
+                    ));
                 })
-                .catch((error) => {
-                  return client.write(error.message + this.options.delimiter);
-                });
+                .catch(error => client.write(error.message + this.options.delimiter));
             }
           } catch (e) {
             if (e instanceof TypeError) {
@@ -87,17 +79,15 @@ class TCPServer extends Server {
   }
 
   clientConnected(cb) {
-    this.on("clientConnected", (client) =>
-      cb({
-        host: client.remoteAddress,
-        port: client.remotePort
-      })
-    );
+    this.on("clientConnected", client => cb({
+      host: client.remoteAddress,
+      port: client.remotePort
+    }));
   }
 
   clientDisconnected(cb) {
     this.on("clientDisconnected", (client) => {
-      const clientIndex = this.connectedClients.findIndex((c) => client === c);
+      const clientIndex = this.connectedClients.findIndex(c => client === c);
       if (clientIndex === -1) {
         return "unknown";
       }

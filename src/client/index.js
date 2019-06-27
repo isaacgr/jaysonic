@@ -1,5 +1,6 @@
 const EventEmitter = require("events");
 const _ = require("lodash");
+const http = require("http");
 const { ERR_CODES, ERR_MSGS } = require("../constants");
 
 /**
@@ -104,7 +105,15 @@ class Client extends EventEmitter {
   handleResponse() {
     this.on("response", (id) => {
       if (!(this.pendingCalls[id] === undefined)) {
-        this.pendingCalls[id].resolve(this.responseQueue[id]);
+        let response = this.responseQueue[id];
+        if (this.writer instanceof http.IncomingMessage) {
+          // want to allow users to access the headers, status code etc.
+          response = {
+            body: this.responseQueue[id],
+            ...this.writer
+          };
+        }
+        this.pendingCalls[id].resolve(response);
         delete this.responseQueue[id];
       }
     });
@@ -192,11 +201,21 @@ class Client extends EventEmitter {
 
   handleError() {
     this.on("messageError", (error) => {
-      this.pendingCalls[error.id].reject(error);
+      let response = error;
+      if (this.writer instanceof http.IncomingMessage) {
+        // want to allow users to access the headers, status code etc.
+        response = {
+          body: error,
+          ...this.writer
+        };
+      }
+      this.pendingCalls[error.id].reject(response);
     });
   }
 
-  sendError({ jsonrpc, id, code, message }) {
+  sendError({
+    jsonrpc, id, code, message
+  }) {
     const response = {
       jsonrpc: jsonrpc || this.options.version,
       error: { code, message: message || "Unknown Error" },

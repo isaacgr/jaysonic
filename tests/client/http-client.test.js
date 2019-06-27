@@ -1,13 +1,15 @@
-const Jaysonic = require("../../src");
+// const Jaysonic = require("../../src");
 
-cosnt {serverhttp} = require('../test-server')
-const clienthttp = new Jaysonic.client.http({ port: 8800 });
+// cosnt {serverhttp} = require('../test-server')
+// const clienthttp = new Jaysonic.client.http({ port: 8800 });
 
-describe('HTTP Client', () => {
-  describe('connection', () => {
+// describe('HTTP Client', () => {
+//   describe('connection', () => {
 
-  })
-  describe('requests', () => {
-    it('should ')
-  })
-})
+//   })
+//   describe('requests', () => {
+//     it('should get response for positional params', (done) => {
+
+//     })
+//   })
+// })
