@@ -1,9 +1,9 @@
 // const Jaysonic = require("../src");
 
-// const serverhttp = new Jaysonic.server.http({ port: 8000 });
+// const server = new Jaysonic.server.tcp({ port: 8000 });
 
-// serverhttp.listen().then(() => {
+// server.listen().then(() => {
 //   console.log("listening");
 // });
 
-// serverhttp.method("test", () => "hi");
+// server.method("test", () => "hi");

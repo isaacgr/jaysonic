@@ -76,7 +76,7 @@ class Server extends EventEmitter {
   handleBatchRequest(batch) {
     return new Promise((resolve, reject) => {
       try {
-        const requests = JSON.parse(batch);
+        const requests = batch;
         const batchRequests = requests.map((request) =>
           this.validateRequest(request)
             .then((message) =>
@@ -108,6 +108,24 @@ class Server extends EventEmitter {
       try {
         // throws error if json invalid
         const json = JSON.parse(message);
+        if (_.isArray(json)) {
+          // possible batch request
+          if (_.isEmpty(json)) {
+            const error = this.sendError(
+              null,
+              ERR_CODES.invalidRequest,
+              ERR_MSGS.invalidRequest
+            );
+            return reject(error);
+          }
+          return this.handleBatchRequest(json)
+            .then((responses) => {
+              resolve({ valid: true, batch: responses });
+            })
+            .catch((error) => {
+              reject(JSON.stringify(error));
+            });
+        }
         if (!json.id) {
           reject(
             this.sendError(

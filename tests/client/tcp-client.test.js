@@ -79,8 +79,8 @@ describe("TCP Client", () => {
         done();
       });
     });
-    it("should receive 'invalid request' error for empty array", (done) => {
-      const request = client.batch([]);
+    it("should receive 'invalid request' error for non empty array", (done) => {
+      const request = client.batch([1]);
       request.catch((response) => {
         expect(response).to.eql([
           {

@@ -1,6 +1,5 @@
 const EventEmitter = require("events");
 const _ = require("lodash");
-const { formatRequest } = require("../functions");
 const { ERR_CODES, ERR_MSGS } = require("../constants");
 
 /**
@@ -120,7 +119,6 @@ class Client extends EventEmitter {
         if (chunk !== "") {
           // will throw an error if not valid json
           const message = JSON.parse(chunk);
-
           if (_.isArray(message)) {
             // possible batch request
             try {

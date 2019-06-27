@@ -1,13 +1,13 @@
-// const Jaysonic = require("../../src");
+const Jaysonic = require("../../src");
 
-// const clienthttp = new Jaysonic.client.http({ port: 8000 });
+cosnt {serverhttp} = require('../test-server')
+const clienthttp = new Jaysonic.client.http({ port: 8800 });
 
-// clienthttp
-//   .request()
-//   .send("test", [])
-//   .then((res) => {
-//     console.log(res);
-//   })
-//   .catch((error) => {
-//     console.log(error);
-//   });
+describe('HTTP Client', () => {
+  describe('connection', () => {
+
+  })
+  describe('requests', () => {
+    it('should ')
+  })
+})

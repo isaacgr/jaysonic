@@ -1,6 +1,6 @@
 const http = require("http");
-const Server = require(".");
 const _ = require("lodash");
+const Server = require(".");
 const { ERR_CODES, ERR_MSGS, errorToStatus } = require("../constants");
 
 /**
@@ -48,25 +48,21 @@ class HTTPServer extends Server {
           if (messages.length > 1) {
             // delimited request
             const promises = messages
-              .filter((messageString) => messageString !== "")
-              .map((message) =>
-                this.validateRequest(message)
-                  .then(({ json }) =>
-                    this.getResult(json)
-                      .then((result) => {
-                        this.setResponseHeader(response);
-                        return result;
-                      })
-                      .catch((error) => {
-                        this.setResponseHeader(response, error.error.code);
-                        return JSON.stringify(error);
-                      })
-                  )
+              .filter(messageString => messageString !== "")
+              .map(message => this.validateRequest(message)
+                .then(({ json }) => this.getResult(json)
+                  .then((result) => {
+                    this.setResponseHeader(response);
+                    return result;
+                  })
                   .catch((error) => {
                     this.setResponseHeader(response, error.error.code);
                     return JSON.stringify(error);
-                  })
-              );
+                  }))
+                .catch((error) => {
+                  this.setResponseHeader(response, error.error.code);
+                  return JSON.stringify(error);
+                }));
             Promise.all(promises)
               .then((result) => {
                 const res = result.join(this.options.delimiter);
@@ -85,7 +81,6 @@ class HTTPServer extends Server {
             // reject otherwise
             try {
               const message = JSON.parse(messages);
-              console.log(message);
               if (!_.isArray(message)) {
                 throw new SyntaxError();
               }
@@ -104,8 +99,8 @@ class HTTPServer extends Server {
               );
             }
             if (
-              _.isArray(JSON.parse(messages)) &&
-              _.isEmpty(JSON.parse(messages))
+              _.isArray(JSON.parse(messages))
+              && _.isEmpty(JSON.parse(messages))
             ) {
               const error = this.sendError(
                 null,
@@ -166,7 +161,7 @@ class HTTPServer extends Server {
 
   clientDisconnected(cb) {
     this.on("clientDisconnected", (client) => {
-      const clientIndex = this.connectedClients.findIndex((c) => client === c);
+      const clientIndex = this.connectedClients.findIndex(c => client === c);
       if (clientIndex === -1) {
         return "unknown";
       }

@@ -34,10 +34,10 @@ class TCPServer extends Server {
         this.messageBuffer += data;
         const messages = this.messageBuffer.split(this.options.delimiter);
         this.messageBuffer = "";
-        if (messages.length > 1) {
-          // delimited requests
-          for (const chunk of messages) {
+        for (const chunk of messages) {
+          try {
             if (chunk !== "") {
+              // normal request otherwise
               const validRequest = () =>
                 this.validateRequest(chunk)
                   .then((result) => result)
@@ -47,57 +47,34 @@ class TCPServer extends Server {
 
               validRequest()
                 .then((message) => {
+                  if (message.batch) {
+                    return client.write(JSON.stringify(message.batch));
+                  }
                   this.getResult(message.json)
                     .then((json) => {
-                      client.write(json + this.options.delimiter);
+                      return client.write(json + this.options.delimiter);
                     })
                     .catch((error) => {
-                      client.write(
+                      return client.write(
                         JSON.stringify(error) + this.options.delimiter
                       );
                     });
                 })
                 .catch((error) => {
-                  client.write(error.message + this.options.delimiter);
+                  return client.write(error.message + this.options.delimiter);
                 });
             }
-          }
-        } else {
-          // possibly a batch request, check and resolve if so
-          // reject otherwise
-          try {
-            const message = JSON.parse(messages);
-            if (!_.isArray(message)) {
-              throw new SyntaxError();
-            }
           } catch (e) {
-            const error = this.sendError(
-              null,
-              ERR_CODES.parseError,
-              ERR_MSGS.parseError
-            );
-            return client.write(JSON.stringify(error) + this.options.delimiter);
+            if (e instanceof TypeError) {
+              const error = this.sendError(
+                null,
+                ERR_CODES.parseError,
+                ERR_MSGS.parseError
+              );
+              return client.write(JSON.stringify(error));
+            }
+            return client.write(e);
           }
-          if (
-            _.isArray(JSON.parse(messages)) &&
-            _.isEmpty(JSON.parse(messages))
-          ) {
-            const error = this.sendError(
-              null,
-              ERR_CODES.invalidRequest,
-              ERR_MSGS.invalidRequest
-            );
-            return client.write(JSON.stringify([error]));
-          }
-          this.handleBatchRequest(messages)
-            .then((responses) => {
-              const res = JSON.stringify(responses);
-              return client.write(res);
-            })
-            .catch((error) => {
-              const res = JSON.stringify(error);
-              return client.write(res);
-            });
         }
       });
       client.on("close", () => {

@@ -2,6 +2,7 @@ const _ = require("lodash");
 const http = require("http");
 const Client = require(".");
 const { formatRequest } = require("../functions");
+const { ERR_CODES, ERR_MSGS } = require("../constants");
 
 /**
  * Constructor for Jsonic HTTP client
@@ -31,7 +32,6 @@ class HTTPClient extends Client {
     };
     this.messageBuffer = "";
     this.options = _.merge(defaults, this.options || {});
-    this.initClient();
   }
 
   initClient() {
@@ -60,14 +60,15 @@ class HTTPClient extends Client {
         new Promise((resolve, reject) => {
           const requestId = this.message_id;
           this.pendingCalls[requestId] = { resolve, reject };
+          this.initClient();
           this.client.write(this.request().message(method, params));
           this.client.end();
           setTimeout(() => {
             if (this.pendingCalls[requestId]) {
               const error = this.sendError({
                 id: requestId,
-                code: ERR_CODES["timeout"],
-                message: ERR_MSGS["timeout"]
+                code: ERR_CODES.timeout,
+                message: ERR_MSGS.timeout
               });
               delete this.pendingCalls[requestId];
               this.client.end();

@@ -1,6 +1,7 @@
-const Client = require(".");
 const net = require("net");
+const Client = require(".");
 const { formatRequest } = require("../functions");
+const { ERR_CODES, ERR_MSGS } = require("../constants");
 
 /**
  * Constructor for Jsonic TCP client
@@ -36,6 +37,7 @@ class TCPClient extends Client {
       });
     });
   }
+
   request() {
     return {
       message: (method, params) => {
@@ -49,25 +51,25 @@ class TCPClient extends Client {
         return request;
       },
 
-      send: (method, params) =>
-        new Promise((resolve, reject) => {
-          const requestId = this.message_id;
-          this.pendingCalls[requestId] = { resolve, reject };
-          this.client.write(this.request().message(method, params));
-          setTimeout(() => {
-            if (this.pendingCalls[requestId]) {
-              const error = this.sendError({
-                id: requestId,
-                code: ERR_CODES["timeout"],
-                message: ERR_MSGS["timeout"]
-              });
-              delete this.pendingCalls[requestId];
-              reject(error);
-            }
-          }, this.options.timeout);
-        })
+      send: (method, params) => new Promise((resolve, reject) => {
+        const requestId = this.message_id;
+        this.pendingCalls[requestId] = { resolve, reject };
+        this.client.write(this.request().message(method, params));
+        setTimeout(() => {
+          if (this.pendingCalls[requestId]) {
+            const error = this.sendError({
+              id: requestId,
+              code: ERR_CODES.timeout,
+              message: ERR_MSGS.timeout
+            });
+            delete this.pendingCalls[requestId];
+            reject(error);
+          }
+        }, this.options.timeout);
+      })
     };
   }
+
   subscribe(method, cb) {
     /**
      * @params {String} [method] method to subscribe to
@@ -79,6 +81,7 @@ class TCPClient extends Client {
       }
     });
   }
+
   notify(notification) {
     const { method, params } = notification;
     return this.request().send(method, params);
