@@ -111,63 +111,61 @@ class Client extends EventEmitter {
     });
   }
 
-  verifyData() {
+  verifyData(messages) {
     /**
      * want to search for whole messages by matching the delimiter from the start of the buffer
      */
-    const messages = this.messageBuffer.split(this.options.delimiter);
-    this.messageBuffer = "";
-    console.log(messages);
-    if (messages.length >= 1) {
-      for (const chunk of messages) {
-        try {
-          if (chunk !== "") {
-            // will throw an error if not valid json
-            const message = JSON.parse(chunk);
-            if (!message.id) {
-              // no id, so notification
-              return this.emit("notify", message);
-            }
+    for (const chunk of messages) {
+      try {
+        if (chunk !== "") {
+          // will throw an error if not valid json
+          const message = JSON.parse(chunk);
 
-            if (message.error) {
-              // got an error back
+          if (_.isArray(message)) {
+            // possible batch request
+            try {
+              const batch = JSON.parse(messages);
+              return this.emit("batchResponse", batch);
+            } catch (e) {
               const error = this.sendError({
-                jsonrpc: message.jsonrpc,
-                id: message.id,
-                code: message.error.code,
-                message: message.error.message
+                id: this.serving_message_id,
+                code: ERR_CODES.parseError,
+                message: ERR_MSGS.parseError
               });
-              return this.emit("messageError", error);
-            }
-
-            // no method, so response
-            if (!message.method) {
-              this.serving_message_id = message.id;
-              this.responseQueue[this.serving_message_id] = message;
-              return this.emit("response", this.serving_message_id);
+              return this.emit("batchError", error);
             }
           }
-        } catch (e) {
-          const error = this.sendError({
-            id: this.serving_message_id,
-            code: ERR_CODES.parseError,
-            message: ERR_MSGS.parseError
-          });
-          return this.emit("messageError", error);
+
+          if (!message.id) {
+            // no id, so assume notification
+            return this.emit("notify", message);
+          }
+
+          if (message.error) {
+            // got an error back
+            const error = this.sendError({
+              jsonrpc: message.jsonrpc,
+              id: message.id,
+              code: message.error.code,
+              message: message.error.message
+            });
+            return this.emit("messageError", error);
+          }
+
+          // no method, so assume response
+          if (!message.method) {
+            this.serving_message_id = message.id;
+            this.responseQueue[this.serving_message_id] = message;
+            return this.emit("response", this.serving_message_id);
+          }
         }
-      }
-    } else {
-      // possibly a batch request
-      try {
-        const batch = JSON.parse(messages);
-        return this.emit("batchResponse", batch);
       } catch (e) {
         const error = this.sendError({
           id: this.serving_message_id,
           code: ERR_CODES.parseError,
           message: ERR_MSGS.parseError
         });
-        return this.emit("batchError", error);
+        return this.emit("messageError", error);
       }
     }
   }
@@ -175,7 +173,9 @@ class Client extends EventEmitter {
   listen() {
     this.writer.on("data", (data) => {
       this.messageBuffer += data;
-      this.verifyData();
+      const messages = this.messageBuffer.split(this.options.delimiter);
+      this.messageBuffer = "";
+      this.verifyData(messages);
     });
     this.writer.on("end", () => {
       this.attached = false;
