@@ -85,6 +85,7 @@ class HTTPServer extends Server {
             // reject otherwise
             try {
               const message = JSON.parse(messages);
+              console.log(message);
               if (!_.isArray(message)) {
                 throw new SyntaxError();
               }

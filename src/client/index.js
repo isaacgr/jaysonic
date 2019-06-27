@@ -22,6 +22,8 @@ class Client extends EventEmitter {
     }
 
     const defaults = {
+      host: "127.0.0.1",
+      port: "8100",
       version: "2.0",
       delimiter: "\n",
       timeout: 30
@@ -64,36 +66,7 @@ class Client extends EventEmitter {
   }
 
   request() {
-    return {
-      message: (method, params) => {
-        const request = formatRequest(
-          method,
-          params,
-          this.message_id,
-          this.options
-        );
-        this.message_id += 1;
-        return request;
-      },
-
-      send: (method, params) =>
-        new Promise((resolve, reject) => {
-          const requestId = this.message_id;
-          this.pendingCalls[requestId] = { resolve, reject };
-          this.writer.write(this.request().message(method, params));
-          setTimeout(() => {
-            if (this.pendingCalls[requestId]) {
-              const error = this.sendError({
-                id: requestId,
-                code: ERR_CODES["timeout"],
-                message: ERR_MSGS["timeout"]
-              });
-              delete this.pendingCalls[requestId];
-              reject(error);
-            }
-          }, this.options.timeout);
-        })
-    };
+    throw new Error("function must be overwritten in subclass");
   }
 
   batch(requests) {
@@ -105,7 +78,7 @@ class Client extends EventEmitter {
     const request = JSON.stringify(requests);
     return new Promise((resolve, reject) => {
       this.pendingCalls[this.message_id] = { resolve, reject };
-      this.writer.write(request);
+      this.client.write(request);
       this.on("batchResponse", (batch) => {
         batch.forEach((message) => {
           if (message.error) {
@@ -144,7 +117,8 @@ class Client extends EventEmitter {
      */
     const messages = this.messageBuffer.split(this.options.delimiter);
     this.messageBuffer = "";
-    if (messages.length > 1) {
+    console.log(messages);
+    if (messages.length >= 1) {
       for (const chunk of messages) {
         try {
           if (chunk !== "") {
@@ -199,11 +173,11 @@ class Client extends EventEmitter {
   }
 
   listen() {
-    this.client.on("data", (data) => {
-      this.messageBuffer += data.trimLeft();
+    this.writer.on("data", (data) => {
+      this.messageBuffer += data;
       this.verifyData();
     });
-    this.client.on("end", () => {
+    this.writer.on("end", () => {
       this.attached = false;
       this.client.removeAllListeners();
       this.emit("serverDisconnected");

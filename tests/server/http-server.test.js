@@ -2,7 +2,7 @@ const { expect } = require("chai");
 const Jayson = require("../../src");
 
 const server = new Jayson.server.http({ port: 8000 });
-const { clienthttp } = require("../test-client");
+// const { clienthttp } = require("../test-client");
 
 server.method("add", ([a, b]) => a + b);
 
