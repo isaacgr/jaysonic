@@ -66,6 +66,13 @@ describe("TCP Client", () => {
         done();
       });
     });
+    it("should send notification to server", (done) => {
+      const request = client.request().notify("greeting", []);
+      request.then((result) => {
+        expect(result).to.be.string;
+        done();
+      });
+    });
     it("should receive response for batch request", (done) => {
       const request = client.batch([
         client.request().message("add", [1, 2]),

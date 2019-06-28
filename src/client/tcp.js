@@ -75,7 +75,12 @@ class TCPClient extends Client {
           options: this.options
         });
         return new Promise((resolve, reject) => {
-          this.client.write(request);
+          this.client.write(request, () => {
+            resolve("notification sent");
+          });
+          this.client.on("error", (error) => {
+            reject(error);
+          });
         });
       }
     };

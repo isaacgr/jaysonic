@@ -255,8 +255,6 @@ client
 
 Clients can send notifications to the server.
 
-The server can accept a notification on a method, so that clients can still send a request and get a response.
-
 The server can also listen for all notifications not tied to methods and handle accordingly.
 
 ```js
