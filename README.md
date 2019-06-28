@@ -69,7 +69,7 @@ The default host and port for the server is `127.0.0.1:8100`. Based on the node 
 
 The default host and port for the TCP client is `127.0.0.1:8100`. Based on the node `net.Socket()` module.
 
-The default host and port for the HTTP client is `127.0.0.1:80/`. Based on the node `http.ClientRequest` module.
+The default host and port for the HTTP client is `http://127.0.0.1:80/`. Based on the node `http.ClientRequest` module.
 
 The default options will be used when instantiating the client or the server. Overrides can be provided by passing an object with the modifications.
 
@@ -185,7 +185,7 @@ const add = () => {
 
 Clients can subscribe to notifications from the server.
 
-> Note: Subscriptions are not supported by the HTTP server/client
+**Note: Subscriptions are not supported by the HTTP server/client**
 
 ```js
 client.subscribe("notification", (message) => {
@@ -228,7 +228,7 @@ const add = () =>
     });
 ```
 
-> The same syntax is used for the HTTP client
+The same syntax is used for the HTTP client
 
 The HTTP Client will include additional information about the response, as per nodes `http.IncomingMessage` method. See more [here](https://nodejs.org/api/http.html#http_class_http_incomingmessage).
 
@@ -258,7 +258,7 @@ Clients can send notifications to the server.
 The server can also listen for all notifications not tied to methods and handle accordingly.
 
 ```js
-// optionally returns a promise
+// optionally returns a promise indicating success or failure for sending message
 client.notify("notify", []);
 
 server.onNotify("notify", (message) => {
@@ -266,6 +266,8 @@ server.onNotify("notify", (message) => {
   // {jsonrpc: "2.0", method: "notify", params: []}
 });
 ```
+
+As per the JSON-RPC spec for HTTP, a notification response must include a `204` status code, with an empty response body. The HTTP Client will resolve a response object if it receives this response, and reject it otherwise.
 
 ### Contributing
 
