@@ -108,5 +108,24 @@ describe("HTTP Server", () => {
           done();
         });
     });
+    it("should respond with 'invalid request' error", (done) => {
+      httpRequest
+        .post("/")
+        .set("Content-Type", "application/json")
+        .send({
+          jsonrpc: "2.0",
+          method: 1,
+          params: [],
+          id: 69
+        })
+        .end((error, response) => {
+          expect(JSON.parse(response.text)).to.be.eql({
+            jsonrpc: "2.0",
+            error: { code: -32600, message: "Invalid Request" },
+            id: 69
+          });
+          done();
+        });
+    });
   });
 });

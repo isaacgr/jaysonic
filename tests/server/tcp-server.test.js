@@ -148,7 +148,7 @@ describe("TCP Server", () => {
               `${JSON.stringify({
                 jsonrpc: "2.0",
                 error: { code: -32600, message: "Invalid Request" },
-                id: null
+                id: 69
               })}\n`
             );
           } catch (e) {
