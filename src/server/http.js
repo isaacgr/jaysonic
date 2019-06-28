@@ -36,19 +36,28 @@ class HTTPServer extends Server {
           this.messageBuffer = "";
           try {
             messages
-              .filter(messageString => messageString !== "")
+              .filter((messageString) => messageString !== "")
               .map((chunk) => {
-                const validRequest = () => this.validateRequest(chunk)
-                  .then(result => result)
-                  .catch((error) => {
-                    throw new Error(JSON.stringify(error));
-                  });
+                const validRequest = () =>
+                  this.validateRequest(chunk)
+                    .then((result) => result)
+                    .catch((error) => {
+                      throw new Error(JSON.stringify(error));
+                    });
                 return validRequest()
                   .then((message) => {
                     if (message.batch) {
-                      this.setResponseHeader(response);
+                      this.setResponseHeader({ response });
                       return response.write(
                         JSON.stringify(message.batch),
+                        () => {
+                          response.end();
+                        }
+                      );
+                    } else if (message.notification) {
+                      this.setResponseHeader({ response, notification: true });
+                      return response.write(
+                        JSON.stringify(message.notification),
                         () => {
                           response.end();
                         }
@@ -56,21 +65,26 @@ class HTTPServer extends Server {
                     }
                     this.getResult(message.json)
                       .then((json) => {
-                        this.setResponseHeader(response);
+                        this.setResponseHeader({ response });
                         return response.write(json, () => {
                           response.end();
                         });
                       })
                       .catch((error) => {
-                        this.setResponseHeader(response, error.error.code);
+                        this.setResponseHeader({
+                          response,
+                          errorCode: error.error.code
+                        });
                         return response.write(JSON.stringify(error), () => {
                           response.end();
                         });
                       });
                   })
-                  .catch(error => response.write(error.message, () => {
-                    response.end();
-                  }));
+                  .catch((error) =>
+                    response.write(error.message, () => {
+                      response.end();
+                    })
+                  );
               });
           } catch (e) {
             const error = this.sendError(
@@ -78,7 +92,7 @@ class HTTPServer extends Server {
               ERR_CODES.parseError,
               ERR_MSGS.parseError
             );
-            this.setResponseHeader(response, error.code);
+            this.setResponseHeader({ response, errorCode: error.code });
             return response.write(
               JSON.stringify(error) + this.options.delimiter,
               () => {
@@ -99,8 +113,11 @@ class HTTPServer extends Server {
     });
   }
 
-  setResponseHeader(response, errorCode = undefined) {
+  setResponseHeader({ response, errorCode, notification }) {
     let statusCode = 200;
+    if (notification) {
+      statusCode = 204;
+    }
     const header = {
       "Content-Type": "application/json"
     };
@@ -121,7 +138,7 @@ class HTTPServer extends Server {
 
   clientDisconnected(cb) {
     this.on("clientDisconnected", (client) => {
-      const clientIndex = this.connectedClients.findIndex(c => client === c);
+      const clientIndex = this.connectedClients.findIndex((c) => client === c);
       if (clientIndex === -1) {
         return "unknown";
       }

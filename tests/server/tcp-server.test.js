@@ -134,8 +134,9 @@ describe("TCP Server", () => {
       sock.write(
         `${JSON.stringify({
           jsonrpc: "2.0",
-          method: "add",
-          params: []
+          method: 1,
+          params: [],
+          id: 69
         })}\n`
       );
       sock.on("data", (data) => {

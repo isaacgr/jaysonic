@@ -21,6 +21,8 @@ server.method("typeerror", ([a]) => {
   }
 });
 
+server.onNotify("notify", () => "notified");
+
 describe("HTTP Server", () => {
   describe("connection", () => {
     it("should listen for requests", (done) => {

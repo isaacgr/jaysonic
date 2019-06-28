@@ -69,6 +69,14 @@ class Server extends EventEmitter {
     this.methods[name] = cb;
   }
 
+  onNotify(method, cb) {
+    this.on("notify", (json) => {
+      if (json.method === method) {
+        cb(json);
+      }
+    });
+  }
+
   handleData() {
     throw new Error("function must be overwritten in subsclass");
   }
@@ -77,11 +85,15 @@ class Server extends EventEmitter {
     return new Promise((resolve, reject) => {
       try {
         const requests = batch;
-        const batchRequests = requests.map(request => this.validateRequest(request)
-          .then(message => this.getResult(message.json)
-            .then(result => JSON.parse(result))
-            .catch(error => error))
-          .catch(error => error));
+        const batchRequests = requests.map((request) =>
+          this.validateRequest(request)
+            .then((message) =>
+              this.getResult(message.json)
+                .then((result) => JSON.parse(result))
+                .catch((error) => error)
+            )
+            .catch((error) => error)
+        );
         Promise.all(batchRequests)
           .then((result) => {
             resolve(result);
@@ -116,16 +128,33 @@ class Server extends EventEmitter {
           }
           return this.handleBatchRequest(json)
             .then((responses) => {
-              resolve({ valid: true, batch: responses });
+              resolve({ batch: responses });
             })
             .catch((error) => {
               reject(JSON.stringify(error));
             });
         }
-        if (!json.id) {
+
+        if (!_.isObject(json)) {
           reject(
             this.sendError(
               null,
+              ERR_CODES.invalidRequest,
+              ERR_MSGS.invalidRequest
+            )
+          );
+        }
+
+        if (!json.id) {
+          // no id, so assume notification
+          this.emit("notify", json);
+          resolve({ notification: json });
+        }
+
+        if (!_.isString(json.method)) {
+          reject(
+            this.sendError(
+              json.id,
               ERR_CODES.invalidRequest,
               ERR_MSGS.invalidRequest
             )
@@ -164,7 +193,7 @@ class Server extends EventEmitter {
           );
         }
         // data looks good
-        resolve({ valid: true, json });
+        resolve({ json });
       } catch (e) {
         reject(this.sendError(null, ERR_CODES.parseError, ERR_MSGS.parseError));
       }

@@ -122,6 +122,16 @@ class Client extends EventEmitter {
             }
           }
 
+          if (!_.isObject(message)) {
+            reject(
+              this.sendError({
+                id: null,
+                code: ERR_CODES.parseError,
+                message: ERR_MSGS.parseError
+              })
+            );
+          }
+
           if (!message.id) {
             // no id, so assume notification
             return this.emit("notify", message);
@@ -192,9 +202,7 @@ class Client extends EventEmitter {
     });
   }
 
-  sendError({
-    jsonrpc, id, code, message
-  }) {
+  sendError({ jsonrpc, id, code, message }) {
     const response = {
       jsonrpc: jsonrpc || this.options.version,
       error: { code, message: message || "Unknown Error" },

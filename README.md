@@ -14,7 +14,8 @@ A TCP and HTTP server and client that implement the JSON-RPC 2.0 Specification.
 - Batching
 - TCP server/client
 - HTTP server/client
-- auto increments request id
+- Automatic increment of request ID
+- Associate response ID with request
 
 ### Download & Installation
 
@@ -29,7 +30,7 @@ All clients and servers are instantiated with the same syntax, just change the t
 ```js
 // TCP
 const server = new Jaysonic.server.tcp();
-const client = new Jayson.client.tcp();
+const client = new Jaysonic.client.tcp();
 // HTTP
 const server = new Jaysonic.server.http();
 const client = new Jaysonic.client.http();
@@ -125,6 +126,11 @@ server
 
 ```js
 server.method("add", ([a, b]) => a + b);
+
+// can also add named
+const add = ([a, b]) => a + b;
+
+server.method("add", add);
 ```
 
 > The same syntax is used for the HTTP server
@@ -245,7 +251,7 @@ client
   });
 ```
 
-<!-- ##### Notifications
+##### Notifications
 
 Clients can send notifications to the server.
 
@@ -254,13 +260,14 @@ The server can accept a notification on a method, so that clients can still send
 The server can also listen for all notifications not tied to methods and handle accordingly.
 
 ```js
+// optionally returns a promise
 client.notify("notify", []);
 
 server.onNotify("notify", (message) => {
   console.log(message);
   // {jsonrpc: "2.0", method: "notify", params: []}
 });
-``` -->
+```
 
 ### Contributing
 
