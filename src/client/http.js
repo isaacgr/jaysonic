@@ -21,10 +21,6 @@ class HTTPClient extends Client {
       port: this.server.port || 80,
       method: "POST",
       headers: {
-        // "Content-Length": Buffer.byteLength(
-        //   this.messageBuffer,
-        //   this.options.encoding
-        // ),
         "Content-Type": "application/json; charset=utf-8",
         Accept: "application/json"
       },
@@ -60,8 +56,13 @@ class HTTPClient extends Client {
         new Promise((resolve, reject) => {
           const requestId = this.message_id;
           this.pendingCalls[requestId] = { resolve, reject };
+          const request = this.request().message(method, params);
+          this.options.headers["Content-Length"] = Buffer.byteLength(
+            request,
+            "utf-8"
+          );
           this.initClient();
-          this.client.write(this.request().message(method, params));
+          this.client.write(request);
           this.client.end();
           setTimeout(() => {
             if (this.pendingCalls[requestId]) {
@@ -83,6 +84,10 @@ class HTTPClient extends Client {
           options: this.options
         });
         return new Promise((resolve, reject) => {
+          this.options.headers["Content-Length"] = Buffer.byteLength(
+            request,
+            "utf-8"
+          );
           const notification = http.request(this.options, (response) => {
             if (response.statusCode === 204) {
               resolve(response);
@@ -106,6 +111,10 @@ class HTTPClient extends Client {
     const request = JSON.stringify(requests);
     return new Promise((resolve, reject) => {
       this.pendingCalls[this.message_id] = { resolve, reject };
+      this.options.headers["Content-Length"] = Buffer.byteLength(
+        request,
+        "utf-8"
+      );
       this.initClient();
       this.client.write(request);
       this.client.end();
