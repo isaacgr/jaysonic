@@ -1,8 +1,15 @@
 const { expect } = require("chai");
+const chai = require("chai");
+const chaiHttp = require("chai-http");
+
 const Jayson = require("../../src");
 
 const server = new Jayson.server.http({ port: 8000 });
 const { clienthttp } = require("../test-client");
+
+chai.use(chaiHttp);
+
+const httpRequest = chai.request("http://localhost:8000");
 
 server.method("add", ([a, b]) => a + b);
 
@@ -85,19 +92,19 @@ describe("HTTP Server", () => {
         done();
       });
     });
-    // it("should respond with 'parse error'", (done) => {
-    //   const request = clienthttp.request().send("nonexistent", {});
-    //   request.catch((response) => {
-    //     expect(response).to.be.eql({
-    //       jsonrpc: "2.0",
-    //       error: {
-    //         code: -32601,
-    //         message: "Method not found"
-    //       },
-    //       id: 4
-    //     });
-    //     done();
-    //   });
-    // });
+    it("should respond with 'parse error'", (done) => {
+      httpRequest
+        .post("/")
+        .set("Content-Type", "application/json")
+        .send("{]")
+        .end((error, response) => {
+          expect(JSON.parse(response.text)).to.be.eql({
+            jsonrpc: "2.0",
+            error: { code: -32700, message: "Parse Error" },
+            id: null
+          });
+          done();
+        });
+    });
   });
 });
