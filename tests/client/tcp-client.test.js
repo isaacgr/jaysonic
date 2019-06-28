@@ -69,7 +69,7 @@ describe("TCP Client", () => {
     it("should send notification to server", (done) => {
       const request = client.request().notify("greeting", []);
       request.then((result) => {
-        expect(result).to.be.string;
+        expect(result).to.be.a("string");
         done();
       });
     });

@@ -52,31 +52,30 @@ class HTTPClient extends Client {
         return request;
       },
 
-      send: (method, params) =>
-        new Promise((resolve, reject) => {
-          const requestId = this.message_id;
-          this.pendingCalls[requestId] = { resolve, reject };
-          const request = this.request().message(method, params);
-          this.options.headers["Content-Length"] = Buffer.byteLength(
-            request,
-            "utf-8"
-          );
-          this.initClient();
-          this.client.write(request);
-          this.client.end();
-          setTimeout(() => {
-            if (this.pendingCalls[requestId]) {
-              const error = this.sendError({
-                id: requestId,
-                code: ERR_CODES.timeout,
-                message: ERR_MSGS.timeout
-              });
-              delete this.pendingCalls[requestId];
-              this.client.end();
-              reject(error);
-            }
-          }, this.options.timeout);
-        }),
+      send: (method, params) => new Promise((resolve, reject) => {
+        const requestId = this.message_id;
+        this.pendingCalls[requestId] = { resolve, reject };
+        const request = this.request().message(method, params);
+        this.options.headers["Content-Length"] = Buffer.byteLength(
+          request,
+          "utf-8"
+        );
+        this.initClient();
+        this.client.write(request);
+        this.client.end();
+        setTimeout(() => {
+          if (this.pendingCalls[requestId]) {
+            const error = this.sendError({
+              id: requestId,
+              code: ERR_CODES.timeout,
+              message: ERR_MSGS.timeout
+            });
+            delete this.pendingCalls[requestId];
+            this.client.end();
+            reject(error);
+          }
+        }, this.options.timeout);
+      }),
       notify: (method, params) => {
         const request = formatRequest({
           method,
@@ -92,7 +91,7 @@ class HTTPClient extends Client {
             if (response.statusCode === 204) {
               resolve(response);
             } else {
-              reject("no response receieved for notification");
+              reject(new Error("no response receieved for notification"));
             }
           });
           notification.write(request);
