@@ -114,8 +114,11 @@ class Server extends EventEmitter {
   validateRequest(message) {
     return new Promise((resolve, reject) => {
       try {
-        // throws error if json invalid
-        const json = JSON.parse(message);
+        let json = message;
+        // only parse if message isnt json object
+        if (!_.isObject(json)) {
+          json = JSON.parse(message);
+        }
         if (_.isArray(json)) {
           // possible batch request
           if (_.isEmpty(json)) {

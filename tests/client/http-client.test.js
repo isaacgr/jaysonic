@@ -36,6 +36,13 @@ describe("HTTP Client", () => {
         done();
       });
     });
+    it("should receive a '204' response for a notification", (done) => {
+      const request = clienthttp.request().notify("notify", []);
+      request.then((response) => {
+        expect(response.statusCode).to.be.equal(204);
+        done();
+      });
+    });
     it("should get an 'invalid params' error", (done) => {
       const request = clienthttp.request().send("add", {});
       request.catch((response) => {

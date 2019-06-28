@@ -55,7 +55,7 @@ describe("HTTP Server", () => {
         done();
       });
     });
-    it("should hanlde call with named params", (done) => {
+    it("should handle call with named params", (done) => {
       const request = clienthttp.request().send("greeting", { name: "Isaac" });
       request.then((response) => {
         expect(response.body).to.be.eql({

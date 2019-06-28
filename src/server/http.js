@@ -56,12 +56,7 @@ class HTTPServer extends Server {
                       );
                     } else if (message.notification) {
                       this.setResponseHeader({ response, notification: true });
-                      return response.write(
-                        JSON.stringify(message.notification),
-                        () => {
-                          response.end();
-                        }
-                      );
+                      return response.end();
                     }
                     this.getResult(message.json)
                       .then((json) => {
@@ -80,11 +75,15 @@ class HTTPServer extends Server {
                         });
                       });
                   })
-                  .catch((error) =>
+                  .catch((error) => {
+                    this.setResponseHeader({
+                      response,
+                      errorCode: JSON.parse(error.message).error.code
+                    });
                     response.write(error.message, () => {
                       response.end();
-                    })
-                  );
+                    });
+                  });
               });
           } catch (e) {
             const error = this.sendError(

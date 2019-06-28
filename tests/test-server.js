@@ -26,4 +26,6 @@ serverHttp.method("typeerror", ([a]) => {
   }
 });
 
+server.onNotify("noitify", () => "notification");
+
 module.exports = { server, serverHttp };

@@ -46,12 +46,12 @@ class HTTPClient extends Client {
   request() {
     return {
       message: (method, params) => {
-        const request = formatRequest(
+        const request = formatRequest({
           method,
           params,
-          this.message_id,
-          this.options
-        );
+          id: this.message_id,
+          options: this.options
+        });
         this.message_id += 1;
         return request;
       },
@@ -76,12 +76,23 @@ class HTTPClient extends Client {
             }
           }, this.options.timeout);
         }),
-      notify: (notification) => {
-        const { method, params } = notification;
-        const request = formatRequest(method, params, this.options);
-        this.client.write(request);
-        this.client.end();
-        return;
+      notify: (method, params) => {
+        const request = formatRequest({
+          method,
+          params,
+          options: this.options
+        });
+        return new Promise((resolve, reject) => {
+          const notification = http.request(this.options, (response) => {
+            if (response.statusCode === 204) {
+              resolve(response);
+            } else {
+              reject("no response receieved for notification");
+            }
+          });
+          notification.write(request);
+          notification.end();
+        });
       }
     };
   }

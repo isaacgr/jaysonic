@@ -41,12 +41,12 @@ class TCPClient extends Client {
   request() {
     return {
       message: (method, params) => {
-        const request = formatRequest(
+        const request = formatRequest({
           method,
           params,
-          this.message_id,
-          this.options
-        );
+          id: this.message_id,
+          options: this.options
+        });
         this.message_id += 1;
         return request;
       },
@@ -68,11 +68,15 @@ class TCPClient extends Client {
             }
           }, this.options.timeout);
         }),
-      notify: (notification) => {
-        const { method, params } = notification;
-        const request = formatRequest(method, params, this.options);
-        this.client.write(request);
-        return;
+      notify: (method, params) => {
+        const request = formatRequest({
+          method,
+          params,
+          options: this.options
+        });
+        return new Promise((resolve, reject) => {
+          this.client.write(request);
+        });
       }
     };
   }
