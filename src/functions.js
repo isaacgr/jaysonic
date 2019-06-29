@@ -3,9 +3,7 @@ const isUndefined = require("lodash/isUndefined");
 const isObject = require("lodash/isObject");
 const isArray = require("lodash/isArray");
 
-const formatRequest = ({
-  method, params, id, options
-}) => {
+const formatRequest = ({ method, params, id, options }) => {
   if (!isString(method)) {
     throw new TypeError(`${method} must be a string`);
   }
@@ -17,6 +15,10 @@ const formatRequest = ({
   // assume 2.0 request unless otherwise specified
   if (!options.version || options.version !== 1) {
     request.jsonrpc = "2.0";
+  }
+
+  if (!params) {
+    throw new Error("params must be defined");
   }
 
   if (params) {

@@ -50,22 +50,23 @@ class TCPClient extends Client {
         return request;
       },
 
-      send: (method, params) => new Promise((resolve, reject) => {
-        const requestId = this.message_id;
-        this.pendingCalls[requestId] = { resolve, reject };
-        this.client.write(this.request().message(method, params));
-        setTimeout(() => {
-          if (this.pendingCalls[requestId]) {
-            const error = this.sendError({
-              id: requestId,
-              code: ERR_CODES.timeout,
-              message: ERR_MSGS.timeout
-            });
-            delete this.pendingCalls[requestId];
-            reject(error);
-          }
-        }, this.options.timeout);
-      }),
+      send: (method, params) =>
+        new Promise((resolve, reject) => {
+          const requestId = this.message_id;
+          this.pendingCalls[requestId] = { resolve, reject };
+          this.client.write(this.request().message(method, params));
+          setTimeout(() => {
+            if (this.pendingCalls[requestId]) {
+              const error = this.sendError({
+                id: requestId,
+                code: ERR_CODES.timeout,
+                message: ERR_MSGS.timeout
+              });
+              delete this.pendingCalls[requestId];
+              reject(error);
+            }
+          }, this.options.timeout);
+        }),
       notify: (method, params) => {
         const request = formatRequest({
           method,
@@ -106,7 +107,7 @@ class TCPClient extends Client {
       this.pendingBatches[String(batchIds)] = { resolve, reject };
 
       const request = JSON.stringify(requests);
-      this.client.write(request);
+      this.client.write(request + this.options.delimiter);
       this.on("batchResponse", (batch) => {
         const batchResponseIds = [];
         batch.forEach((message) => {
@@ -123,9 +124,7 @@ class TCPClient extends Client {
         }
         for (const ids of Object.keys(this.pendingBatches)) {
           if (
-            _.isEmpty(
-              _.difference(JSON.parse(`[${ids}]`), batchResponseIds)
-            )
+            _.isEmpty(_.difference(JSON.parse(`[${ids}]`), batchResponseIds))
           ) {
             this.pendingBatches[ids].resolve(batch);
           }

@@ -273,6 +273,7 @@ As per the JSON-RPC spec for HTTP, a notification response must include a `204` 
 ```js
 // optionally returns a promise indicating success or failure for sending message
 client
+  .request()
   .notify("notify", [])
   .then((response) => {
     console.log(response.statusCode);

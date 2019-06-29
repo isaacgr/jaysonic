@@ -35,24 +35,31 @@ class TCPServer extends Server {
         for (const chunk of messages) {
           try {
             if (chunk !== "") {
-              const validRequest = () => this.validateRequest(chunk)
-                .then(result => result)
-                .catch((error) => {
-                  throw new Error(JSON.stringify(error));
-                });
+              const validRequest = () =>
+                this.validateRequest(chunk)
+                  .then((result) => result)
+                  .catch((error) => {
+                    throw new Error(JSON.stringify(error));
+                  });
 
               validRequest()
                 .then((message) => {
                   if (message.batch) {
-                    return client.write(JSON.stringify(message.batch));
+                    return client.write(
+                      JSON.stringify(message.batch) + this.options.delimiter
+                    );
                   }
                   this.getResult(message.json)
-                    .then(json => client.write(json + this.options.delimiter))
-                    .catch(error => client.write(
-                      JSON.stringify(error) + this.options.delimiter
-                    ));
+                    .then((json) => client.write(json + this.options.delimiter))
+                    .catch((error) =>
+                      client.write(
+                        JSON.stringify(error) + this.options.delimiter
+                      )
+                    );
                 })
-                .catch(error => client.write(error.message + this.options.delimiter));
+                .catch((error) =>
+                  client.write(error.message + this.options.delimiter)
+                );
             }
           } catch (e) {
             if (e instanceof TypeError) {
@@ -77,15 +84,17 @@ class TCPServer extends Server {
   }
 
   clientConnected(cb) {
-    this.on("clientConnected", client => cb({
-      host: client.remoteAddress,
-      port: client.remotePort
-    }));
+    this.on("clientConnected", (client) =>
+      cb({
+        host: client.remoteAddress,
+        port: client.remotePort
+      })
+    );
   }
 
   clientDisconnected(cb) {
     this.on("clientDisconnected", (client) => {
-      const clientIndex = this.connectedClients.findIndex(c => client === c);
+      const clientIndex = this.connectedClients.findIndex((c) => client === c);
       if (clientIndex === -1) {
         return "unknown";
       }

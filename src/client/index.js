@@ -111,15 +111,14 @@ class Client extends EventEmitter {
           if (_.isArray(message)) {
             // possible batch request
             try {
-              const batch = JSON.parse(messages);
-              return this.emit("batchResponse", batch);
+              this.emit("batchResponse", message);
             } catch (e) {
               const error = this.sendError({
                 id: this.serving_message_id,
                 code: ERR_CODES.parseError,
                 message: ERR_MSGS.parseError
               });
-              return this.emit("batchError", error);
+              this.emit("batchError", error);
             }
           }
 
@@ -130,12 +129,12 @@ class Client extends EventEmitter {
               code: ERR_CODES.parseError,
               message: ERR_MSGS.parseError
             });
-            return this.emit("messageError", error);
+            this.emit("messageError", error);
           }
 
           if (!message.id) {
             // no id, so assume notification
-            return this.emit("notify", message);
+            this.emit("notify", message);
           }
 
           if (message.error) {
@@ -146,14 +145,14 @@ class Client extends EventEmitter {
               code: message.error.code,
               message: message.error.message
             });
-            return this.emit("messageError", error);
+            this.emit("messageError", error);
           }
 
           // no method, so assume response
           if (!message.method) {
             this.serving_message_id = message.id;
             this.responseQueue[this.serving_message_id] = message;
-            return this.emit("response", this.serving_message_id);
+            this.emit("response", this.serving_message_id);
           }
         }
       } catch (e) {
@@ -162,7 +161,7 @@ class Client extends EventEmitter {
           code: ERR_CODES.parseError,
           message: ERR_MSGS.parseError
         });
-        return this.emit("messageError", error);
+        this.emit("messageError", error);
       }
     }
   }
@@ -203,9 +202,7 @@ class Client extends EventEmitter {
     });
   }
 
-  sendError({
-    jsonrpc, id, code, message
-  }) {
+  sendError({ jsonrpc, id, code, message }) {
     const response = {
       jsonrpc: jsonrpc || this.options.version,
       error: { code, message: message || "Unknown Error" },

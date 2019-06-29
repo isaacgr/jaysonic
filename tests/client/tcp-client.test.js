@@ -128,12 +128,12 @@ describe("TCP Client", () => {
           method: "notification",
           params: []
         });
+        done();
       });
       server.notify({
         method: "notification",
         params: []
       });
-      done();
     });
   });
 });
