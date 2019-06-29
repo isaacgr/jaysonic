@@ -94,7 +94,6 @@ const Jaysonic = require("jaysonic");
 const client = new Jaysonic.client.http({
     method: "POST",
     headers: {
-      "Content-Length": // calculated by request message,
       "Content-Type": "application/json; charset=utf-8",
       Accept: "application/json"
     },
@@ -234,7 +233,7 @@ The HTTP Client will include additional information about the response, as per n
 
 The HTTP client response is an object with a `body` property, which contains the json response from the server, as well as the `http.IncomingMessage` instance. Which contains things like the header and statusCode. All methods can be found [here](https://www.w3schools.com/nodejs/obj_http_incomingmessage.asp).
 
-Ex.
+##### HTTP Client Requests
 
 ```js
 client
@@ -271,7 +270,9 @@ As per the JSON-RPC spec for HTTP, a notification response must include a `204` 
 
 ### Contributing
 
-Keep it simple. Keep it minimal. Don't put every single feature just because you can.
+Definitely welcome. I tried to account for everything in the spec, but issues come up of course.
+
+Keep it simple. Keep it minimal. Make sure all tests pass and no linting errors.
 
 ### Authors or Acknowledgments
 
