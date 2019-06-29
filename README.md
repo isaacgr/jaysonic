@@ -44,6 +44,7 @@ The client and server support changing the JSON-RPC version and the delimiter us
 `port`: The host port to serve from for the server, or to connect to by the client. Default is `8100`. \
 `delimiter`: Delimiter to break requests by. Defaults to `\n`. \
 `version`: RPC version to use. Defaults to `2.0`. \
+`retries`: The number of retry attempts for the client to connect to the server. Default is `2`. \
 `timeout`: The amount of time before a request times out. Will return a `-32000` error code. The default value is `30` (in seconds).
 
 The server has an additional option specified by the [NodeJS Docs](https://nodejs.org/api/net.html#net_server_listen_options_callback).
