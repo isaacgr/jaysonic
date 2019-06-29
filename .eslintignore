@@ -1,1 +1,3 @@
 lib/*
+tests/client.js
+tests/general-test.js

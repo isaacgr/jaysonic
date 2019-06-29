@@ -31,8 +31,19 @@ class TCPClient extends Client {
         this.handleError();
         resolve(this.server);
       });
+      let { retries } = this.options;
       this.client.on("error", (error) => {
-        reject(error);
+        retries -= 1;
+        if (error.code === "ECONNREFUSED" && retries) {
+          process.stdout.write(
+            `Unable to connect. Retrying. ${retries} attempts left.\n`
+          );
+          setTimeout(() => {
+            this.client.connect(this.server);
+          }, 5000);
+        } else {
+          reject(error);
+        }
       });
     });
   }
@@ -50,23 +61,22 @@ class TCPClient extends Client {
         return request;
       },
 
-      send: (method, params) =>
-        new Promise((resolve, reject) => {
-          const requestId = this.message_id;
-          this.pendingCalls[requestId] = { resolve, reject };
-          this.client.write(this.request().message(method, params));
-          setTimeout(() => {
-            if (this.pendingCalls[requestId]) {
-              const error = this.sendError({
-                id: requestId,
-                code: ERR_CODES.timeout,
-                message: ERR_MSGS.timeout
-              });
-              delete this.pendingCalls[requestId];
-              reject(error);
-            }
-          }, this.options.timeout);
-        }),
+      send: (method, params) => new Promise((resolve, reject) => {
+        const requestId = this.message_id;
+        this.pendingCalls[requestId] = { resolve, reject };
+        this.client.write(this.request().message(method, params));
+        setTimeout(() => {
+          if (this.pendingCalls[requestId]) {
+            const error = this.sendError({
+              id: requestId,
+              code: ERR_CODES.timeout,
+              message: ERR_MSGS.timeout
+            });
+            delete this.pendingCalls[requestId];
+            reject(error);
+          }
+        }, this.options.timeout);
+      }),
       notify: (method, params) => {
         const request = formatRequest({
           method,

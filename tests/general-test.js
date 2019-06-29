@@ -12,7 +12,14 @@ server.onNotify("notify", () => {
   console.log("notification");
 });
 
-const client = new Jaysonic.client.tcp();
+const client = new Jaysonic.client.tcp({ port: 8900 });
+
+client.subscribe("notification", (error, message) => {
+  if (error) {
+    console.log(error);
+  }
+  console.log(message);
+});
 
 client
   .connect()
@@ -28,7 +35,7 @@ client
     invalid();
     badmeth();
     notify();
-    server.notify({ method: "notifcation", params: [] });
+    server.notify("notification", []);
   })
   .catch((error) => {
     console.log(`Client Error: ${error}`);

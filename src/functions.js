@@ -3,7 +3,9 @@ const isUndefined = require("lodash/isUndefined");
 const isObject = require("lodash/isObject");
 const isArray = require("lodash/isArray");
 
-const formatRequest = ({ method, params, id, options }) => {
+const formatRequest = ({
+  method, params, id, options
+}) => {
   if (!isString(method)) {
     throw new TypeError(`${method} must be a string`);
   }
@@ -37,7 +39,9 @@ const formatRequest = ({ method, params, id, options }) => {
   return messageString;
 };
 
-const formatResponse = ({ jsonrpc, id, method, result, params }) => {
+const formatResponse = ({
+  jsonrpc, id, method, result, params
+}) => {
   const response = {};
 
   response.result = result;

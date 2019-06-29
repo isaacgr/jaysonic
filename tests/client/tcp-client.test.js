@@ -1,4 +1,4 @@
-const { expect, assert } = require("chai");
+const { expect } = require("chai");
 
 const { server } = require("../test-server.js");
 const Jaysonic = require("../../src");

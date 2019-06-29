@@ -25,7 +25,8 @@ class Client extends EventEmitter {
       port: "8100",
       version: "2.0",
       delimiter: "\n",
-      timeout: 30
+      timeout: 30,
+      retries: 2
     };
 
     this.client = undefined;
@@ -202,7 +203,9 @@ class Client extends EventEmitter {
     });
   }
 
-  sendError({ jsonrpc, id, code, message }) {
+  sendError({
+    jsonrpc, id, code, message
+  }) {
     const response = {
       jsonrpc: jsonrpc || this.options.version,
       error: { code, message: message || "Unknown Error" },
