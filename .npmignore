@@ -1,1 +1,6 @@
 src/
+tests/
+.babelrc
+.eslint*
+package*
+.git*
