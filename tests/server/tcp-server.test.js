@@ -160,4 +160,20 @@ describe("TCP Server", () => {
       });
     });
   });
+  describe("notifications", () => {
+    it("should handle client notification", (done) => {
+      server.onNotify("notification", (error, message) => {
+        if (error) {
+          return done(error);
+        }
+        expect(message).to.be.eql({
+          jsonrpc: "2.0",
+          method: "notification",
+          params: []
+        });
+        done();
+      });
+      client.request().notify("notification", []);
+    });
+  });
 });

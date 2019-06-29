@@ -126,14 +126,11 @@ describe("TCP Client", () => {
         if (error) {
           return done(error);
         }
-        expect(message).to.be.eql(
-          {
-            jsonrpc: "2.0",
-            method: "notification",
-            result: []
-          },
-          message
-        );
+        expect(message).to.be.eql({
+          jsonrpc: "2.0",
+          method: "notification",
+          params: []
+        });
         done();
       });
       server.notify("notification", []);

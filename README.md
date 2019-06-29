@@ -187,7 +187,7 @@ Clients can subscribe to notifications from the server.
 **Note: Subscriptions are not supported by the HTTP server/client**
 
 ```js
-client.subscribe("notification", (message) => {
+client.subscribe("notification", (error, message) => {
   console.log(message);
   // {jsonrpc: "2.0", method: "notification", params: []}
 });
@@ -258,9 +258,9 @@ The server can also listen for all notifications not tied to methods and handle 
 
 ```js
 // optionally returns a promise indicating success or failure for sending message
-client.notify("notify", []);
+client.request().notify("notify", []);
 
-server.onNotify("notify", (message) => {
+server.onNotify("notify", (error, message) => {
   console.log(message);
   // {jsonrpc: "2.0", method: "notify", params: []}
 });
@@ -283,7 +283,7 @@ client
     console.log(error);
   });
 
-server.onNotify("notify", (message) => {
+server.onNotify("notify", (error, message) => {
   console.log(message);
   // {jsonrpc: "2.0", method: "notify", params: []}
 });
