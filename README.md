@@ -268,6 +268,26 @@ server.onNotify("notify", (message) => {
 
 As per the JSON-RPC spec for HTTP, a notification response must include a `204` status code, with an empty response body. The HTTP Client will resolve a response object if it receives this response, and reject it otherwise.
 
+##### HTTP Client Notifications
+
+```js
+// optionally returns a promise indicating success or failure for sending message
+client
+  .notify("notify", [])
+  .then((response) => {
+    console.log(response.statusCode);
+    // 204
+  })
+  .catch((error) => {
+    console.log(error);
+  });
+
+server.onNotify("notify", (message) => {
+  console.log(message);
+  // {jsonrpc: "2.0", method: "notify", params: []}
+});
+```
+
 ### Contributing
 
 Definitely welcome. I tried to account for everything in the spec, but issues come up of course.
