@@ -28,8 +28,6 @@ class Client extends EventEmitter {
       timeout: 30
     };
 
-    const { host, port } = options;
-    this.server = { host, port };
     this.client = undefined;
     this.message_id = 1;
     this.serving_message_id = 1;
@@ -48,6 +46,9 @@ class Client extends EventEmitter {
     this.responseQueue = {};
     this.options = _.merge(defaults, options || {});
     this.options.timeout = this.options.timeout * 1000;
+
+    const { host, port } = this.options;
+    this.server = { host, port };
   }
 
   // http client doesnt need this method
