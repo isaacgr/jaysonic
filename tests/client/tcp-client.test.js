@@ -78,6 +78,7 @@ describe("TCP Client", () => {
         client.request().message("add", [1, 2]),
         client.request().message("add", [3, 4])
       ]);
+      request.catch((error) => console.log(error));
       request.then((response) => {
         expect(response).to.eql([
           { result: 3, jsonrpc: "2.0", id: 3 },
@@ -86,19 +87,19 @@ describe("TCP Client", () => {
         done();
       });
     });
-    it("should receive 'invalid request' error for non empty array", (done) => {
-      const request = client.batch([1]);
-      request.catch((response) => {
-        expect(response).to.eql([
-          {
-            jsonrpc: "2.0",
-            error: { code: -32600, message: "Invalid Request" },
-            id: null
-          }
-        ]);
-        done();
-      });
-    });
+    // it("should receive 'invalid request' error for non empty array", (done) => {
+    //   const request = client.batch([1]);
+    //   request.catch((response) => {
+    //     expect(response).to.eql([
+    //       {
+    //         jsonrpc: "2.0",
+    //         error: { code: -32600, message: "Invalid Request" },
+    //         id: null
+    //       }
+    //     ]);
+    //     done();
+    //   });
+    // });
     it("should handle 'method not found' error", (done) => {
       const request = client.request().send("nonexistent method", []);
       request.catch((error) => {
