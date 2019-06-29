@@ -11,7 +11,6 @@ const { ERR_CODES, ERR_MSGS } = require("../constants");
  * @param {Object} [options] optional settings for client
  * @return TCPClient
  */
-
 class TCPServer extends Server {
   constructor(options) {
     super(options);
@@ -36,7 +35,6 @@ class TCPServer extends Server {
         for (const chunk of messages) {
           try {
             if (chunk !== "") {
-              // normal request otherwise
               const validRequest = () => this.validateRequest(chunk)
                 .then(result => result)
                 .catch((error) => {

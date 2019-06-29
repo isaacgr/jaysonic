@@ -12,10 +12,11 @@ const { ERR_CODES, ERR_MSGS } = require("../constants");
  * @param {Object} [options] optional settings for client
  * @return HTTPClient
  */
-
 class HTTPClient extends Client {
   constructor(server, options) {
     super(server, options);
+
+    // the content length will be calculated on a per request basis
     const defaults = {
       host: this.server.host,
       port: this.server.port || 80,
@@ -52,31 +53,36 @@ class HTTPClient extends Client {
         return request;
       },
 
-      send: (method, params) =>
-        new Promise((resolve, reject) => {
-          const requestId = this.message_id;
-          this.pendingCalls[requestId] = { resolve, reject };
-          const request = this.request().message(method, params);
-          this.options.headers["Content-Length"] = Buffer.byteLength(
-            request,
-            "utf-8"
-          );
-          this.initClient();
-          this.client.write(request);
-          this.client.end();
-          setTimeout(() => {
-            if (this.pendingCalls[requestId]) {
-              const error = this.sendError({
-                id: requestId,
-                code: ERR_CODES.timeout,
-                message: ERR_MSGS.timeout
-              });
-              delete this.pendingCalls[requestId];
-              this.client.end();
-              reject(error);
-            }
-          }, this.options.timeout);
-        }),
+      send: (method, params) => new Promise((resolve, reject) => {
+        const requestId = this.message_id;
+        this.pendingCalls[requestId] = { resolve, reject };
+        const request = this.request().message(method, params);
+        this.options.headers["Content-Length"] = Buffer.byteLength(
+          request,
+          "utf-8"
+        );
+        this.initClient();
+        this.client.write(request);
+        this.client.end();
+        setTimeout(() => {
+          if (this.pendingCalls[requestId]) {
+            const error = this.sendError({
+              id: requestId,
+              code: ERR_CODES.timeout,
+              message: ERR_MSGS.timeout
+            });
+            delete this.pendingCalls[requestId];
+            this.client.end();
+            reject(error);
+          }
+        }, this.options.timeout);
+      }),
+
+      /**
+       * The spec for HTTP notifications states a 204 error response with an empty body
+       * Want to provide a promise response for users to know notification was received
+       * or rejected by server
+       */
       notify: (method, params) => {
         const request = formatRequest({
           method,
@@ -114,8 +120,8 @@ class HTTPClient extends Client {
      */
 
     return new Promise((resolve, reject) => {
-      let batchIds = [];
-      for (let request of requests) {
+      const batchIds = [];
+      for (const request of requests) {
         const json = JSON.parse(request);
         if (json.id) {
           batchIds.push(json.id);
@@ -132,7 +138,7 @@ class HTTPClient extends Client {
       this.client.write(request);
       this.client.end();
       this.on("batchResponse", (batch) => {
-        let batchResponseIds = [];
+        const batchResponseIds = [];
         batch.forEach((message) => {
           if (message.error) {
             // reject the whole message if there are any errors
@@ -145,10 +151,10 @@ class HTTPClient extends Client {
         if (_.isEmpty(batchResponseIds)) {
           resolve([]);
         }
-        for (let ids of Object.keys(this.pendingBatches)) {
+        for (const ids of Object.keys(this.pendingBatches)) {
           if (
             _.isEmpty(
-              _.difference(JSON.parse("[" + ids + "]"), batchResponseIds)
+              _.difference(JSON.parse(`[${ids}]`), batchResponseIds)
             )
           ) {
             this.pendingBatches[ids].resolve(batch);

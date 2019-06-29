@@ -49,6 +49,7 @@ const formatResponse = (message, result) => {
     response.jsonrpc = "2.0";
   }
 
+  // could be notification
   if (id) {
     response.id = id;
   }

@@ -57,7 +57,7 @@ The HTTP client supports additional options for the HTTP request.
 `headers`: Headers to include in the request. Defaults provided by the spec are:
 
 - `"Content-Length"`
-  - calculated by request message
+  - calculated by request message, this is not configurable
 - `"Content-Type"`
   - defaults to `"application/json; charset=utf-8"`
 - `Accept`

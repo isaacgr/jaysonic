@@ -10,10 +10,9 @@ const { ERR_CODES, ERR_MSGS } = require("../constants");
  * @param {Object} [options]
  * @param {Number} [options.version=2] JSON-RPC version to use (1|2)
  * @param {String} [options.delimiter="\n"] delimiter to use for requests
- * @param {Boolean} [options.persist=true] persist the connection to server after a request
+ * @param {Number} [options.timeout=30] timeout for request
  * @return {Client}
  */
-
 class Client extends EventEmitter {
   constructor(options) {
     super();
@@ -51,6 +50,7 @@ class Client extends EventEmitter {
     this.options.timeout = this.options.timeout * 1000;
   }
 
+  // http client doesnt need this method
   connect() {
     throw new Error("function must be overwritten in subclass");
   }
@@ -100,11 +100,10 @@ class Client extends EventEmitter {
   }
 
   verifyData(messages) {
-    /**
-     * want to search for whole messages by matching the delimiter from the start of the buffer
-     */
     for (const chunk of messages) {
       try {
+        // sometimes split messages have empty string at the end
+        // just ignore it
         if (chunk !== "") {
           // will throw an error if not valid json
           const message = JSON.parse(chunk);
@@ -124,6 +123,7 @@ class Client extends EventEmitter {
           }
 
           if (!_.isObject(message)) {
+            // error out if it cant be parsed
             const error = this.sendError({
               id: null,
               code: ERR_CODES.parseError,
@@ -138,7 +138,7 @@ class Client extends EventEmitter {
           }
 
           if (message.error) {
-            // got an error back
+            // got an error back so reject the message
             const error = this.sendError({
               jsonrpc: message.jsonrpc,
               id: message.id,
@@ -202,7 +202,9 @@ class Client extends EventEmitter {
     });
   }
 
-  sendError({ jsonrpc, id, code, message }) {
+  sendError({
+    jsonrpc, id, code, message
+  }) {
     const response = {
       jsonrpc: jsonrpc || this.options.version,
       error: { code, message: message || "Unknown Error" },

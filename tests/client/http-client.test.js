@@ -1,10 +1,11 @@
 const { expect } = require("chai");
-const Jaysonic = require("../../src");
 const chai = require("chai");
 const chaiHttp = require("chai-http");
+const Jaysonic = require("../../src");
 const { serverHttp } = require("../test-server");
 
 const clienthttp = new Jaysonic.client.http({ port: 8800 });
+
 chai.use(chaiHttp);
 const httpRequest = chai.request("http://localhost:8800");
 

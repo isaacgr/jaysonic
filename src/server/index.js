@@ -5,6 +5,17 @@ const isArray = require("lodash/isArray");
 const { formatResponse } = require("../functions");
 const { ERR_CODES, ERR_MSGS } = require("../constants");
 
+/**
+ * @class Server
+ * @extends require('events').EventEmitter
+ * @param {Object} [host] host IP to connect with
+ * @param {Object} [host] host port to connect with
+ * @param {Object} [options]
+ * @param {Number} [options.version=2] JSON-RPC version to use (1|2)
+ * @param {String} [options.delimiter="\n"] delimiter to use for requests
+ * @param {Boolean} [options.exlusive=false] disallow port sharing
+ * @return {Client}
+ */
 class Server extends EventEmitter {
   constructor(options) {
     super();
@@ -29,6 +40,7 @@ class Server extends EventEmitter {
   listen() {
     return new Promise((resolve, reject) => {
       if (this.listening) {
+        // not having this caused MaxEventListeners error
         reject(Error("server already listening"));
       }
       const { host, port, exclusive } = this.options;

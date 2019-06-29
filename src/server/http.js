@@ -10,7 +10,6 @@ const { ERR_CODES, ERR_MSGS, errorToStatus } = require("../constants");
  * @param {Object} [options] optional settings for server
  * @return HTTPServer
  */
-
 class HTTPServer extends Server {
   constructor(options) {
     super(options);
@@ -36,14 +35,13 @@ class HTTPServer extends Server {
           this.messageBuffer = "";
           try {
             messages
-              .filter((messageString) => messageString !== "")
+              .filter(messageString => messageString !== "")
               .map((chunk) => {
-                const validRequest = () =>
-                  this.validateRequest(chunk)
-                    .then((result) => result)
-                    .catch((error) => {
-                      throw new Error(JSON.stringify(error));
-                    });
+                const validRequest = () => this.validateRequest(chunk)
+                  .then(result => result)
+                  .catch((error) => {
+                    throw new Error(JSON.stringify(error));
+                  });
                 return validRequest()
                   .then((message) => {
                     if (message.batch) {
@@ -138,7 +136,7 @@ class HTTPServer extends Server {
 
   clientDisconnected(cb) {
     this.on("clientDisconnected", (client) => {
-      const clientIndex = this.connectedClients.findIndex((c) => client === c);
+      const clientIndex = this.connectedClients.findIndex(c => client === c);
       if (clientIndex === -1) {
         return "unknown";
       }

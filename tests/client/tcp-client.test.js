@@ -5,8 +5,6 @@ const Jaysonic = require("../../src");
 
 const client = new Jaysonic.client.tcp({ host: "127.0.0.1", port: 8100 });
 
-// basing tests off of https://www.jsonrpc.org/specification
-
 before((done) => {
   server.listen().then(() => {
     done();
@@ -78,7 +76,6 @@ describe("TCP Client", () => {
         client.request().message("add", [1, 2]),
         client.request().message("add", [3, 4])
       ]);
-      request.catch((error) => console.log(error));
       request.then((response) => {
         expect(response).to.eql([
           { result: 3, jsonrpc: "2.0", id: 3 },

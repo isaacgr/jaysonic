@@ -7,16 +7,12 @@ const server2 = new Jaysonic.server.tcp({ host: "127.0.0.1", port: 7070 });
 const { client, socket, sock } = require("../test-client.js");
 
 server.method("add", ([a, b]) => a + b);
-
 server.method("greeting", ({ name }) => `Hello ${name}`);
-
 server.method("typeerror", ([a]) => {
   if (typeof a !== "string") {
     throw new TypeError();
   }
 });
-
-// basing tests off of https://www.jsonrpc.org/specification
 
 before((done) => {
   server.listen().then(() => {
