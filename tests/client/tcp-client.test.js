@@ -3,7 +3,11 @@ const { expect } = require("chai");
 const { server } = require("../test-server.js");
 const Jaysonic = require("../../src");
 
-const client = new Jaysonic.client.tcp({ host: "127.0.0.1", port: 8100 });
+const client = new Jaysonic.client.tcp({
+  host: "127.0.0.1",
+  port: 8100,
+  retries: 0
+});
 
 before((done) => {
   server.listen().then(() => {
@@ -29,7 +33,8 @@ describe("TCP Client", () => {
     it("should handle a connection refused error", (done) => {
       const badClient = new Jaysonic.client.tcp({
         host: "127.0.0.1",
-        port: 8101
+        port: 8101,
+        retries: 0
       });
       const connection = badClient.connect();
       connection.catch((error) => {
