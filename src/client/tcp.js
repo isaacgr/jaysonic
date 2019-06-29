@@ -115,7 +115,6 @@ class TCPClient extends Client {
         batch.forEach((message) => {
           if (message.error) {
             // reject the whole message if there are any errors
-            console.log(message);
             reject(batch);
           }
           if (message.id) {
@@ -136,7 +135,6 @@ class TCPClient extends Client {
         }
       });
       this.on("batchError", (error) => {
-        console.log(error);
         reject(error);
       });
     });

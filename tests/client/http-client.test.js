@@ -1,9 +1,12 @@
 const { expect } = require("chai");
 const Jaysonic = require("../../src");
-
+const chai = require("chai");
+const chaiHttp = require("chai-http");
 const { serverHttp } = require("../test-server");
 
 const clienthttp = new Jaysonic.client.http({ port: 8800 });
+chai.use(chaiHttp);
+const httpRequest = chai.request("http://localhost:8800");
 
 before((done) => {
   serverHttp.listen().then(() => {
@@ -85,17 +88,20 @@ describe("HTTP Client", () => {
       });
     });
     it("should receive 'invalid request' error for non empty array", (done) => {
-      const request = clienthttp.batch([1]);
-      request.catch((response) => {
-        expect(response).to.eql([
-          {
-            jsonrpc: "2.0",
-            error: { code: -32600, message: "Invalid Request" },
-            id: null
-          }
-        ]);
-        done();
-      });
+      httpRequest
+        .post("/")
+        .set("Content-Type", "application/json")
+        .send([1])
+        .end((error, response) => {
+          expect(JSON.parse(response.text)).to.be.eql([
+            {
+              jsonrpc: "2.0",
+              error: { code: -32600, message: "Invalid Request" },
+              id: null
+            }
+          ]);
+          done();
+        });
     });
   });
 });

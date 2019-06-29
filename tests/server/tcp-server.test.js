@@ -30,14 +30,14 @@ before((done) => {
   });
 });
 
-after(() => {
-  client.end().then(() => {
-    server.close();
-    server2.close();
-    socket.destroy();
-    sock.destroy();
-  });
-});
+// after(() => {
+//   client.end().then(() => {
+//     server.close();
+//     server2.close();
+//     socket.destroy();
+//     sock.destroy();
+//   });
+// });
 
 describe("TCP Server", () => {
   describe("connection", () => {
