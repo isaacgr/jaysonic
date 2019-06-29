@@ -1,4 +1,4 @@
-const { expect } = require("chai");
+const { expect, assert } = require("chai");
 
 const { server } = require("../test-server.js");
 const Jaysonic = require("../../src");
@@ -122,18 +122,21 @@ describe("TCP Client", () => {
   });
   describe("notifications", () => {
     it("should handle receiving a notification", (done) => {
-      client.subscribe("notification", (message) => {
-        expect(message).to.eql({
-          jsonrpc: "2.0",
-          method: "notification",
-          params: []
-        });
+      client.subscribe("notification", (error, message) => {
+        if (error) {
+          return done(error);
+        }
+        expect(message).to.be.eql(
+          {
+            jsonrpc: "2.0",
+            method: "notification",
+            result: []
+          },
+          message
+        );
         done();
       });
-      server.notify({
-        method: "notification",
-        params: []
-      });
+      server.notify("notification", []);
     });
   });
 });

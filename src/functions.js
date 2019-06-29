@@ -37,8 +37,7 @@ const formatRequest = ({ method, params, id, options }) => {
   return messageString;
 };
 
-const formatResponse = (message, result) => {
-  const { jsonrpc, id } = message;
+const formatResponse = ({ jsonrpc, id, method, result }) => {
   const response = {};
 
   response.result = result;
@@ -54,6 +53,10 @@ const formatResponse = (message, result) => {
   // could be notification
   if (id) {
     response.id = id;
+  }
+
+  if (method && !id) {
+    response.method = method;
   }
 
   return JSON.stringify(response);

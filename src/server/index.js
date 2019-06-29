@@ -82,9 +82,13 @@ class Server extends EventEmitter {
   }
 
   onNotify(method, cb) {
-    this.on("notify", (json) => {
-      if (json.method === method) {
-        cb(json);
+    this.on("notify", (message) => {
+      try {
+        if (message.method === method) {
+          return cb(undefined, message);
+        }
+      } catch (e) {
+        return cb(e);
       }
     });
   }
@@ -97,11 +101,15 @@ class Server extends EventEmitter {
     return new Promise((resolve, reject) => {
       try {
         const requests = batch;
-        const batchRequests = requests.map(request => this.validateRequest(request)
-          .then(message => this.getResult(message.json)
-            .then(result => JSON.parse(result))
-            .catch(error => error))
-          .catch(error => error));
+        const batchRequests = requests.map((request) =>
+          this.validateRequest(request)
+            .then((message) =>
+              this.getResult(message.json)
+                .then((result) => JSON.parse(result))
+                .catch((error) => error)
+            )
+            .catch((error) => error)
+        );
         Promise.all(batchRequests)
           .then((result) => {
             resolve(result);
@@ -216,7 +224,7 @@ class Server extends EventEmitter {
     return new Promise((resolve, reject) => {
       try {
         const result = this.methods[message.method](params);
-        resolve(formatResponse(message, result));
+        resolve(formatResponse({ ...message, result }));
       } catch (e) {
         let error = this.sendError(message.id, ERR_CODES.internal);
         if (e instanceof TypeError) {

@@ -17,7 +17,7 @@ class TCPClient extends Client {
     return new Promise((resolve, reject) => {
       if (this.attached) {
         // not having this caused MaxEventListeners error
-        reject(Error("client already connected"));
+        return reject(Error("client already connected"));
       }
       this.client = new net.Socket();
       this.client.connect(this.server);
@@ -142,8 +142,12 @@ class TCPClient extends Client {
    */
   subscribe(method, cb) {
     this.on("notify", (message) => {
-      if (message.method === method) {
-        cb(message);
+      try {
+        if (message.method === method) {
+          return cb(undefined, message);
+        }
+      } catch (e) {
+        return cb(e);
       }
     });
   }

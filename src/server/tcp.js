@@ -107,9 +107,8 @@ class TCPServer extends Server {
   }
 
   // only available for TCP server
-  notify(notification) {
-    const { method, params } = notification;
-    const response = formatResponse({ jsonrpc: "2.0" }, { method, params });
+  notify(method, result) {
+    const response = formatResponse({ jsonrpc: "2.0", method, result });
     try {
       this.connectedClients.forEach((client) => {
         client.write(response + this.options.delimiter);
