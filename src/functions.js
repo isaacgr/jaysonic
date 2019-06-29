@@ -37,10 +37,14 @@ const formatRequest = ({ method, params, id, options }) => {
   return messageString;
 };
 
-const formatResponse = ({ jsonrpc, id, method, result }) => {
+const formatResponse = ({ jsonrpc, id, method, result, params }) => {
   const response = {};
 
   response.result = result;
+
+  if (params) {
+    response.params = params;
+  }
 
   if (!jsonrpc) {
     // 1.0 response
@@ -50,11 +54,11 @@ const formatResponse = ({ jsonrpc, id, method, result }) => {
     response.jsonrpc = "2.0";
   }
 
-  // could be notification
   if (id) {
     response.id = id;
   }
 
+  // could be notification
   if (method && !id) {
     response.method = method;
   }

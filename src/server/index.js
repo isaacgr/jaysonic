@@ -224,7 +224,12 @@ class Server extends EventEmitter {
     return new Promise((resolve, reject) => {
       try {
         const result = this.methods[message.method](params);
-        resolve(formatResponse({ ...message, result }));
+        const response = formatResponse({
+          jsonrpc: "2.0",
+          id: message.id,
+          result
+        });
+        resolve(response);
       } catch (e) {
         let error = this.sendError(message.id, ERR_CODES.internal);
         if (e instanceof TypeError) {
