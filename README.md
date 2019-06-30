@@ -192,10 +192,7 @@ client.subscribe("notification", (error, message) => {
   console.log(message);
   // {jsonrpc: "2.0", method: "notification", params: []}
 });
-server.notify({
-  method: "notification",
-  params: []
-});
+server.notify("notification", []);
 ```
 
 ##### Batch Requests
