@@ -2,6 +2,20 @@
   "name": "jaysonic",
   "version": "1.0.1",
   "description": "A persistent jsonrpc client and server",
+  "keywords": [
+    "jsonrpc",
+    "json-rpc",
+    "rpc",
+    "json",
+    "jsonrpc-2.0",
+    "jsonrpc-1.0",
+    "middleware",
+    "connect",
+    "http",
+    "tcp",
+    "api",
+    "library"
+  ],
   "main": "index.js",
   "scripts": {
     "test": "mocha tests/**/*test.js --exit",
