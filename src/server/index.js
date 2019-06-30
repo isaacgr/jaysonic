@@ -221,7 +221,7 @@ class Server extends EventEmitter {
       try {
         const result = this.methods[message.method](params);
         const response = formatResponse({
-          jsonrpc: "2.0",
+          jsonrpc: message.jsonrpc,
           id: message.id,
           result
         });
