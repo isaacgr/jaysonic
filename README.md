@@ -1,3 +1,35 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [Jaysonic - A persistent JSON-RPC client and server](#jaysonic---a-persistent-json-rpc-client-and-server)
+    - [List of features](#list-of-features)
+    - [Download & Installation](#download--installation)
+    - [Initialization](#initialization)
+    - [Options](#options)
+    - [Code Demos](#code-demos)
+          - [TCP](#tcp)
+          - [HTTP](#http)
+      - [Server side](#server-side)
+        - [Listening](#listening)
+        - [Closing the connection](#closing-the-connection)
+        - [Adding Methods](#adding-methods)
+        - [Listening for client connections](#listening-for-client-connections)
+      - [Client Side](#client-side)
+        - [Connecting](#connecting)
+        - [Listening for server disconnect](#listening-for-server-disconnect)
+        - [Making requests](#making-requests)
+        - [Subscriptions](#subscriptions)
+        - [Batch Requests](#batch-requests)
+        - [HTTP Client Requests](#http-client-requests)
+        - [Notifications](#notifications)
+        - [HTTP Client Notifications](#http-client-notifications)
+    - [Contributing](#contributing)
+    - [Authors or Acknowledgments](#authors-or-acknowledgments)
+    - [License](#license)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 ![](logo.png)
 
 # Jaysonic - A persistent JSON-RPC client and server
