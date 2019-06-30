@@ -50,7 +50,7 @@ const formatResponse = ({
     response.params = params;
   }
 
-  if (!jsonrpc) {
+  if (!jsonrpc || jsonrpc === 1) {
     // 1.0 response
     response.error = null;
   } else {
@@ -66,7 +66,6 @@ const formatResponse = ({
   if (method && !id) {
     response.method = method;
   }
-
   return JSON.stringify(response);
 };
 
