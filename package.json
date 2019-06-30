@@ -2,6 +2,10 @@
   "name": "jaysonic",
   "version": "1.0.3",
   "description": "A persistent jsonrpc client and server",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/isaacgr/jaysonic"
+  },
   "keywords": [
     "jsonrpc",
     "json-rpc",
