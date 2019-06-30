@@ -122,6 +122,19 @@ server
   });
 ```
 
+##### Closing the connection
+
+```js
+server
+  .close()
+  .then(() => {
+    // do something
+  })
+  .catch((error) => {
+    // error when trying to close the connection
+  });
+```
+
 ##### Adding Methods
 
 ```js
@@ -131,6 +144,20 @@ server.method("add", ([a, b]) => a + b);
 const add = ([a, b]) => a + b;
 
 server.method("add", add);
+```
+
+##### Listening for client connections
+
+The `clientConnected` and `clientDisconnected` methods return the host and port of the client in the callback.
+
+```js
+server.clientConnected(({ host, port }) => {
+  console.log("client connected");
+});
+
+server.clientDisconnected(({ host, port }) => {
+  console.log("client disconnected");
+});
 ```
 
 > The same syntax is used for the HTTP server
@@ -151,6 +178,16 @@ client
   .catch((error) => {
     console.log(`Client unable to connect, ${error}`);
   });
+```
+
+##### Listening for server disconnect
+
+The `serverDisconnected` method fires a callback when the server is disconnected.
+
+```js
+client.serverDisconnected(() => {
+  // do something
+});
 ```
 
 ##### Making requests
