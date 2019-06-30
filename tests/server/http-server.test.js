@@ -5,11 +5,13 @@ const chaiHttp = require("chai-http");
 const Jayson = require("../../src");
 
 const server = new Jayson.server.http({ port: 8000 });
+const serverV1 = new Jayson.server.http({ port: 8400, version: 1 });
 const { clienthttp } = require("../test-client");
 
 chai.use(chaiHttp);
 
 const httpRequest = chai.request("http://localhost:8000");
+const httpRequestV1 = chai.request("http://localhost:8400");
 
 server.method("add", ([a, b]) => a + b);
 
@@ -22,6 +24,12 @@ server.method("typeerror", ([a]) => {
 });
 
 server.onNotify("notify", () => "notified");
+
+before((done) => {
+  serverV1.listen().then(() => {
+    done();
+  });
+});
 
 describe("HTTP Server", () => {
   describe("connection", () => {
@@ -123,6 +131,47 @@ describe("HTTP Server", () => {
             jsonrpc: "2.0",
             error: { code: -32600, message: "Invalid Request" },
             id: 69
+          });
+          done();
+        });
+    });
+  });
+  describe("v1.0 responses", () => {
+    it("should provide a v1.0 response to a 1.0 request", (done) => {
+      httpRequest
+        .post("/")
+        .set("Content-Type", "application/json")
+        .send({
+          method: "add",
+          params: [1, 2],
+          id: 80
+        })
+        .end((error, response) => {
+          expect(JSON.parse(response.text)).to.be.eql({
+            result: 3,
+            error: null,
+            id: 80
+          });
+          done();
+        });
+    });
+    it("should provide a v1.0 error response to a 1.0 request", (done) => {
+      httpRequestV1
+        .post("/")
+        .set("Content-Type", "application/json")
+        .send({
+          method: "add",
+          params: {},
+          id: 1
+        })
+        .end((error, response) => {
+          expect(JSON.parse(response.text)).to.be.eql({
+            result: null,
+            error: {
+              code: -32601,
+              message: "Method not found"
+            },
+            id: 1
           });
           done();
         });

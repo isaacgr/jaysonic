@@ -1,6 +1,6 @@
 const { expect } = require("chai");
 
-const { server } = require("../test-server.js");
+const { server, serverV1 } = require("../test-server.js");
 const Jaysonic = require("../../src");
 
 const client = new Jaysonic.client.tcp({
@@ -9,9 +9,19 @@ const client = new Jaysonic.client.tcp({
   retries: 0
 });
 
+const clientV1 = new Jaysonic.client.tcp({
+  host: "127.0.0.1",
+  port: 8600,
+  retries: 0,
+  version: 1
+});
+
 before((done) => {
   server.listen().then(() => {
-    done();
+    serverV1.listen().then(() => {
+      clientV1.connect();
+      done();
+    });
   });
 });
 
@@ -139,6 +149,30 @@ describe("TCP Client", () => {
         done();
       });
       server.notify("notification", []);
+    });
+  });
+  describe("v1.0 requests", () => {
+    it("should receive response for v1.0 request", (done) => {
+      const request = clientV1.request().send("add", [1, 2]);
+      request.then((response) => {
+        expect(response).to.eql({
+          result: 3,
+          error: null,
+          id: 1
+        });
+        done();
+      });
+    });
+    it("should receive error for v1.0 request", (done) => {
+      const request = clientV1.request().send("test", [1, 2]);
+      request.catch((response) => {
+        expect(response).to.eql({
+          result: null,
+          error: { code: -32601, message: "Method not found" },
+          id: 2
+        });
+        done();
+      });
     });
   });
 });
