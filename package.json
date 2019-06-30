@@ -1,6 +1,6 @@
 {
   "name": "jaysonic",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A persistent jsonrpc client and server",
   "keywords": [
     "jsonrpc",
