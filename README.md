@@ -1,6 +1,6 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
 
 - [Jaysonic - A persistent JSON-RPC client and server](#jaysonic---a-persistent-json-rpc-client-and-server)
     - [List of features](#list-of-features)
@@ -178,9 +178,11 @@ const add = ([a, b]) => a + b;
 server.method("add", add);
 ```
 
+_Note: The same syntax for all the above methods is used for the HTTP server_
+
 ##### Listening for client connections
 
-The `clientConnected` and `clientDisconnected` methods return the host and port of the client in the callback.
+The `clientConnected` and `clientDisconnected` methods return the host and port of the client in the callback. These methods are not available for the HTTP server.
 
 ```js
 server.clientConnected(({ host, port }) => {
@@ -191,8 +193,6 @@ server.clientDisconnected(({ host, port }) => {
   console.log("client disconnected");
 });
 ```
-
-> The same syntax is used for the HTTP server
 
 #### Client Side
 
