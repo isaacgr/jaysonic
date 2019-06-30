@@ -206,11 +206,20 @@ class Client extends EventEmitter {
   sendError({
     jsonrpc, id, code, message
   }) {
-    const response = {
-      jsonrpc: jsonrpc || this.options.version,
-      error: { code, message: message || "Unknown Error" },
-      id
-    };
+    let response;
+    if (this.options.version === "2.0") {
+      response = {
+        jsonrpc: jsonrpc || this.options.version,
+        error: { code, message: message || "Unknown Error" },
+        id
+      };
+    } else {
+      response = {
+        result: null,
+        error: { code, message: message || "Unknown Error" },
+        id
+      };
+    }
     return response;
   }
 }
