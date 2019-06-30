@@ -8,7 +8,7 @@
     "lint": "./node_modules/eslint/bin/eslint.js .",
     "lint-fix": "./node_modules/eslint/bin/eslint.js --fix .",
     "build": "./node_modules/.bin/babel src --out-dir lib",
-    "prepare": "npm run lint && npm run build"
+    "prepare": "npm run lint-fix && npm run build"
   },
   "author": "Isaac Rowell",
   "license": "ISC",
