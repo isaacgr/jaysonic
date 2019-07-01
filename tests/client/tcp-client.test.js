@@ -1,6 +1,7 @@
 const { expect } = require("chai");
-
 const { server, serverV1 } = require("../test-server.js");
+const data = require("../large-data.json");
+
 const Jaysonic = require("../../src");
 
 const client = new Jaysonic.client.tcp({
@@ -130,6 +131,17 @@ describe("TCP Client", () => {
           jsonrpc: "2.0",
           error: { code: -32602, message: "Invalid Parameters" },
           id: 6
+        });
+        done();
+      });
+    });
+    it("should retreive large dataset", (done) => {
+      const request = client.request().send("large.data", []);
+      request.then((result) => {
+        expect(result).to.eql({
+          jsonrpc: "2.0",
+          result: data,
+          id: 7
         });
         done();
       });
