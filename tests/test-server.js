@@ -21,6 +21,7 @@ server.method("typeerror", ([a]) => {
   }
 });
 server.method("large.data", () => data);
+serverHttp.method("large.data", () => data);
 
 serverHttp.method("add", ([a, b]) => a + b);
 serverHttp.method("greeting", ({ name }) => `Hello ${name}`);

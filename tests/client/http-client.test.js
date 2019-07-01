@@ -2,6 +2,7 @@ const { expect } = require("chai");
 const chai = require("chai");
 const chaiHttp = require("chai-http");
 const Jaysonic = require("../../src");
+const data = require("../large-data.json");
 const { serverHttp } = require("../test-server");
 
 const clienthttp = new Jaysonic.client.http({ port: 8800 });
@@ -16,7 +17,6 @@ before((done) => {
 });
 
 describe("HTTP Client", () => {
-  describe("connection", () => {});
   describe("requests", () => {
     it("should get a response for positional params", (done) => {
       const request = clienthttp.request().send("add", [1, 2]);
@@ -85,6 +85,17 @@ describe("HTTP Client", () => {
           { result: 3, jsonrpc: "2.0", id: 5 },
           { result: 7, jsonrpc: "2.0", id: 6 }
         ]);
+        done();
+      });
+    });
+    it("should get a response for large dataset", (done) => {
+      const request = clienthttp.request().send("large.data", []);
+      request.then((response) => {
+        expect(response.body).to.be.eql({
+          result: data,
+          jsonrpc: "2.0",
+          id: 7
+        });
         done();
       });
     });
