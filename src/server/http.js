@@ -47,7 +47,7 @@ class HTTPServer extends Server {
                     if (message.batch) {
                       this.setResponseHeader({ response });
                       return response.write(
-                        JSON.stringify(message.batch),
+                        JSON.stringify(message.batch) + this.options.delimiter,
                         () => {
                           response.end();
                         }
@@ -60,18 +60,24 @@ class HTTPServer extends Server {
                     this.getResult(message.json)
                       .then((json) => {
                         this.setResponseHeader({ response });
-                        return response.write(json, () => {
-                          response.end();
-                        });
+                        return response.write(
+                          json + this.options.delimiter,
+                          () => {
+                            response.end();
+                          }
+                        );
                       })
                       .catch((error) => {
                         this.setResponseHeader({
                           response,
                           errorCode: error.error.code
                         });
-                        return response.write(JSON.stringify(error), () => {
-                          response.end();
-                        });
+                        return response.write(
+                          JSON.stringify(error) + this.options.delimiter,
+                          () => {
+                            response.end();
+                          }
+                        );
                       });
                   })
                   .catch((error) => {
@@ -79,9 +85,12 @@ class HTTPServer extends Server {
                       response,
                       errorCode: JSON.parse(error.message).error.code
                     });
-                    response.write(error.message, () => {
-                      response.end();
-                    });
+                    response.write(
+                      error.message + this.options.delimiter,
+                      () => {
+                        response.end();
+                      }
+                    );
                   });
               });
           } catch (e) {

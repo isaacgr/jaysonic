@@ -171,8 +171,12 @@ class Client extends EventEmitter {
     this.writer.on("data", (data) => {
       this.messageBuffer += data;
       const messages = this.messageBuffer.split(this.options.delimiter);
-      this.messageBuffer = "";
-      this.verifyData(messages);
+      if (messages.length > 1) {
+        // otherwise messages are still coming in and request
+        // possibly hasnt finished
+        this.messageBuffer = "";
+        this.verifyData(messages);
+      }
     });
     this.writer.on("end", () => {
       this.attached = false;
