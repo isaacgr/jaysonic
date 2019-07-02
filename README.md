@@ -242,7 +242,7 @@ const add = () => {
     .send("add", [1, 2])
     .then((result) => {
       console.log(result);
-      // 3
+      // {jsonrpc: "2.0", result: 3, id: 1}
     })
     .catch((error) => {
       console.log(error);
@@ -285,8 +285,8 @@ const add = () =>
     ])
     .then((result) => {
       // [
-      //   {jsonrpc: "2.0", method: "add", result: 3, id: 1},
-      //   {jsonrpc: "2.0", method: "add", result: 7, id: 1}
+      //   {jsonrpc: "2.0", result: 3, id: 1},
+      //   {jsonrpc: "2.0", result: 7, id: 2}
       // ]
     })
     .catch((error) => {
