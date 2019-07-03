@@ -157,9 +157,7 @@ class HTTPClient extends Client {
         }
         for (const ids of Object.keys(this.pendingBatches)) {
           if (
-            _.isEmpty(
-              _.difference(JSON.parse(`[${ids}]`), batchResponseIds)
-            )
+            _.isEmpty(_.difference(JSON.parse(`[${ids}]`), batchResponseIds))
           ) {
             this.pendingBatches[ids].resolve(batch);
           }
