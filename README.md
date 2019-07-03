@@ -87,7 +87,7 @@ The HTTP client supports additional options for the HTTP request.
 
 `method`: The method to make the request with. Default is `POST`.
 `path`: The path to send the request to. Default is `/`.
-`encoding`: How to encode the HTTP request. Will facto into content-length calculation. Default is `utf-8`.
+`encoding`: How to encode the HTTP request. Will factor into content-length calculation. Default is `utf-8`.
 `headers`: Headers to include in the request. Defaults provided by the spec are:
 
 - `"Content-Length"`
@@ -297,11 +297,13 @@ const add = () =>
 
 The same syntax is used for the HTTP client
 
+##### HTTP Client Requests
+
 The HTTP Client will include additional information about the response, as per nodes `http.IncomingMessage` method. See more [here](https://nodejs.org/api/http.html#http_class_http_incomingmessage).
 
-The HTTP client response is an object with a `body` property, which contains the json response from the server, as well as the `http.IncomingMessage` instance. Which contains things like the header and statusCode. All methods can be found [here](https://www.w3schools.com/nodejs/obj_http_incomingmessage.asp).
+The HTTP client response and error are objects with a `body` property, which contains the json response from the server, as well as the `http.IncomingMessage` instance. Which contains things like the header and statusCode. All methods can be found [here](https://www.w3schools.com/nodejs/obj_http_incomingmessage.asp).
 
-##### HTTP Client Requests
+Additionally, the `error` object contains a `response` property that provides the body of the erroneous response.
 
 ```js
 client
