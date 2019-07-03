@@ -87,12 +87,13 @@ The HTTP client supports additional options for the HTTP request.
 
 `method`: The method to make the request with. Default is `POST`.
 `path`: The path to send the request to. Default is `/`.
+`encoding`: How to encode the HTTP request. Will facto into content-length calculation. Default is `utf-8`.
 `headers`: Headers to include in the request. Defaults provided by the spec are:
 
 - `"Content-Length"`
   - calculated by request message, this is not configurable
 - `"Content-Type"`
-  - defaults to `"application/json; charset=utf-8"`
+  - defaults to `"application/json`
 - `Accept`
   - defaults to `"application/json"`
 
