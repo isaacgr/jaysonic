@@ -1,14 +1,15 @@
 const { expect } = require("chai");
-const chai = require("chai");
-const chaiHttp = require("chai-http");
 const Jaysonic = require("../../src");
 const data = require("../large-data.json");
 const { serverHttp } = require("../test-server");
 
 const clienthttp = new Jaysonic.client.http({ port: 8800 });
-
-chai.use(chaiHttp);
-const httpRequest = chai.request("http://localhost:8800");
+const httpbinclient = new Jaysonic.client.http({
+  host: "httpbin.org",
+  method: "GET",
+  path: "/headers",
+  port: 80
+});
 
 before((done) => {
   serverHttp.listen().then(() => {
@@ -99,21 +100,25 @@ describe("HTTP Client", () => {
         done();
       });
     });
-    it("should receive 'invalid request' error for non empty array", (done) => {
-      httpRequest
-        .post("/")
-        .set("Content-Type", "application/json")
-        .send([1])
-        .end((error, response) => {
-          expect(JSON.parse(response.text)).to.be.eql([
-            {
-              jsonrpc: "2.0",
-              error: { code: -32600, message: "Invalid Request" },
-              id: null
-            }
-          ]);
-          done();
+  });
+  describe("headers", () => {
+    it("should send headers with content length", (done) => {
+      const request = httpbinclient.request().send("add", [1, 2]);
+      const length = Buffer.byteLength(
+        httpbinclient.request().message("add", [1, 2]),
+        httpbinclient.options.encoding
+      );
+      request.catch((error) => {
+        expect(error.body).to.be.eql({
+          jsonrpc: "2.0",
+          error: { code: -32700, message: "Parse Error" },
+          id: 1
         });
+        expect(error.response.headers).to.include({
+          "Content-Length": String(length)
+        });
+        done();
+      });
     });
   });
 });
