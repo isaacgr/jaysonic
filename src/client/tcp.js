@@ -69,7 +69,7 @@ class TCPClient extends Client {
         } catch (e) {
           if (e instanceof TypeError) {
             // this.client is probably undefined
-            reject(new Error(`Unable to send request. Error: ${e.message}`));
+            reject(new Error(`Unable to send request. ${e.message}`));
           }
         }
         setTimeout(() => {
@@ -98,7 +98,7 @@ class TCPClient extends Client {
           } catch (e) {
             if (e instanceof TypeError) {
               // this.client is probably undefined
-              reject(new Error(`Unable to send request. Error: ${e.message}`));
+              reject(new Error(`Unable to send request. ${e.message}`));
             }
           }
         });
@@ -132,7 +132,7 @@ class TCPClient extends Client {
       } catch (e) {
         if (e instanceof TypeError) {
           // this.client is probably undefined
-          reject(new Error(`Unable to send request. Error: ${e.message}`));
+          reject(new Error(`Unable to send request. ${e.message}`));
         }
       }
       this.on("batchResponse", (batch) => {
