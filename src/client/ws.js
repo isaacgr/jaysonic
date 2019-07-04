@@ -40,10 +40,11 @@ class WSClient {
 
   initClient() {
     const { url, protocols } = this.options;
-    this.client = new WebSocket(url, protocols);
+    this.client = new WebSocket(url);
     this.listen();
-    this.handleResponse();
-    this.handleError();
+    this.client.onerror = (error) => {
+      throw new Error(error);
+    };
   }
 
   onConnection() {
@@ -72,10 +73,7 @@ class WSClient {
         new Promise((resolve, reject) => {
           const requestId = this.message_id;
           this.pendingCalls[requestId] = { resolve, reject };
-          this.client.send(
-            this.request().message(method, params),
-            this.options.protocols
-          );
+          this.client.send(this.request().message(method, params));
           setTimeout(() => {
             if (this.pendingCalls[requestId]) {
               const error = this.sendError({
@@ -110,16 +108,7 @@ class WSClient {
       const message = JSON.parse(chunk);
       if (_.isArray(message)) {
         // possible batch request
-        try {
-          this.handleBatchResponse(message);
-        } catch (e) {
-          const error = this.sendError({
-            id: this.serving_message_id,
-            code: ERR_CODES.parseError,
-            message: ERR_MSGS.parseError
-          });
-          this.handleBatchError(error);
-        }
+        this.handleBatchResponse(message);
       }
 
       if (!_.isObject(message)) {
@@ -129,7 +118,7 @@ class WSClient {
           code: ERR_CODES.parseError,
           message: ERR_MSGS.parseError
         });
-        throw new Error(error);
+        this.handleError(error);
       }
 
       if (!message.id) {
@@ -145,7 +134,7 @@ class WSClient {
           code: message.error.code,
           message: message.error.message
         });
-        throw new Error(error);
+        this.handleError(error);
       }
 
       // no method, so assume response
@@ -160,7 +149,58 @@ class WSClient {
         code: ERR_CODES.parseError,
         message: ERR_MSGS.parseError
       });
-      throw new Error(error);
+      this.handleError(error);
+    }
+  }
+
+  batch(requests) {
+    /**
+     * should receive a list of request objects
+     * [client.request.message(), client.request.message()]
+     * send a single request with that, server should handle it
+     *
+     * We want to store the IDs for the requests in the batch in an array
+     * Use this to reference the batch response
+     * The spec has no explaination on how to do that, so this is the solution
+     */
+
+    return new Promise((resolve, reject) => {
+      const batchIds = [];
+      for (const request of requests) {
+        const json = JSON.parse(request);
+        if (json.id) {
+          batchIds.push(json.id);
+        }
+      }
+      this.pendingBatches[String(batchIds)] = { resolve, reject };
+
+      const request = JSON.stringify(requests);
+      this.client.write(request + this.options.delimiter);
+    });
+  }
+
+  handleBatchResponse(batch) {
+    try {
+      const batchResponseIds = [];
+      batch.forEach((message) => {
+        if (message.error) {
+          // reject the whole message if there are any errors
+          reject(batch);
+        }
+        if (message.id) {
+          batchResponseIds.push(message.id);
+        }
+      });
+      if (_.isEmpty(batchResponseIds)) {
+        resolve([]);
+      }
+      for (const ids of Object.keys(this.pendingBatches)) {
+        if (_.isEmpty(_.difference(JSON.parse(`[${ids}]`), batchResponseIds))) {
+          this.pendingBatches[ids].resolve(batch);
+        }
+      }
+    } catch (e) {
+      reject(batch);
     }
   }
 
@@ -170,12 +210,35 @@ class WSClient {
     };
   }
 
-  handleResponse() {}
+  handleResponse(message) {
+    if (!(this.pendingCalls[message.id] === undefined)) {
+      let response = this.responseQueue[message.id];
+      this.pendingCalls[message.id].resolve(response);
+      delete this.responseQueue[message.id];
+    }
+  }
 
-  handleError() {
-    this.client.onerror = (error) => {
-      console.log(error);
-    };
+  handleError(error) {
+    let response = error;
+    this.pendingCalls[error.id].reject(response);
+  }
+
+  sendError({ jsonrpc, id, code, message }) {
+    let response;
+    if (this.options.version === "2.0") {
+      response = {
+        jsonrpc: jsonrpc || this.options.version,
+        error: { code, message: message || "Unknown Error" },
+        id
+      };
+    } else {
+      response = {
+        result: null,
+        error: { code, message: message || "Unknown Error" },
+        id
+      };
+    }
+    return response;
   }
 }
 
