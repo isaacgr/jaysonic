@@ -134,6 +134,18 @@ class Client extends EventEmitter {
           }
 
           if (!message.id) {
+            // special case http response
+            // may want to still know the body
+            // this is not in spec at all
+            if (this.writer instanceof http.IncomingMessage) {
+              const error = this.sendError({
+                id: this.serving_message_id,
+                code: ERR_CODES.parseError,
+                message: ERR_MSGS.parseError
+              });
+              this.writer.response = message;
+              this.emit("messageError", error);
+            }
             // no id, so assume notification
             this.emit("notify", message);
           }
@@ -170,22 +182,27 @@ class Client extends EventEmitter {
   listen() {
     this.writer.on("data", (data) => {
       this.messageBuffer += data;
-      const messages = this.messageBuffer.split(this.options.delimiter);
-      if (messages.length > 1) {
-        // otherwise messages are still coming in and request
-        // possibly hasnt finished
-        this.messageBuffer = "";
-        this.verifyData(messages);
+      if (this.writer instanceof http.IncomingMessage) {
+        this.writer.on("end", () => {
+          // only expect one response per request for http
+          const messages = this.messageBuffer;
+          this.messageBuffer = "";
+          this.verifyData(Array(messages));
+        });
+      } else {
+        const messages = this.messageBuffer.split(this.options.delimiter);
+        if (messages.length > 1) {
+          // otherwise messages are still coming in and request
+          // possibly hasnt finished
+          this.messageBuffer = "";
+          this.verifyData(messages);
+        }
       }
-    });
-    this.writer.on("end", () => {
-      this.attached = false;
-      this.client.removeAllListeners();
-      this.emit("serverDisconnected");
     });
     this.client.on("close", () => {
       this.attached = false;
       this.client.removeAllListeners();
+      this.emit("serverDisconnected");
     });
   }
 

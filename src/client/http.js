@@ -17,12 +17,16 @@ class HTTPClient extends Client {
     super(server, options);
 
     // the content length will be calculated on a per request basis
+    // according to the node http docs:
+    // the encoding argument is optional and only applies when chunk is a string.
+    // Defaults to 'utf8'.
     const defaults = {
       host: this.server.host,
       port: this.server.port || 80,
+      encoding: "utf-8",
       method: "POST",
       headers: {
-        "Content-Type": "application/json; charset=utf-8",
+        "Content-Type": "application/json",
         Accept: "application/json"
       },
       path: "/"
@@ -59,10 +63,10 @@ class HTTPClient extends Client {
         const request = this.request().message(method, params);
         this.options.headers["Content-Length"] = Buffer.byteLength(
           request,
-          "utf-8"
+          this.options.encoding
         );
         this.initClient();
-        this.client.write(request);
+        this.client.write(request, this.options.encoding);
         this.client.end();
         setTimeout(() => {
           if (this.pendingCalls[requestId]) {
@@ -92,7 +96,7 @@ class HTTPClient extends Client {
         return new Promise((resolve, reject) => {
           this.options.headers["Content-Length"] = Buffer.byteLength(
             request,
-            "utf-8"
+            this.options.encoding
           );
           const notification = http.request(this.options, (response) => {
             if (response.statusCode === 204) {
@@ -101,7 +105,7 @@ class HTTPClient extends Client {
               reject(new Error("no response receieved for notification"));
             }
           });
-          notification.write(request);
+          notification.write(request, this.options.encoding);
           notification.end();
         });
       }
@@ -132,10 +136,10 @@ class HTTPClient extends Client {
       const request = JSON.stringify(requests);
       this.options.headers["Content-Length"] = Buffer.byteLength(
         request,
-        "utf-8"
+        this.options.encoding
       );
       this.initClient();
-      this.client.write(request);
+      this.client.write(request, this.options.encoding);
       this.client.end();
       this.on("batchResponse", (batch) => {
         const batchResponseIds = [];
@@ -153,9 +157,7 @@ class HTTPClient extends Client {
         }
         for (const ids of Object.keys(this.pendingBatches)) {
           if (
-            _.isEmpty(
-              _.difference(JSON.parse(`[${ids}]`), batchResponseIds)
-            )
+            _.isEmpty(_.difference(JSON.parse(`[${ids}]`), batchResponseIds))
           ) {
             this.pendingBatches[ids].resolve(batch);
           }
