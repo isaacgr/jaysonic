@@ -68,6 +68,9 @@ class HTTPClient extends Client {
         this.initClient();
         this.client.write(request, this.options.encoding);
         this.client.end();
+        this.client.on("error", (error) => {
+          reject(error);
+        });
         setTimeout(() => {
           if (this.pendingCalls[requestId]) {
             const error = this.sendError({
@@ -107,6 +110,9 @@ class HTTPClient extends Client {
           });
           notification.write(request, this.options.encoding);
           notification.end();
+          notification.on("error", (error) => {
+            reject(error);
+          });
         });
       }
     };
@@ -141,6 +147,9 @@ class HTTPClient extends Client {
       this.initClient();
       this.client.write(request, this.options.encoding);
       this.client.end();
+      this.client.on("error", (error) => {
+        reject(error);
+      });
       this.on("batchResponse", (batch) => {
         const batchResponseIds = [];
         batch.forEach((message) => {
