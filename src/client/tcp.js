@@ -64,7 +64,14 @@ class TCPClient extends Client {
       send: (method, params) => new Promise((resolve, reject) => {
         const requestId = this.message_id;
         this.pendingCalls[requestId] = { resolve, reject };
-        this.client.write(this.request().message(method, params));
+        try {
+          this.client.write(this.request().message(method, params));
+        } catch (e) {
+          if (e instanceof TypeError) {
+            // this.client is probably undefined
+            reject(new Error(`Unable to send request. ${e.message}`));
+          }
+        }
         setTimeout(() => {
           if (this.pendingCalls[requestId]) {
             const error = this.sendError({
@@ -84,12 +91,16 @@ class TCPClient extends Client {
           options: this.options
         });
         return new Promise((resolve, reject) => {
-          this.client.write(request, () => {
-            resolve("notification sent");
-          });
-          this.client.on("error", (error) => {
-            reject(error);
-          });
+          try {
+            this.client.write(request, () => {
+              resolve("notification sent");
+            });
+          } catch (e) {
+            if (e instanceof TypeError) {
+              // this.client is probably undefined
+              reject(new Error(`Unable to send request. ${e.message}`));
+            }
+          }
         });
       }
     };
@@ -115,9 +126,15 @@ class TCPClient extends Client {
         }
       }
       this.pendingBatches[String(batchIds)] = { resolve, reject };
-
       const request = JSON.stringify(requests);
-      this.client.write(request + this.options.delimiter);
+      try {
+        this.client.write(request + this.options.delimiter);
+      } catch (e) {
+        if (e instanceof TypeError) {
+          // this.client is probably undefined
+          reject(new Error(`Unable to send request. ${e.message}`));
+        }
+      }
       this.on("batchResponse", (batch) => {
         const batchResponseIds = [];
         batch.forEach((message) => {
