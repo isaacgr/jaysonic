@@ -13,7 +13,6 @@ class WSClient extends EventTarget {
       url: "wss://www.example.com/socketserver",
       version: "2.0",
       delimiter: "\n",
-      path: "/",
       timeout: 30,
       retries: 2
     };
