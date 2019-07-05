@@ -34,6 +34,8 @@ class WSClient extends EventTarget {
     this.responseQueue = {};
     this.options = _.merge(defaults, options || {});
     this.options.timeout = this.options.timeout * 1000;
+    let { retries } = this.options;
+    this.remainingRetries = retries;
 
     this.initClient();
   }
@@ -41,9 +43,26 @@ class WSClient extends EventTarget {
   initClient() {
     const { url, protocols } = this.options;
     this.client = new WebSocket(url);
+    this.close();
     this.listen();
     this.client.onerror = (error) => {
-      throw new Error(error);
+      this.client.close();
+    };
+  }
+
+  close() {
+    this.client.onclose = (e) => {
+      if (this.remainingRetries) {
+        this.remainingRetries -= 1;
+        console.log(
+          `Connection failed. ${this.remainingRetries} attempts left.`
+        );
+        setTimeout(() => {
+          this.initClient();
+        }, this.options.timeout);
+      } else {
+        return;
+      }
     };
   }
 
@@ -68,7 +87,6 @@ class WSClient extends EventTarget {
         this.message_id += 1;
         return request;
       },
-
       send: (method, params) =>
         new Promise((resolve, reject) => {
           const requestId = this.message_id;
