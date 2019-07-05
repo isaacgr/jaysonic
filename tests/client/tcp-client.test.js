@@ -114,6 +114,23 @@ describe("TCP Client", () => {
         done();
       });
     });
+    it("should receive error in batch response if one batch request is bad", (done) => {
+      const request = client.batch([
+        client.request().message("nonexistent", [1, 2]),
+        client.request().message("add", [3, 4])
+      ]);
+      request.then((response) => {
+        expect(response).to.eql([
+          {
+            jsonrpc: "2.0",
+            error: { code: -32601, message: "Method not found" },
+            id: 5
+          },
+          { result: 7, jsonrpc: "2.0", id: 6 }
+        ]);
+        done();
+      });
+    });
     // it("should receive 'invalid request' error for non empty array", (done) => {
     //   const request = client.batch([1]);
     //   request.catch((response) => {
@@ -133,7 +150,7 @@ describe("TCP Client", () => {
         expect(error).to.eql({
           jsonrpc: "2.0",
           error: { code: -32601, message: "Method not found" },
-          id: 5
+          id: 7
         });
         done();
       });
@@ -144,7 +161,7 @@ describe("TCP Client", () => {
         expect(error).to.eql({
           jsonrpc: "2.0",
           error: { code: -32602, message: "Invalid Parameters" },
-          id: 6
+          id: 8
         });
         done();
       });
@@ -155,7 +172,7 @@ describe("TCP Client", () => {
         expect(result).to.eql({
           jsonrpc: "2.0",
           result: data,
-          id: 7
+          id: 9
         });
         done();
       });
