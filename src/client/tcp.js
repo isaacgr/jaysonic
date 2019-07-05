@@ -119,14 +119,16 @@ class TCPClient extends Client {
 
     return new Promise((resolve, reject) => {
       const batchIds = [];
+      const batchRequests = [];
       for (const request of requests) {
         const json = JSON.parse(request);
+        batchRequests.push(json);
         if (json.id) {
           batchIds.push(json.id);
         }
       }
       this.pendingBatches[String(batchIds)] = { resolve, reject };
-      const request = JSON.stringify(requests);
+      const request = JSON.stringify(batchRequests);
       try {
         this.client.write(request + this.options.delimiter);
       } catch (e) {
