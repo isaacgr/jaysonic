@@ -115,7 +115,7 @@ class Client extends EventEmitter {
               this.emit("batchResponse", message);
             } catch (e) {
               const error = this.sendError({
-                id: this.serving_message_id,
+                id: null,
                 code: ERR_CODES.parseError,
                 message: ERR_MSGS.parseError
               });

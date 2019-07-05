@@ -116,6 +116,23 @@ describe("HTTP Client", () => {
         done();
       });
     });
+    it("should receive error in batch response if one batch request is bad", (done) => {
+      const request = clienthttp.batch([
+        clienthttp.request().message("nonexistent", [1, 2]),
+        clienthttp.request().message("add", [3, 4])
+      ]);
+      request.then((response) => {
+        expect(response).to.eql([
+          {
+            jsonrpc: "2.0",
+            error: { code: -32601, message: "Method not found" },
+            id: 8
+          },
+          { result: 7, jsonrpc: "2.0", id: 9 }
+        ]);
+        done();
+      });
+    });
   });
   describe("headers", () => {
     it("should send headers with content length", (done) => {
