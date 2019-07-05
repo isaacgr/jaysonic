@@ -184,16 +184,17 @@ class WSClient extends EventTarget {
 
     return new Promise((resolve, reject) => {
       const batchIds = [];
+      let batchRequest = [];
       for (const request of requests) {
         const json = JSON.parse(request);
+        batchRequest.push(json);
         if (json.id) {
           batchIds.push(json.id);
         }
       }
       this.pendingBatches[String(batchIds)] = { resolve, reject };
 
-      const request = JSON.stringify(requests);
-      this.client.write(request + this.options.delimiter);
+      this.client.send(JSON.stringify(batchRequest) + this.options.delimiter);
     });
   }
 
