@@ -2,8 +2,9 @@ const _ = require("lodash");
 const { formatRequest } = require("../functions");
 const { ERR_CODES, ERR_MSGS } = require("../constants");
 
-class WSClient {
+class WSClient extends EventTarget {
   constructor(options) {
+    super();
     if (!(this instanceof WSClient)) {
       return new WSClient(options);
     }
@@ -202,6 +203,25 @@ class WSClient {
     } catch (e) {
       reject(batch);
     }
+  }
+  handleNotification(message) {
+    this.dispatchEvent(new CustomEvent("notify", { detail: message }));
+  }
+
+  /**
+   * @params {String} [method] method to subscribe to
+   * @params {Function} [cb] callback function to invoke on notify
+   */
+  subscribe(method, cb) {
+    this.addEventListener("notify", ({ detail }) => {
+      try {
+        if (detail.method === method) {
+          return cb(undefined, detail);
+        }
+      } catch (e) {
+        return cb(e);
+      }
+    });
   }
 
   listen() {
