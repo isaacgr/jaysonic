@@ -150,6 +150,17 @@ class HTTPClient extends Client {
       this.client.on("error", (error) => {
         reject(error);
       });
+      setTimeout(() => {
+        if (this.pendingBatches[String(batchIds)]) {
+          const error = this.sendError({
+            id: null,
+            code: ERR_CODES.timeout,
+            message: ERR_MSGS.timeout
+          });
+          delete this.pendingBatches[String(batchIds)];
+          reject(error);
+        }
+      }, this.options.timeout);
       this.on("batchResponse", (batch) => {
         const batchResponseIds = [];
         batch.forEach((message) => {
