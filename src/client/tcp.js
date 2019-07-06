@@ -48,11 +48,11 @@ class TCPClient extends Client {
 
   request() {
     return {
-      message: (method, params) => {
+      message: (method, params, id = true) => {
         const request = formatRequest({
           method,
           params,
-          id: this.message_id,
+          id: id ? this.message_id : undefined,
           options: this.options
         });
         this.message_id += 1;
