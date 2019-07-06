@@ -1,6 +1,6 @@
 const http = require("http");
 const Server = require(".");
-const { ERR_CODES, ERR_MSGS, errorToStatus } = require("../constants");
+const { errorToStatus } = require("../constants");
 
 /**
  * Constructor for Jsonic HTTP server
@@ -34,76 +34,58 @@ class HTTPServer extends Server {
           const messages = this.messageBuffer.split(this.options.delimiter);
           this.messageBuffer = "";
           messages
-            .filter((messageString) => messageString !== "")
-            .map((chunk) => {
-              const validRequest = this.validateRequest(chunk)
-                .then((result) => result)
-                .catch((error) => {
-                  throw error;
-                });
-
-              const validMessage = validRequest
-                .then((result) => {
-                  return this._validateMessage(result)
-                    .then((message) => message)
-                    .catch((error) => {
-                      throw error;
-                    });
-                })
-                .catch((error) => {
-                  throw error;
-                });
-
-              return Promise.all([validRequest, validMessage])
-                .then(([_, message]) => {
-                  if (message.batch) {
-                    this.setResponseHeader({ response });
-                    return response.write(
-                      JSON.stringify(message.batch) + this.options.delimiter,
-                      () => {
-                        response.end();
-                      }
-                    );
-                  } else if (message.notification) {
-                    this.setResponseHeader({ response, notification: true });
-                    return response.end();
-                  }
-                  this.getResult(message)
-                    .then((result) => {
-                      this.setResponseHeader({ response });
-                      return response.write(
-                        result + this.options.delimiter,
-                        () => {
-                          response.end();
-                        }
-                      );
-                    })
-                    .catch((error) => {
-                      this.setResponseHeader({
-                        response,
-                        errorCode: error.error.code
-                      });
-                      return response.write(
-                        JSON.stringify(error) + this.options.delimiter,
-                        () => {
-                          response.end();
-                        }
-                      );
-                    });
-                })
-                .catch((error) => {
-                  this.setResponseHeader({
-                    response,
-                    errorCode: error.code
-                  });
-                  response.write(
-                    JSON.stringify(error) + this.options.delimiter,
+            .filter(messageString => messageString !== "")
+            .map(chunk => Promise.all(this.handleValidation(chunk))
+              .then((validationResult) => {
+                const message = validationResult[1];
+                if (message.batch) {
+                  this.setResponseHeader({ response });
+                  return response.write(
+                    JSON.stringify(message.batch) + this.options.delimiter,
                     () => {
                       response.end();
                     }
                   );
+                }
+                if (message.notification) {
+                  this.setResponseHeader({ response, notification: true });
+                  return response.end();
+                }
+                this.getResult(message)
+                  .then((result) => {
+                    this.setResponseHeader({ response });
+                    return response.write(
+                      result + this.options.delimiter,
+                      () => {
+                        response.end();
+                      }
+                    );
+                  })
+                  .catch((error) => {
+                    this.setResponseHeader({
+                      response,
+                      errorCode: error.error.code
+                    });
+                    return response.write(
+                      JSON.stringify(error) + this.options.delimiter,
+                      () => {
+                        response.end();
+                      }
+                    );
+                  });
+              })
+              .catch((error) => {
+                this.setResponseHeader({
+                  response,
+                  errorCode: error.code
                 });
-            });
+                response.write(
+                  JSON.stringify(error) + this.options.delimiter,
+                  () => {
+                    response.end();
+                  }
+                );
+              }));
         });
       });
       client.on("close", () => {
@@ -142,7 +124,7 @@ class HTTPServer extends Server {
 
   clientDisconnected(cb) {
     this.on("clientDisconnected", (client) => {
-      const clientIndex = this.connectedClients.findIndex((c) => client === c);
+      const clientIndex = this.connectedClients.findIndex(c => client === c);
       if (clientIndex === -1) {
         return "unknown";
       }
