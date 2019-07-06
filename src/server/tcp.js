@@ -33,39 +33,41 @@ class TCPServer extends Server {
         const messages = this.messageBuffer.split(this.options.delimiter);
         this.messageBuffer = "";
         for (const chunk of messages) {
-          try {
-            if (chunk !== "") {
-              const validRequest = () => this.validateRequest(chunk)
-                .then(result => result)
-                .catch((error) => {
-                  throw new Error(JSON.stringify(error));
-                });
+          if (chunk !== "") {
+            const validRequest = this.validateRequest(chunk)
+              .then((result) => result)
+              .catch((error) => error);
 
-              validRequest()
-                .then((message) => {
-                  if (message.batch) {
-                    return client.write(
-                      JSON.stringify(message.batch) + this.options.delimiter
-                    );
-                  }
-                  this.getResult(message.json)
-                    .then(json => client.write(json + this.options.delimiter))
-                    .catch(error => client.write(
-                      JSON.stringify(error) + this.options.delimiter
-                    ));
-                })
-                .catch(error => client.write(error.message + this.options.delimiter));
-            }
-          } catch (e) {
-            if (e instanceof TypeError) {
-              const error = this.sendError(
-                null,
-                ERR_CODES.parseError,
-                ERR_MSGS.parseError
+            const validMessage = validRequest
+              .then((result) => {
+                return this._validateMessage(result)
+                  .then((message) => message)
+                  .catch((error) => {
+                    throw error;
+                  });
+              })
+              .catch((error) => {
+                throw error;
+              });
+
+            return Promise.all([validRequest, validMessage])
+              .then(([_, message]) => {
+                if (message.batch) {
+                  return client.write(
+                    JSON.stringify(message.batch) + this.options.delimiter
+                  );
+                }
+                this.getResult(message)
+                  .then((result) =>
+                    client.write(result + this.options.delimiter)
+                  )
+                  .catch((error) =>
+                    client.write(JSON.stringify(error) + this.options.delimiter)
+                  );
+              })
+              .catch((error) =>
+                client.write(JSON.stringify(error) + this.options.delimiter)
               );
-              return client.write(JSON.stringify(error));
-            }
-            return client.write(e);
           }
         }
       });
@@ -79,15 +81,17 @@ class TCPServer extends Server {
   }
 
   clientConnected(cb) {
-    this.on("clientConnected", client => cb({
-      host: client.remoteAddress,
-      port: client.remotePort
-    }));
+    this.on("clientConnected", (client) =>
+      cb({
+        host: client.remoteAddress,
+        port: client.remotePort
+      })
+    );
   }
 
   clientDisconnected(cb) {
     this.on("clientDisconnected", (client) => {
-      const clientIndex = this.connectedClients.findIndex(c => client === c);
+      const clientIndex = this.connectedClients.findIndex((c) => client === c);
       if (clientIndex === -1) {
         return "unknown";
       }
