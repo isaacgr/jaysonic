@@ -57,13 +57,6 @@ describe("HTTP Client", () => {
         done();
       });
     });
-    it("should receive a '204' response for a notification", (done) => {
-      const request = clienthttp.request().notify("notify", []);
-      request.then((response) => {
-        expect(response.statusCode).to.be.equal(204);
-        done();
-      });
-    });
     it("should get an 'invalid params' error", (done) => {
       const request = clienthttp.request().send("add", {});
       request.catch((response) => {
@@ -92,6 +85,19 @@ describe("HTTP Client", () => {
         done();
       });
     });
+    it("should get a response for large dataset", (done) => {
+      const request = clienthttp.request().send("large.data", []);
+      request.then((response) => {
+        expect(response.body).to.be.eql({
+          result: data,
+          jsonrpc: "2.0",
+          id: 5
+        });
+        done();
+      });
+    });
+  });
+  describe("batches", () => {
     it("should receive response for batch request", (done) => {
       const request = clienthttp.batch([
         clienthttp.request().message("add", [1, 2]),
@@ -99,20 +105,9 @@ describe("HTTP Client", () => {
       ]);
       request.then((response) => {
         expect(response).to.eql([
-          { result: 3, jsonrpc: "2.0", id: 5 },
-          { result: 7, jsonrpc: "2.0", id: 6 }
+          { result: 3, jsonrpc: "2.0", id: 6 },
+          { result: 7, jsonrpc: "2.0", id: 7 }
         ]);
-        done();
-      });
-    });
-    it("should get a response for large dataset", (done) => {
-      const request = clienthttp.request().send("large.data", []);
-      request.then((response) => {
-        expect(response.body).to.be.eql({
-          result: data,
-          jsonrpc: "2.0",
-          id: 7
-        });
         done();
       });
     });
@@ -121,7 +116,7 @@ describe("HTTP Client", () => {
         clienthttp.request().message("nonexistent", [1, 2]),
         clienthttp.request().message("add", [3, 4])
       ]);
-      request.then((response) => {
+      request.catch((response) => {
         expect(response).to.eql([
           {
             jsonrpc: "2.0",
@@ -130,6 +125,15 @@ describe("HTTP Client", () => {
           },
           { result: 7, jsonrpc: "2.0", id: 9 }
         ]);
+        done();
+      });
+    });
+  });
+  describe("notifications", () => {
+    it("should receive a '204' response for a notification", (done) => {
+      const request = clienthttp.request().notify("notify", []);
+      request.then((response) => {
+        expect(response.statusCode).to.be.equal(204);
         done();
       });
     });
