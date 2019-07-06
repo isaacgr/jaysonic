@@ -39,8 +39,6 @@ class HTTPClient extends Client {
     this.client = http.request(this.options, (response) => {
       this.writer = response;
       this.listen();
-      this.handleResponse();
-      this.handleError();
     });
   }
 
@@ -166,10 +164,6 @@ class HTTPClient extends Client {
       this.on("batchResponse", (batch) => {
         const batchResponseIds = [];
         batch.forEach((message) => {
-          if (message.error) {
-            // reject the whole message if there are any errors
-            reject(batch);
-          }
           if (message.id) {
             batchResponseIds.push(message.id);
           }
@@ -181,13 +175,19 @@ class HTTPClient extends Client {
           if (
             _.isEmpty(_.difference(JSON.parse(`[${ids}]`), batchResponseIds))
           ) {
+            batch.forEach((message) => {
+              if (message.error) {
+                // reject the whole message if there are any errors
+                this.pendingBatches[ids].reject(batch);
+              }
+            });
             this.pendingBatches[ids].resolve(batch);
           }
         }
       });
-      this.on("batchError", (error) => {
-        reject(error);
-      });
+      // this.on("batchError", (error) => {
+      //   reject(error);
+      // });
     });
   }
 }
