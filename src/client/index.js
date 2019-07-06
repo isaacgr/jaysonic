@@ -84,21 +84,19 @@ class Client extends EventEmitter {
     throw new Error("function must be overwritten in subsclass");
   }
 
-  handleResponse() {
-    this.on("response", (id) => {
-      if (!(this.pendingCalls[id] === undefined)) {
-        let response = this.responseQueue[id];
-        if (this.writer instanceof http.IncomingMessage) {
-          // want to allow users to access the headers, status code etc.
-          response = {
-            body: this.responseQueue[id],
-            ...this.writer
-          };
-        }
-        this.pendingCalls[id].resolve(response);
-        delete this.responseQueue[id];
+  handleResponse(id) {
+    if (!(this.pendingCalls[id] === undefined)) {
+      let response = this.responseQueue[id];
+      if (this.writer instanceof http.IncomingMessage) {
+        // want to allow users to access the headers, status code etc.
+        response = {
+          body: this.responseQueue[id],
+          ...this.writer
+        };
       }
-    });
+      this.pendingCalls[id].resolve(response);
+      delete this.responseQueue[id];
+    }
   }
 
   verifyData(messages) {
@@ -130,7 +128,7 @@ class Client extends EventEmitter {
               code: ERR_CODES.parseError,
               message: ERR_MSGS.parseError
             });
-            this.emit("messageError", error);
+            return this.handleError(error);
           }
 
           if (!message.id) {
@@ -144,7 +142,7 @@ class Client extends EventEmitter {
                 message: ERR_MSGS.parseError
               });
               this.writer.response = message;
-              this.emit("messageError", error);
+              return this.handleError(error);
             }
             // no id, so assume notification
             this.emit("notify", message);
@@ -158,14 +156,14 @@ class Client extends EventEmitter {
               code: message.error.code,
               message: message.error.message
             });
-            this.emit("messageError", error);
+            return this.handleError(error);
           }
 
           // no method, so assume response
           if (!message.method) {
             this.serving_message_id = message.id;
             this.responseQueue[this.serving_message_id] = message;
-            this.emit("response", this.serving_message_id);
+            this.handleResponse(this.serving_message_id);
           }
         }
       } catch (e) {
@@ -174,7 +172,7 @@ class Client extends EventEmitter {
           code: ERR_CODES.parseError,
           message: ERR_MSGS.parseError
         });
-        this.emit("messageError", error);
+        return this.handleError(error);
       }
     }
   }
@@ -210,18 +208,16 @@ class Client extends EventEmitter {
     this.on("serverDisconnected", () => cb());
   }
 
-  handleError() {
-    this.on("messageError", (error) => {
-      let response = error;
-      if (this.writer instanceof http.IncomingMessage) {
-        // want to allow users to access the headers, status code etc.
-        response = {
-          body: error,
-          ...this.writer
-        };
-      }
-      this.pendingCalls[error.id].reject(response);
-    });
+  handleError(error) {
+    let response = error;
+    if (this.writer instanceof http.IncomingMessage) {
+      // want to allow users to access the headers, status code etc.
+      response = {
+        body: error,
+        ...this.writer
+      };
+    }
+    this.pendingCalls[error.id].reject(response);
   }
 
   sendError({
