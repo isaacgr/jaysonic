@@ -99,31 +99,25 @@ class Server extends EventEmitter {
 
   handleBatchRequest(batch) {
     return new Promise((resolve, reject) => {
-      try {
-        const requests = batch;
-        const batchRequests = requests.map((request) =>
-          this._validateMessage(request)
-            .then((message) =>
-              this.getResult(message)
-                .then((result) => JSON.parse(result))
-                .catch((error) => error)
-            )
-            .catch((error) => error)
-        );
-        Promise.all(batchRequests)
-          .then((result) => {
-            resolve(result);
-          })
+      const requests = batch;
+      const batchRequests = requests.map(request => this.validateMessage(request)
+        .then(message => this.getResult(message)
+          .then(result => JSON.parse(result))
           .catch((error) => {
-            reject(error);
-          });
-      } catch (e) {
-        if (e instanceof SyntaxError) {
-          reject(
-            this.sendError(null, ERR_CODES.parseError, ERR_MSGS.parseError)
-          );
-        }
-      }
+            throw error;
+          }))
+        .catch((error) => {
+          throw error;
+        }));
+      Promise.all(
+        batchRequests.map(promise => promise.catch(error => error))
+      )
+        .then((result) => {
+          resolve(result);
+        })
+        .catch((error) => {
+          reject(error);
+        });
     });
   }
 
@@ -138,7 +132,7 @@ class Server extends EventEmitter {
     });
   }
 
-  _validateMessage(message) {
+  validateMessage(message) {
     return new Promise((resolve, reject) => {
       if (_.isArray(message)) {
         // possible batch request
@@ -169,12 +163,6 @@ class Server extends EventEmitter {
         );
       }
 
-      if (!message.id) {
-        // no id, so assume notification
-        this.emit("notify", message);
-        resolve({ notification: message });
-      }
-
       if (!_.isString(message.method)) {
         reject(
           this.sendError(
@@ -183,6 +171,11 @@ class Server extends EventEmitter {
             ERR_MSGS.invalidRequest
           )
         );
+      }
+
+      if (!message.id) {
+        // no id, so assume notification
+        resolve({ notification: message });
       }
 
       if (message.jsonrpc) {
@@ -219,6 +212,26 @@ class Server extends EventEmitter {
       // data looks good
       resolve(message);
     });
+  }
+
+  handleValidation(chunk) {
+    const validRequest = this.validateRequest(chunk)
+      .then(result => result)
+      .catch((error) => {
+        throw error;
+      });
+
+    const validMessage = validRequest
+      .then(result => this.validateMessage(result)
+        .then(message => message)
+        .catch((error) => {
+          throw error;
+        }))
+      .catch((error) => {
+        throw error;
+      });
+
+    return [validRequest, validMessage];
   }
 
   getResult(message) {
