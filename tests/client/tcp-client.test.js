@@ -180,6 +180,47 @@ describe("TCP Client", () => {
       });
     });
   });
+  describe("multiple requests", () => {
+    it("should get responses for multiple requests at once", (done) => {
+      const request = client.request().send("add", [1, 2]);
+      const request2 = client.request().send("greeting", { name: "Isaac" });
+      const request3 = client.batch([
+        client.request().message("add", [1, 2]),
+        client.request().message("add", [3, 4])
+      ]);
+      const request4 = client.batch([
+        client.request().message("nonexistent", [1, 2]),
+        client.request().message("add", [3, 4])
+      ]);
+      request.then((res1) => {
+        expect(res1).to.eql({ jsonrpc: "2.0", result: 3, id: 10 });
+        request2.then((res2) => {
+          expect(res2).to.eql({
+            jsonrpc: "2.0",
+            result: "Hello Isaac",
+            id: 11
+          });
+          request3.then((res3) => {
+            expect(res3).to.eql([
+              { result: 3, jsonrpc: "2.0", id: 12 },
+              { result: 7, jsonrpc: "2.0", id: 13 }
+            ]);
+            request4.catch((res4) => {
+              expect(res4).to.eql([
+                {
+                  jsonrpc: "2.0",
+                  error: { code: -32601, message: "Method not found" },
+                  id: 14
+                },
+                { result: 7, jsonrpc: "2.0", id: 15 }
+              ]);
+              done();
+            });
+          });
+        });
+      });
+    });
+  });
   describe("notifications", () => {
     it("should handle receiving a notification", (done) => {
       client.subscribe("notification", (error, message) => {
