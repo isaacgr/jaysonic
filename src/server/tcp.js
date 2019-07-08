@@ -64,10 +64,12 @@ class TCPServer extends Server {
   }
 
   clientConnected(cb) {
-    this.on("clientConnected", client => cb({
-      host: client.remoteAddress,
-      port: client.remotePort
-    }));
+    this.on("clientConnected", (client) => {
+      cb({
+        host: client.remoteAddress,
+        port: client.remotePort
+      });
+    });
   }
 
   clientDisconnected(cb) {
