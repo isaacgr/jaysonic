@@ -25,28 +25,30 @@ class TCPServer extends Server {
 
   handleData() {
     this.server.on("connection", (client) => {
-      this.emit("clientConnected", client);
       this.connectedClients.push(client);
+      this.emit("clientConnected", client);
       client.on("data", (data) => {
         this.messageBuffer += data;
         const messages = this.messageBuffer.split(this.options.delimiter);
         this.messageBuffer = "";
         for (const chunk of messages) {
           if (chunk !== "") {
-            return Promise.all(this.handleValidation(chunk))
+            Promise.all(this.handleValidation(chunk))
               .then((validationResult) => {
                 const message = validationResult[1];
                 if (message.batch) {
-                  return client.write(
+                  client.write(
                     JSON.stringify(message.batch) + this.options.delimiter
                   );
+                } else if (message.notification) {
+                  this.emit("notify", message.notification);
+                } else {
+                  this.getResult(message)
+                    .then(result => client.write(result + this.options.delimiter))
+                    .catch(error => client.write(
+                      JSON.stringify(error) + this.options.delimiter
+                    ));
                 }
-                if (message.notification) {
-                  return this.emit("notify", message.notification);
-                }
-                this.getResult(message)
-                  .then(result => client.write(result + this.options.delimiter))
-                  .catch(error => client.write(JSON.stringify(error) + this.options.delimiter));
               })
               .catch(error => client.write(JSON.stringify(error) + this.options.delimiter));
           }
