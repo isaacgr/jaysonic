@@ -119,19 +119,15 @@ class Client extends EventEmitter {
               });
               this.emit("batchError", error);
             }
-          }
-
-          if (!_.isObject(message)) {
+          } else if (!_.isObject(message)) {
             // error out if it cant be parsed
             const error = this.sendError({
               id: null,
               code: ERR_CODES.parseError,
               message: ERR_MSGS.parseError
             });
-            return this.handleError(error);
-          }
-
-          if (!message.id) {
+            this.handleError(error);
+          } else if (!message.id) {
             // special case http response
             // may want to still know the body
             // this is not in spec at all
@@ -142,13 +138,11 @@ class Client extends EventEmitter {
                 message: ERR_MSGS.parseError
               });
               this.writer.response = message;
-              return this.handleError(error);
+              this.handleError(error);
             }
             // no id, so assume notification
             this.emit("notify", message);
-          }
-
-          if (message.error) {
+          } else if (message.error) {
             // got an error back so reject the message
             const error = this.sendError({
               jsonrpc: message.jsonrpc,
@@ -156,23 +150,32 @@ class Client extends EventEmitter {
               code: message.error.code,
               message: message.error.message
             });
-            return this.handleError(error);
-          }
-
-          // no method, so assume response
-          if (!message.method) {
+            this.handleError(error);
+          } else if (!message.method) {
+            // no method, so assume response
             this.serving_message_id = message.id;
             this.responseQueue[this.serving_message_id] = message;
-            return this.handleResponse(this.serving_message_id);
+            this.handleResponse(this.serving_message_id);
+          } else {
+            throw new Error();
           }
         }
       } catch (e) {
-        const error = this.sendError({
-          id: this.serving_message_id,
-          code: ERR_CODES.parseError,
-          message: ERR_MSGS.parseError
-        });
-        return this.handleError(error);
+        if (e instanceof TypeError) {
+          const error = this.sendError({
+            id: this.serving_message_id,
+            code: ERR_CODES.parseError,
+            message: ERR_MSGS.parseError
+          });
+          this.handleError(error);
+        } else {
+          const error = this.sendError({
+            id: this.serving_message_id,
+            code: ERR_CODES.internal,
+            message: ERR_MSGS.internal
+          });
+          this.handleError(error);
+        }
       }
     }
   }
