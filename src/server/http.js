@@ -40,39 +40,36 @@ class HTTPServer extends Server {
                 const message = validationResult[1];
                 if (message.batch) {
                   this.setResponseHeader({ response });
-                  return response.write(
+                  response.write(
                     JSON.stringify(message.batch) + this.options.delimiter,
                     () => {
                       response.end();
                     }
                   );
-                }
-                if (message.notification) {
+                } else if (message.notification) {
                   this.setResponseHeader({ response, notification: true });
-                  return response.end();
-                }
-                this.getResult(message)
-                  .then((result) => {
-                    this.setResponseHeader({ response });
-                    return response.write(
-                      result + this.options.delimiter,
-                      () => {
+                  response.end();
+                } else {
+                  this.getResult(message)
+                    .then((result) => {
+                      this.setResponseHeader({ response });
+                      response.write(result + this.options.delimiter, () => {
                         response.end();
-                      }
-                    );
-                  })
-                  .catch((error) => {
-                    this.setResponseHeader({
-                      response,
-                      errorCode: error.error.code
+                      });
+                    })
+                    .catch((error) => {
+                      this.setResponseHeader({
+                        response,
+                        errorCode: error.error.code
+                      });
+                      response.write(
+                        JSON.stringify(error) + this.options.delimiter,
+                        () => {
+                          response.end();
+                        }
+                      );
                     });
-                    return response.write(
-                      JSON.stringify(error) + this.options.delimiter,
-                      () => {
-                        response.end();
-                      }
-                    );
-                  });
+                }
               })
               .catch((error) => {
                 this.setResponseHeader({
