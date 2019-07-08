@@ -163,7 +163,7 @@ class Client extends EventEmitter {
           if (!message.method) {
             this.serving_message_id = message.id;
             this.responseQueue[this.serving_message_id] = message;
-            this.handleResponse(this.serving_message_id);
+            return this.handleResponse(this.serving_message_id);
           }
         }
       } catch (e) {
