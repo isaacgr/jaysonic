@@ -169,25 +169,33 @@ class HTTPClient extends Client {
           }
         });
         if (_.isEmpty(batchResponseIds)) {
-          resolve([]);
+          const response = {
+            body: [],
+            ...this.writer
+          };
+          resolve(response);
         }
         for (const ids of Object.keys(this.pendingBatches)) {
           if (
             _.isEmpty(_.difference(JSON.parse(`[${ids}]`), batchResponseIds))
           ) {
+            const response = {
+              body: batch,
+              ...this.writer
+            };
             batch.forEach((message) => {
               if (message.error) {
                 // reject the whole message if there are any errors
-                this.pendingBatches[ids].reject(batch);
+                this.pendingBatches[ids].reject(response);
               }
             });
-            this.pendingBatches[ids].resolve(batch);
+            this.pendingBatches[ids].resolve(response);
           }
         }
       });
-      // this.on("batchError", (error) => {
-      //   reject(error);
-      // });
+      this.on("batchError", (error) => {
+        reject(error);
+      });
     });
   }
 }
