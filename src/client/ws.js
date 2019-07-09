@@ -10,7 +10,6 @@ class WSClient extends EventTarget {
     }
 
     const defaults = {
-      url: "wss://www.example.com/socketserver",
       version: "2.0",
       delimiter: "\n",
       timeout: 30,
@@ -122,52 +121,59 @@ class WSClient extends EventTarget {
 
   verifyData(chunk) {
     try {
-      // will throw an error if not valid json
-      const message = JSON.parse(chunk);
-      if (_.isArray(message)) {
-        // possible batch request
-        this.handleBatchResponse(message);
+      // sometimes split messages have empty string at the end
+      // just ignore it
+      if (chunk !== "") {
+        // will throw an error if not valid json
+        const message = JSON.parse(chunk);
+        if (_.isArray(message)) {
+          // possible batch request
+          this.handleBatchResponse(message);
+        } else if (!_.isObject(message)) {
+          // error out if it cant be parsed
+          const error = this.sendError({
+            id: null,
+            code: ERR_CODES.parseError,
+            message: ERR_MSGS.parseError
+          });
+          this.handleError(error);
+        } else if (!message.id) {
+          // no id, so assume notification
+          this.handleNotification();
+        } else if (message.error) {
+          // got an error back so reject the message
+          const error = this.sendError({
+            jsonrpc: message.jsonrpc,
+            id: message.id,
+            code: message.error.code,
+            message: message.error.message
+          });
+          this.handleError(error);
+        } else if (!message.method) {
+          // no method, so assume response
+          this.serving_message_id = message.id;
+          this.responseQueue[this.serving_message_id] = message;
+          this.handleResponse(this.serving_message_id);
+        } else {
+          throw new Error();
+        }
       }
-
-      if (!_.isObject(message)) {
-        // error out if it cant be parsed
+    } catch (e) {
+      if (e instanceof TypeError) {
         const error = this.sendError({
-          id: null,
+          id: this.serving_message_id,
           code: ERR_CODES.parseError,
           message: ERR_MSGS.parseError
         });
         this.handleError(error);
-      }
-
-      if (!message.id) {
-        // no id, so assume notification
-        this.handleNotification(message);
-      }
-
-      if (message.error) {
-        // got an error back so reject the message
+      } else {
         const error = this.sendError({
-          jsonrpc: message.jsonrpc,
-          id: message.id,
-          code: message.error.code,
-          message: message.error.message
+          id: this.serving_message_id,
+          code: ERR_CODES.internal,
+          message: ERR_MSGS.internal
         });
         this.handleError(error);
       }
-
-      // no method, so assume response
-      if (!message.method) {
-        this.serving_message_id = message.id;
-        this.responseQueue[this.serving_message_id] = message;
-        this.handleResponse(message);
-      }
-    } catch (e) {
-      const error = this.sendError({
-        id: this.serving_message_id,
-        code: ERR_CODES.parseError,
-        message: ERR_MSGS.parseError
-      });
-      this.handleError(error);
     }
   }
 
@@ -184,42 +190,58 @@ class WSClient extends EventTarget {
 
     return new Promise((resolve, reject) => {
       const batchIds = [];
-      let batchRequest = [];
+      const batchRequests = [];
       for (const request of requests) {
         const json = JSON.parse(request);
-        batchRequest.push(json);
+        batchRequests.push(json);
         if (json.id) {
           batchIds.push(json.id);
         }
       }
       this.pendingBatches[String(batchIds)] = { resolve, reject };
-
-      this.client.send(JSON.stringify(batchRequest) + this.options.delimiter);
+      const request = JSON.stringify(batchRequests);
+      try {
+        this.client.send(request + this.options.delimiter);
+      } catch (e) {
+        if (e instanceof TypeError) {
+          // this.client is probably undefined
+          reject(new Error(`Unable to send request. ${e.message}`));
+        }
+      }
+      setTimeout(() => {
+        if (this.pendingBatches[String(batchIds)]) {
+          const error = this.sendError({
+            id: null,
+            code: ERR_CODES.timeout,
+            message: ERR_MSGS.timeout
+          });
+          delete this.pendingBatches[String(batchIds)];
+          reject(error);
+        }
+      }, this.options.timeout);
     });
   }
 
   handleBatchResponse(batch) {
-    try {
-      const batchResponseIds = [];
-      batch.forEach((message) => {
-        if (message.error) {
-          // reject the whole message if there are any errors
-          reject(batch);
-        }
-        if (message.id) {
-          batchResponseIds.push(message.id);
-        }
-      });
-      if (_.isEmpty(batchResponseIds)) {
-        resolve([]);
+    const batchResponseIds = [];
+    batch.forEach((message) => {
+      if (message.id) {
+        batchResponseIds.push(message.id);
       }
-      for (const ids of Object.keys(this.pendingBatches)) {
-        if (_.isEmpty(_.difference(JSON.parse(`[${ids}]`), batchResponseIds))) {
-          this.pendingBatches[ids].resolve(batch);
-        }
+    });
+    if (_.isEmpty(batchResponseIds)) {
+      resolve([]);
+    }
+    for (const ids of Object.keys(this.pendingBatches)) {
+      if (_.isEmpty(_.difference(JSON.parse(`[${ids}]`), batchResponseIds))) {
+        batch.forEach((message) => {
+          if (message.error) {
+            // reject the whole message if there are any errors
+            this.pendingBatches[ids].reject(batch);
+          }
+        });
+        this.pendingBatches[ids].resolve(batch);
       }
-    } catch (e) {
-      reject(batch);
     }
   }
   handleNotification(message) {
