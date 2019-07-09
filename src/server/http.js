@@ -21,77 +21,75 @@ class HTTPServer extends Server {
 
   initserver() {
     this.server = new http.Server();
+    this.server.on("connection", (client) => {
+      this.connectedClients.push(client);
+      client.on("close", () => {
+        this.emit("clientDisconnected");
+      });
+      client.on("end", () => {
+        this.emit("clientDisconnected");
+      });
+    });
   }
 
   handleData() {
-    this.server.on("connection", (client) => {
-      this.connectedClients.push(client);
-      this.server.on("request", (request, response) => {
-        request.on("data", (data) => {
-          this.messageBuffer += data;
-        });
-        request.on("end", () => {
-          const messages = this.messageBuffer.split(this.options.delimiter);
-          this.messageBuffer = "";
-          messages
-            .filter(messageString => messageString !== "")
-            .map(chunk => Promise.all(this.handleValidation(chunk))
-              .then((validationResult) => {
-                const message = validationResult[1];
-                if (message.batch) {
-                  this.setResponseHeader({ response });
-                  response.write(
-                    JSON.stringify(message.batch) + this.options.delimiter,
-                    () => {
-                      response.end();
-                    }
-                  );
-                } else if (message.notification) {
-                  this.setResponseHeader({ response, notification: true });
-                  response.end();
-                } else {
-                  this.getResult(message)
-                    .then((result) => {
-                      this.setResponseHeader({ response });
-                      response.write(result + this.options.delimiter, () => {
-                        response.end();
-                      });
-                    })
-                    .catch((error) => {
-                      this.setResponseHeader({
-                        response,
-                        errorCode: error.error.code
-                      });
-                      response.write(
-                        JSON.stringify(error) + this.options.delimiter,
-                        () => {
-                          response.end();
-                        }
-                      );
-                    });
-                }
-              })
-              .catch((error) => {
-                this.setResponseHeader({
-                  response,
-                  errorCode: error.code
-                });
+    this.server.on("request", (request, response) => {
+      request.on("data", (data) => {
+        this.messageBuffer += data;
+      });
+      request.on("end", () => {
+        const messages = this.messageBuffer.split(this.options.delimiter);
+        this.messageBuffer = "";
+        messages
+          .filter(messageString => messageString !== "")
+          .map(chunk => Promise.all(this.handleValidation(chunk))
+            .then((validationResult) => {
+              const message = validationResult[1];
+              if (message.batch) {
+                this.setResponseHeader({ response });
                 response.write(
-                  JSON.stringify(error) + this.options.delimiter,
+                  JSON.stringify(message.batch) + this.options.delimiter,
                   () => {
                     response.end();
                   }
                 );
-              }));
-        });
-      });
-      client.on("close", () => {
-        this.server.removeAllListeners("request");
-        this.emit("clientDisconnected");
-      });
-      client.on("end", () => {
-        this.server.removeAllListeners("request");
-        this.emit("clientDisconnected");
+              } else if (message.notification) {
+                this.setResponseHeader({ response, notification: true });
+                response.end();
+              } else {
+                this.getResult(message)
+                  .then((result) => {
+                    this.setResponseHeader({ response });
+                    response.write(result + this.options.delimiter, () => {
+                      response.end();
+                    });
+                  })
+                  .catch((error) => {
+                    this.setResponseHeader({
+                      response,
+                      errorCode: error.error.code
+                    });
+                    response.write(
+                      JSON.stringify(error) + this.options.delimiter,
+                      () => {
+                        response.end();
+                      }
+                    );
+                  });
+              }
+            })
+            .catch((error) => {
+              this.setResponseHeader({
+                response,
+                errorCode: error.code
+              });
+              response.write(
+                JSON.stringify(error) + this.options.delimiter,
+                () => {
+                  response.end();
+                }
+              );
+            }));
       });
     });
   }
