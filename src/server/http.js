@@ -1,6 +1,6 @@
 const http = require("http");
 const Server = require(".");
-const { ERR_CODES, ERR_MSGS, errorToStatus } = require("../constants");
+const { errorToStatus } = require("../constants");
 
 /**
  * Constructor for Jsonic HTTP server
@@ -21,101 +21,75 @@ class HTTPServer extends Server {
 
   initserver() {
     this.server = new http.Server();
+    this.server.on("connection", (client) => {
+      this.connectedClients.push(client);
+      client.on("close", () => {
+        this.emit("clientDisconnected");
+      });
+      client.on("end", () => {
+        this.emit("clientDisconnected");
+      });
+    });
   }
 
   handleData() {
-    this.server.on("connection", (client) => {
-      this.connectedClients.push(client);
-      this.server.on("request", (request, response) => {
-        request.on("data", (data) => {
-          this.messageBuffer += data;
-        });
-        request.on("end", () => {
-          const messages = this.messageBuffer.split(this.options.delimiter);
-          this.messageBuffer = "";
-          try {
-            messages
-              .filter(messageString => messageString !== "")
-              .map((chunk) => {
-                const validRequest = () => this.validateRequest(chunk)
-                  .then(result => result)
-                  .catch((error) => {
-                    throw new Error(JSON.stringify(error));
-                  });
-                return validRequest()
-                  .then((message) => {
-                    if (message.batch) {
-                      this.setResponseHeader({ response });
-                      return response.write(
-                        JSON.stringify(message.batch) + this.options.delimiter,
-                        () => {
-                          response.end();
-                        }
-                      );
-                    }
-                    if (message.notification) {
-                      this.setResponseHeader({ response, notification: true });
-                      return response.end();
-                    }
-                    this.getResult(message.json)
-                      .then((json) => {
-                        this.setResponseHeader({ response });
-                        return response.write(
-                          json + this.options.delimiter,
-                          () => {
-                            response.end();
-                          }
-                        );
-                      })
-                      .catch((error) => {
-                        this.setResponseHeader({
-                          response,
-                          errorCode: error.error.code
-                        });
-                        return response.write(
-                          JSON.stringify(error) + this.options.delimiter,
-                          () => {
-                            response.end();
-                          }
-                        );
-                      });
+    this.server.on("request", (request, response) => {
+      request.on("data", (data) => {
+        this.messageBuffer += data;
+      });
+      request.on("end", () => {
+        const messages = this.messageBuffer.split(this.options.delimiter);
+        this.messageBuffer = "";
+        messages
+          .filter(messageString => messageString !== "")
+          .map(chunk => Promise.all(this.handleValidation(chunk))
+            .then((validationResult) => {
+              const message = validationResult[1];
+              if (message.batch) {
+                this.setResponseHeader({ response });
+                response.write(
+                  JSON.stringify(message.batch) + this.options.delimiter,
+                  () => {
+                    response.end();
+                  }
+                );
+              } else if (message.notification) {
+                this.setResponseHeader({ response, notification: true });
+                response.end();
+              } else {
+                this.getResult(message)
+                  .then((result) => {
+                    this.setResponseHeader({ response });
+                    response.write(result + this.options.delimiter, () => {
+                      response.end();
+                    });
                   })
                   .catch((error) => {
                     this.setResponseHeader({
                       response,
-                      errorCode: JSON.parse(error.message).error.code
+                      errorCode: error.error.code
                     });
                     response.write(
-                      error.message + this.options.delimiter,
+                      JSON.stringify(error) + this.options.delimiter,
                       () => {
                         response.end();
                       }
                     );
                   });
-              });
-          } catch (e) {
-            const error = this.sendError(
-              null,
-              ERR_CODES.parseError,
-              ERR_MSGS.parseError
-            );
-            this.setResponseHeader({ response, errorCode: error.code });
-            return response.write(
-              JSON.stringify(error) + this.options.delimiter,
-              () => {
-                response.end();
               }
-            );
-          }
-        });
-      });
-      client.on("close", () => {
-        this.server.removeAllListeners("request");
-        this.emit("clientDisconnected");
-      });
-      client.on("end", () => {
-        this.server.removeAllListeners("request");
-        this.emit("clientDisconnected");
+            })
+            .catch((error) => {
+              this.setResponseHeader({
+                response,
+                errorCode: error.code
+              });
+              response.write(
+                JSON.stringify(error) + this.options.delimiter,
+                () => {
+                  response.end();
+                }
+              );
+            }));
       });
     });
   }

@@ -27,8 +27,6 @@ class TCPClient extends Client {
         this.writer = this.client;
         // start listeners, response handlers and error handlers
         this.listen();
-        this.handleResponse();
-        this.handleError();
         resolve(this.server);
       });
       let { retries } = this.options;
@@ -50,11 +48,11 @@ class TCPClient extends Client {
 
   request() {
     return {
-      message: (method, params) => {
+      message: (method, params, id = true) => {
         const request = formatRequest({
           method,
           params,
-          id: this.message_id,
+          id: id ? this.message_id : undefined,
           options: this.options
         });
         this.message_id += 1;
@@ -151,10 +149,6 @@ class TCPClient extends Client {
       this.on("batchResponse", (batch) => {
         const batchResponseIds = [];
         batch.forEach((message) => {
-          if (message.error) {
-            // reject the whole message if there are any errors
-            reject(batch);
-          }
           if (message.id) {
             batchResponseIds.push(message.id);
           }
@@ -166,6 +160,12 @@ class TCPClient extends Client {
           if (
             _.isEmpty(_.difference(JSON.parse(`[${ids}]`), batchResponseIds))
           ) {
+            batch.forEach((message) => {
+              if (message.error) {
+                // reject the whole message if there are any errors
+                this.pendingBatches[ids].reject(batch);
+              }
+            });
             this.pendingBatches[ids].resolve(batch);
           }
         }

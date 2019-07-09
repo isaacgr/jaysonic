@@ -1,7 +1,6 @@
 const net = require("net");
 const Server = require(".");
 const { formatResponse } = require("../functions");
-const { ERR_CODES, ERR_MSGS } = require("../constants");
 
 /**
  * Constructor for Jsonic TCP client
@@ -26,46 +25,32 @@ class TCPServer extends Server {
 
   handleData() {
     this.server.on("connection", (client) => {
-      this.emit("clientConnected", client);
       this.connectedClients.push(client);
+      this.emit("clientConnected", client);
       client.on("data", (data) => {
         this.messageBuffer += data;
         const messages = this.messageBuffer.split(this.options.delimiter);
         this.messageBuffer = "";
         for (const chunk of messages) {
-          try {
-            if (chunk !== "") {
-              const validRequest = () => this.validateRequest(chunk)
-                .then(result => result)
-                .catch((error) => {
-                  throw new Error(JSON.stringify(error));
-                });
-
-              validRequest()
-                .then((message) => {
-                  if (message.batch) {
-                    return client.write(
-                      JSON.stringify(message.batch) + this.options.delimiter
-                    );
-                  }
-                  this.getResult(message.json)
-                    .then(json => client.write(json + this.options.delimiter))
+          if (chunk !== "") {
+            Promise.all(this.handleValidation(chunk))
+              .then((validationResult) => {
+                const message = validationResult[1];
+                if (message.batch) {
+                  client.write(
+                    JSON.stringify(message.batch) + this.options.delimiter
+                  );
+                } else if (message.notification) {
+                  this.emit("notify", message.notification);
+                } else {
+                  this.getResult(message)
+                    .then(result => client.write(result + this.options.delimiter))
                     .catch(error => client.write(
                       JSON.stringify(error) + this.options.delimiter
                     ));
-                })
-                .catch(error => client.write(error.message + this.options.delimiter));
-            }
-          } catch (e) {
-            if (e instanceof TypeError) {
-              const error = this.sendError(
-                null,
-                ERR_CODES.parseError,
-                ERR_MSGS.parseError
-              );
-              return client.write(JSON.stringify(error));
-            }
-            return client.write(e);
+                }
+              })
+              .catch(error => client.write(JSON.stringify(error) + this.options.delimiter));
           }
         }
       });
@@ -79,10 +64,12 @@ class TCPServer extends Server {
   }
 
   clientConnected(cb) {
-    this.on("clientConnected", client => cb({
-      host: client.remoteAddress,
-      port: client.remotePort
-    }));
+    this.on("clientConnected", (client) => {
+      cb({
+        host: client.remoteAddress,
+        port: client.remotePort
+      });
+    });
   }
 
   clientDisconnected(cb) {

@@ -84,21 +84,19 @@ class Client extends EventEmitter {
     throw new Error("function must be overwritten in subsclass");
   }
 
-  handleResponse() {
-    this.on("response", (id) => {
-      if (!(this.pendingCalls[id] === undefined)) {
-        let response = this.responseQueue[id];
-        if (this.writer instanceof http.IncomingMessage) {
-          // want to allow users to access the headers, status code etc.
-          response = {
-            body: this.responseQueue[id],
-            ...this.writer
-          };
-        }
-        this.pendingCalls[id].resolve(response);
-        delete this.responseQueue[id];
+  handleResponse(id) {
+    if (!(this.pendingCalls[id] === undefined)) {
+      let response = this.responseQueue[id];
+      if (this.writer instanceof http.IncomingMessage) {
+        // want to allow users to access the headers, status code etc.
+        response = {
+          body: this.responseQueue[id],
+          ...this.writer
+        };
       }
-    });
+      this.pendingCalls[id].resolve(response);
+      delete this.responseQueue[id];
+    }
   }
 
   verifyData(messages) {
@@ -121,19 +119,15 @@ class Client extends EventEmitter {
               });
               this.emit("batchError", error);
             }
-          }
-
-          if (!_.isObject(message)) {
+          } else if (!_.isObject(message)) {
             // error out if it cant be parsed
             const error = this.sendError({
               id: null,
               code: ERR_CODES.parseError,
               message: ERR_MSGS.parseError
             });
-            this.emit("messageError", error);
-          }
-
-          if (!message.id) {
+            this.handleError(error);
+          } else if (!message.id) {
             // special case http response
             // may want to still know the body
             // this is not in spec at all
@@ -144,13 +138,11 @@ class Client extends EventEmitter {
                 message: ERR_MSGS.parseError
               });
               this.writer.response = message;
-              this.emit("messageError", error);
+              this.handleError(error);
             }
             // no id, so assume notification
             this.emit("notify", message);
-          }
-
-          if (message.error) {
+          } else if (message.error) {
             // got an error back so reject the message
             const error = this.sendError({
               jsonrpc: message.jsonrpc,
@@ -158,23 +150,32 @@ class Client extends EventEmitter {
               code: message.error.code,
               message: message.error.message
             });
-            this.emit("messageError", error);
-          }
-
-          // no method, so assume response
-          if (!message.method) {
+            this.handleError(error);
+          } else if (!message.method) {
+            // no method, so assume response
             this.serving_message_id = message.id;
             this.responseQueue[this.serving_message_id] = message;
-            this.emit("response", this.serving_message_id);
+            this.handleResponse(this.serving_message_id);
+          } else {
+            throw new Error();
           }
         }
       } catch (e) {
-        const error = this.sendError({
-          id: this.serving_message_id,
-          code: ERR_CODES.parseError,
-          message: ERR_MSGS.parseError
-        });
-        this.emit("messageError", error);
+        if (e instanceof TypeError) {
+          const error = this.sendError({
+            id: this.serving_message_id,
+            code: ERR_CODES.parseError,
+            message: ERR_MSGS.parseError
+          });
+          this.handleError(error);
+        } else {
+          const error = this.sendError({
+            id: this.serving_message_id,
+            code: ERR_CODES.internal,
+            message: ERR_MSGS.internal
+          });
+          this.handleError(error);
+        }
       }
     }
   }
@@ -210,18 +211,16 @@ class Client extends EventEmitter {
     this.on("serverDisconnected", () => cb());
   }
 
-  handleError() {
-    this.on("messageError", (error) => {
-      let response = error;
-      if (this.writer instanceof http.IncomingMessage) {
-        // want to allow users to access the headers, status code etc.
-        response = {
-          body: error,
-          ...this.writer
-        };
-      }
-      this.pendingCalls[error.id].reject(response);
-    });
+  handleError(error) {
+    let response = error;
+    if (this.writer instanceof http.IncomingMessage) {
+      // want to allow users to access the headers, status code etc.
+      response = {
+        body: error,
+        ...this.writer
+      };
+    }
+    this.pendingCalls[error.id].reject(response);
   }
 
   sendError({
