@@ -33,7 +33,7 @@ class WSClient extends EventTarget {
     this.responseQueue = {};
     this.options = _.merge(defaults, options || {});
     this.options.timeout = this.options.timeout * 1000;
-    let { retries } = this.options;
+    const { retries } = this.options;
     this.remainingRetries = retries;
 
     this.initClient();
@@ -53,20 +53,18 @@ class WSClient extends EventTarget {
     this.client.onclose = (e) => {
       if (this.remainingRetries) {
         this.remainingRetries -= 1;
-        console.log(
-          `Connection failed. ${this.remainingRetries} attempts left.`
-        );
+        // console.log(
+        //   `Connection failed. ${this.remainingRetries} attempts left.`
+        // );
         setTimeout(() => {
           this.initClient();
         }, this.options.timeout);
       } else {
-        return;
       }
     };
   }
 
   onConnection() {
-    console.log("called");
     return new Promise((resolve, reject) => {
       this.client.onopen = (event) => {
         resolve(event);
@@ -229,9 +227,6 @@ class WSClient extends EventTarget {
         batchResponseIds.push(message.id);
       }
     });
-    if (_.isEmpty(batchResponseIds)) {
-      resolve([]);
-    }
     for (const ids of Object.keys(this.pendingBatches)) {
       if (_.isEmpty(_.difference(JSON.parse(`[${ids}]`), batchResponseIds))) {
         batch.forEach((message) => {
@@ -244,6 +239,7 @@ class WSClient extends EventTarget {
       }
     }
   }
+
   handleNotification(message) {
     this.dispatchEvent(new CustomEvent("notify", { detail: message }));
   }
@@ -256,7 +252,7 @@ class WSClient extends EventTarget {
     this.addEventListener("notify", ({ detail }) => {
       try {
         if (detail.method === method) {
-          return cb(undefined, detail);
+          return cb(null, detail);
         }
       } catch (e) {
         return cb(e);
@@ -272,14 +268,14 @@ class WSClient extends EventTarget {
 
   handleResponse(message) {
     if (!(this.pendingCalls[message.id] === undefined)) {
-      let response = this.responseQueue[message.id];
+      const response = this.responseQueue[message.id];
       this.pendingCalls[message.id].resolve(response);
       delete this.responseQueue[message.id];
     }
   }
 
   handleError(error) {
-    let response = error;
+    const response = error;
     this.pendingCalls[error.id].reject(response);
   }
 
