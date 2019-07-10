@@ -18,7 +18,11 @@
     "http",
     "tcp",
     "api",
-    "library"
+    "library",
+    "ws",
+    "web",
+    "socket",
+    "sockets"
   ],
   "main": "index.js",
   "scripts": {
