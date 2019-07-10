@@ -25,9 +25,7 @@ describe("WebSocket Server", () => {
         expect(conn).to.have.all.keys("host", "port");
       });
       clientws.connect().then(() => {
-        clientws.onConnection().then(() => {
-          done();
-        });
+        done();
       });
     });
   });

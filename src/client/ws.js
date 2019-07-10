@@ -44,11 +44,12 @@ class WSClient extends EventTarget {
       this.client = new window.WebSocket(url, protocols);
       this.close();
       this.listen();
+      this.client.onopen = (event) => {
+        resolve(event);
+      };
       this.client.onerror = (error) => {
-        this.client.close();
         reject(error);
       };
-      resolve();
     });
   }
 
@@ -64,17 +65,6 @@ class WSClient extends EventTarget {
         }, this.options.timeout);
       }
     };
-  }
-
-  onConnection() {
-    return new Promise((resolve, reject) => {
-      this.client.onopen = (event) => {
-        resolve(event);
-      };
-      this.client.onerror = (error) => {
-        reject(error);
-      };
-    });
   }
 
   request() {

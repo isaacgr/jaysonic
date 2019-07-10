@@ -18,9 +18,7 @@ describe("WebSocket Client", () => {
   describe("connection", () => {
     it("should connect to server", (done) => {
       ws.connect().then(() => {
-        ws.onConnection().then(() => {
-          done();
-        });
+        done();
       });
     });
   });
