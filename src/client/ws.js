@@ -10,6 +10,7 @@ class WSClient extends EventTarget {
     }
 
     const defaults = {
+      url: "ws://127.0.0.1:8100",
       version: "2.0",
       delimiter: "\n",
       timeout: 30,
@@ -41,7 +42,7 @@ class WSClient extends EventTarget {
 
   initClient() {
     const { url, protocols } = this.options;
-    this.client = new WebSocket(url);
+    this.client = new window.WebSocket(url, protocols);
     this.close();
     this.listen();
     this.client.onerror = (error) => {
