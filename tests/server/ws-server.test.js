@@ -108,4 +108,20 @@ describe("WebSocket Server", () => {
       };
     });
   });
+  describe("notifications", () => {
+    it("should handle client notification", (done) => {
+      wss.onNotify("notification", (error, message) => {
+        if (error) {
+          return done(error);
+        }
+        expect(message).to.be.eql({
+          jsonrpc: "2.0",
+          method: "notification",
+          params: []
+        });
+        done();
+      });
+      clientws.request().notify("notification", []);
+    });
+  });
 });
