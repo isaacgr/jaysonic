@@ -1,9 +1,7 @@
 const WebSocket = require("ws");
 const _ = require("lodash");
 const Server = require(".");
-
 const { formatResponse } = require("../functions");
-const { ERR_CODES, ERR_MSGS } = require("../constants");
 
 /**
  * Constructor for Jsonic WS client
@@ -65,39 +63,25 @@ class WSServer extends Server {
         const messages = this.messageBuffer.split(this.options.delimiter);
         this.messageBuffer = "";
         for (const chunk of messages) {
-          try {
-            if (chunk !== "") {
-              const validRequest = () => this.validateRequest(chunk)
-                .then(result => result)
-                .catch((error) => {
-                  throw new Error(JSON.stringify(error));
-                });
-
-              validRequest()
-                .then((message) => {
-                  if (message.batch) {
-                    return client.send(
-                      JSON.stringify(message.batch) + this.options.delimiter
-                    );
-                  }
-                  this.getResult(message.json)
-                    .then(json => client.send(json + this.options.delimiter))
+          if (chunk !== "") {
+            Promise.all(this.handleValidation(chunk))
+              .then((validationResult) => {
+                const message = validationResult[1];
+                if (message.batch) {
+                  client.send(
+                    JSON.stringify(message.batch) + this.options.delimiter
+                  );
+                } else if (message.notification) {
+                  this.emit("notify", message.notification);
+                } else {
+                  this.getResult(message)
+                    .then(result => client.send(result + this.options.delimiter))
                     .catch(error => client.send(
                       JSON.stringify(error) + this.options.delimiter
                     ));
-                })
-                .catch(error => client.send(error.message + this.options.delimiter));
-            }
-          } catch (e) {
-            if (e instanceof TypeError) {
-              const error = this.sendError(
-                null,
-                ERR_CODES.parseError,
-                ERR_MSGS.parseError
-              );
-              return client.send(JSON.stringify(error));
-            }
-            return client.send(e);
+                }
+              })
+              .catch(error => client.send(JSON.stringify(error) + this.options.delimiter));
           }
         }
       });
