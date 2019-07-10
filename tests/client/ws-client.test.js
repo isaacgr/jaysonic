@@ -2,10 +2,10 @@ const { expect } = require("chai");
 const { wss } = require("../test-server.js");
 const data = require("../large-data.json");
 
-const WSClient = require("../../src/client/ws");
+const Jaysonic = require("../../src/");
 
-const ws = new WSClient();
-const wsV1 = new WSClient({ version: 1 });
+const ws = new Jaysonic.client.ws();
+const wsV1 = new Jaysonic.client.ws({ version: 1 });
 
 before((done) => {
   wss.listen().then(() => {

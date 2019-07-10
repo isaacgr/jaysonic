@@ -53,7 +53,7 @@ class WSClient extends EventTarget {
   }
 
   close() {
-    this.client.onclose = (e) => {
+    this.client.onclose = () => {
       if (this.remainingRetries) {
         this.remainingRetries -= 1;
         // console.log(
@@ -62,7 +62,6 @@ class WSClient extends EventTarget {
         setTimeout(() => {
           this.initClient();
         }, this.options.timeout);
-      } else {
       }
     };
   }
@@ -71,6 +70,9 @@ class WSClient extends EventTarget {
     return new Promise((resolve, reject) => {
       this.client.onopen = (event) => {
         resolve(event);
+      };
+      this.client.onerror = (error) => {
+        reject(error);
       };
     });
   }
@@ -110,6 +112,7 @@ class WSClient extends EventTarget {
           options: this.options
         });
         return new Promise((resolve, reject) => {
+          this.client.send(request);
           resolve("notification sent");
           this.client.onerror = (error) => {
             reject(error);
