@@ -4,8 +4,8 @@ const data = require("../large-data.json");
 
 const Jaysonic = require("../../src/");
 
-const ws = new Jaysonic.client.ws();
-const wsV1 = new Jaysonic.client.ws({ version: 1 });
+const ws = new Jaysonic.client.ws({ url: "ws://127.0.0.1:8900" });
+const wsV1 = new Jaysonic.client.ws({ url: "ws://127.0.0.1:8900", version: 1 });
 
 before((done) => {
   wss.listen().then(() => {

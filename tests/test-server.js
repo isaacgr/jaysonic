@@ -11,7 +11,7 @@ const serverHttp = new Jaysonic.server.http({
   host: "127.0.0.1",
   port: 8800
 });
-const wss = new Jaysonic.server.ws();
+const wss = new Jaysonic.server.ws({ port: 8900 });
 
 // TCP Server
 server.method("add", ([a, b]) => a + b);
@@ -49,5 +49,8 @@ wss.onNotify("noitify", () => "notification");
 serverV1.method("add", ([a, b]) => a + b);
 
 module.exports = {
-  server, serverHttp, serverV1, wss
+  server,
+  serverHttp,
+  serverV1,
+  wss
 };
