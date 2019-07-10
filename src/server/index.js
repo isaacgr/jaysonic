@@ -308,3 +308,10 @@ Server.http = require("./http");
  * @static
  */
 Server.tcp = require("./tcp");
+
+/**
+ * WS server constructor
+ * @type ServerWS
+ * @static
+ */
+Server.ws = require("./ws");

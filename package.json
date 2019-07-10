@@ -18,11 +18,15 @@
     "http",
     "tcp",
     "api",
-    "library"
+    "library",
+    "ws",
+    "web",
+    "socket",
+    "sockets"
   ],
   "main": "index.js",
   "scripts": {
-    "test": "mocha tests/**/*test.js --exit",
+    "test": "mocha --opts tests/mocha.opts tests/**/*test.js --exit",
     "lint": "./node_modules/eslint/bin/eslint.js .",
     "lint-fix": "./node_modules/eslint/bin/eslint.js --fix .",
     "build": "./node_modules/.bin/babel src --out-dir lib",
@@ -47,9 +51,12 @@
     "eslint-plugin-node": "^9.1.0",
     "eslint-plugin-promise": "^4.1.1",
     "eslint-plugin-standard": "^4.0.0",
+    "jsdom": "15.1.1",
+    "jsdom-global": "3.0.2",
     "mocha": "^6.1.4"
   },
   "dependencies": {
-    "lodash": "^4.17.11"
+    "lodash": "^4.17.11",
+    "ws": "^7.1.0"
   }
 }
