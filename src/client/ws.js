@@ -139,7 +139,7 @@ class WSClient extends EventTarget {
           this.handleError(error);
         } else if (!message.id) {
           // no id, so assume notification
-          this.handleNotification();
+          this.handleNotification(message);
         } else if (message.error) {
           // got an error back so reject the message
           const error = this.sendError({
@@ -153,7 +153,7 @@ class WSClient extends EventTarget {
           // no method, so assume response
           this.serving_message_id = message.id;
           this.responseQueue[this.serving_message_id] = message;
-          this.handleResponse(this.serving_message_id);
+          this.handleResponse(message);
         } else {
           throw new Error();
         }
