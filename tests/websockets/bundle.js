@@ -1,11 +1,31 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _wrapNativeSuper(Class) { var _cache = typeof Map === "function" ? new Map() : undefined; _wrapNativeSuper = function _wrapNativeSuper(Class) { if (Class === null || !_isNativeFunction(Class)) return Class; if (typeof Class !== "function") { throw new TypeError("Super expression must either be null or a function"); } if (typeof _cache !== "undefined") { if (_cache.has(Class)) return _cache.get(Class); _cache.set(Class, Wrapper); } function Wrapper() { return _construct(Class, arguments, _getPrototypeOf(this).constructor); } Wrapper.prototype = Object.create(Class.prototype, { constructor: { value: Wrapper, enumerable: false, writable: true, configurable: true } }); return _setPrototypeOf(Wrapper, Class); }; return _wrapNativeSuper(Class); }
+
+function isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
+
+function _construct(Parent, args, Class) { if (isNativeReflectConstruct()) { _construct = Reflect.construct; } else { _construct = function _construct(Parent, args, Class) { var a = [null]; a.push.apply(a, args); var Constructor = Function.bind.apply(Parent, a); var instance = new Constructor(); if (Class) _setPrototypeOf(instance, Class.prototype); return instance; }; } return _construct.apply(null, arguments); }
+
+function _isNativeFunction(fn) { return Function.toString.call(fn).indexOf("[native code]") !== -1; }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
 var _ = require("lodash");
 
@@ -18,27 +38,31 @@ var _require2 = require("../constants"),
 
 var WSClient =
 /*#__PURE__*/
-function () {
+function (_EventTarget) {
+  _inherits(WSClient, _EventTarget);
+
   function WSClient(options) {
+    var _this;
+
     _classCallCheck(this, WSClient);
 
-    if (!(this instanceof WSClient)) {
-      return new WSClient(options);
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(WSClient).call(this));
+
+    if (!(_assertThisInitialized(_this) instanceof WSClient)) {
+      return _possibleConstructorReturn(_this, new WSClient(options));
     }
 
     var defaults = {
-      url: "wss://www.example.com/socketserver",
       version: "2.0",
       delimiter: "\n",
-      path: "/",
       timeout: 30,
       retries: 2
     };
-    this.message_id = 1;
-    this.serving_message_id = 1;
-    this.pendingCalls = {};
-    this.pendingBatches = {};
-    this.attached = false;
+    _this.message_id = 1;
+    _this.serving_message_id = 1;
+    _this.pendingCalls = {};
+    _this.pendingBatches = {};
+    _this.attached = false;
     /**
      * we can receive whole messages, or parital so we need to buffer
      *
@@ -47,32 +71,59 @@ function () {
      * partial message: {"jsonrpc": 2.0, "params"
      */
 
-    this.messageBuffer = "";
-    this.responseQueue = {};
-    this.options = _.merge(defaults, options || {});
-    this.options.timeout = this.options.timeout * 1000;
-    this.initClient();
+    _this.messageBuffer = "";
+    _this.responseQueue = {};
+    _this.options = _.merge(defaults, options || {});
+    _this.options.timeout = _this.options.timeout * 1000;
+    var retries = _this.options.retries;
+    _this.remainingRetries = retries;
+
+    _this.initClient();
+
+    return _this;
   }
 
   _createClass(WSClient, [{
     key: "initClient",
     value: function initClient() {
+      var _this2 = this;
+
       var _this$options = this.options,
           url = _this$options.url,
           protocols = _this$options.protocols;
-      this.client = new WebSocket(url, protocols);
+      this.client = new WebSocket(url);
+      this.close();
       this.listen();
-      this.handleResponse();
-      this.handleError();
+
+      this.client.onerror = function (error) {
+        _this2.client.close();
+      };
+    }
+  }, {
+    key: "close",
+    value: function close() {
+      var _this3 = this;
+
+      this.client.onclose = function (e) {
+        if (_this3.remainingRetries) {
+          _this3.remainingRetries -= 1;
+          console.log("Connection failed. ".concat(_this3.remainingRetries, " attempts left."));
+          setTimeout(function () {
+            _this3.initClient();
+          }, _this3.options.timeout);
+        } else {
+          return;
+        }
+      };
     }
   }, {
     key: "onConnection",
     value: function onConnection() {
-      var _this = this;
+      var _this4 = this;
 
       console.log("called");
       return new Promise(function (resolve, reject) {
-        _this.client.onopen = function (event) {
+        _this4.client.onopen = function (event) {
           resolve(event);
         };
       });
@@ -80,53 +131,53 @@ function () {
   }, {
     key: "request",
     value: function request() {
-      var _this2 = this;
+      var _this5 = this;
 
       return {
         message: function message(method, params) {
           var request = formatRequest({
             method: method,
             params: params,
-            id: _this2.message_id,
-            options: _this2.options
+            id: _this5.message_id,
+            options: _this5.options
           });
-          _this2.message_id += 1;
+          _this5.message_id += 1;
           return request;
         },
         send: function send(method, params) {
           return new Promise(function (resolve, reject) {
-            var requestId = _this2.message_id;
-            _this2.pendingCalls[requestId] = {
+            var requestId = _this5.message_id;
+            _this5.pendingCalls[requestId] = {
               resolve: resolve,
               reject: reject
             };
 
-            _this2.client.send(_this2.request().message(method, params), _this2.options.protocols);
+            _this5.client.send(_this5.request().message(method, params));
 
             setTimeout(function () {
-              if (_this2.pendingCalls[requestId]) {
-                var error = _this2.sendError({
+              if (_this5.pendingCalls[requestId]) {
+                var error = _this5.sendError({
                   id: requestId,
                   code: ERR_CODES.timeout,
                   message: ERR_MSGS.timeout
                 });
 
-                delete _this2.pendingCalls[requestId];
+                delete _this5.pendingCalls[requestId];
                 reject(error);
               }
-            }, _this2.options.timeout);
+            }, _this5.options.timeout);
           });
         },
         notify: function notify(method, params) {
           var request = formatRequest({
             method: method,
             params: params,
-            options: _this2.options
+            options: _this5.options
           });
           return new Promise(function (resolve, reject) {
-            resolve(_this2.client.send(request));
+            resolve(_this5.client.send(request));
 
-            _this2.client.onerror = function (error) {
+            _this5.client.onerror = function (error) {
               reject(error);
             };
           });
@@ -137,92 +188,261 @@ function () {
     key: "verifyData",
     value: function verifyData(chunk) {
       try {
-        // will throw an error if not valid json
-        var message = JSON.parse(chunk);
+        // sometimes split messages have empty string at the end
+        // just ignore it
+        if (chunk !== "") {
+          // will throw an error if not valid json
+          var message = JSON.parse(chunk);
 
-        if (_.isArray(message)) {
-          // possible batch request
-          try {
+          if (_.isArray(message)) {
+            // possible batch request
             this.handleBatchResponse(message);
-          } catch (e) {
+          } else if (!_.isObject(message)) {
+            // error out if it cant be parsed
             var error = this.sendError({
-              id: this.serving_message_id,
+              id: null,
               code: ERR_CODES.parseError,
               message: ERR_MSGS.parseError
             });
-            this.handleBatchError(error);
+            this.handleError(error);
+          } else if (!message.id) {
+            // no id, so assume notification
+            this.handleNotification();
+          } else if (message.error) {
+            // got an error back so reject the message
+            var _error = this.sendError({
+              jsonrpc: message.jsonrpc,
+              id: message.id,
+              code: message.error.code,
+              message: message.error.message
+            });
+
+            this.handleError(_error);
+          } else if (!message.method) {
+            // no method, so assume response
+            this.serving_message_id = message.id;
+            this.responseQueue[this.serving_message_id] = message;
+            this.handleResponse(this.serving_message_id);
+          } else {
+            throw new Error();
           }
         }
-
-        if (!_.isObject(message)) {
-          // error out if it cant be parsed
-          var _error = this.sendError({
-            id: null,
+      } catch (e) {
+        if (e instanceof TypeError) {
+          var _error2 = this.sendError({
+            id: this.serving_message_id,
             code: ERR_CODES.parseError,
             message: ERR_MSGS.parseError
           });
 
-          throw new Error(_error);
-        }
-
-        if (!message.id) {
-          // no id, so assume notification
-          this.handleNotification(message);
-        }
-
-        if (message.error) {
-          // got an error back so reject the message
-          var _error2 = this.sendError({
-            jsonrpc: message.jsonrpc,
-            id: message.id,
-            code: message.error.code,
-            message: message.error.message
+          this.handleError(_error2);
+        } else {
+          var _error3 = this.sendError({
+            id: this.serving_message_id,
+            code: ERR_CODES.internal,
+            message: ERR_MSGS.internal
           });
 
-          throw new Error(_error2);
-        } // no method, so assume response
+          this.handleError(_error3);
+        }
+      }
+    }
+  }, {
+    key: "batch",
+    value: function batch(requests) {
+      var _this6 = this;
 
+      /**
+       * should receive a list of request objects
+       * [client.request.message(), client.request.message()]
+       * send a single request with that, server should handle it
+       *
+       * We want to store the IDs for the requests in the batch in an array
+       * Use this to reference the batch response
+       * The spec has no explaination on how to do that, so this is the solution
+       */
+      return new Promise(function (resolve, reject) {
+        var batchIds = [];
+        var batchRequests = [];
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
 
-        if (!message.method) {
-          this.serving_message_id = message.id;
-          this.responseQueue[this.serving_message_id] = message;
-          this.handleResponse(message);
+        try {
+          for (var _iterator = requests[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            var _request = _step.value;
+            var json = JSON.parse(_request);
+            batchRequests.push(json);
+
+            if (json.id) {
+              batchIds.push(json.id);
+            }
+          }
+        } catch (err) {
+          _didIteratorError = true;
+          _iteratorError = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+              _iterator["return"]();
+            }
+          } finally {
+            if (_didIteratorError) {
+              throw _iteratorError;
+            }
+          }
         }
 
-        console.log(message);
-      } catch (e) {
-        var _error3 = this.sendError({
-          id: this.serving_message_id,
-          code: ERR_CODES.parseError,
-          message: ERR_MSGS.parseError
-        });
+        _this6.pendingBatches[String(batchIds)] = {
+          resolve: resolve,
+          reject: reject
+        };
+        var request = JSON.stringify(batchRequests);
 
-        throw new Error(_error3);
+        try {
+          _this6.client.send(request + _this6.options.delimiter);
+        } catch (e) {
+          if (e instanceof TypeError) {
+            // this.client is probably undefined
+            reject(new Error("Unable to send request. ".concat(e.message)));
+          }
+        }
+
+        setTimeout(function () {
+          if (_this6.pendingBatches[String(batchIds)]) {
+            var error = _this6.sendError({
+              id: null,
+              code: ERR_CODES.timeout,
+              message: ERR_MSGS.timeout
+            });
+
+            delete _this6.pendingBatches[String(batchIds)];
+            reject(error);
+          }
+        }, _this6.options.timeout);
+      });
+    }
+  }, {
+    key: "handleBatchResponse",
+    value: function handleBatchResponse(batch) {
+      var _this7 = this;
+
+      var batchResponseIds = [];
+      batch.forEach(function (message) {
+        if (message.id) {
+          batchResponseIds.push(message.id);
+        }
+      });
+
+      if (_.isEmpty(batchResponseIds)) {
+        resolve([]);
       }
+
+      var _loop = function _loop() {
+        var ids = _Object$keys[_i];
+
+        if (_.isEmpty(_.difference(JSON.parse("[".concat(ids, "]")), batchResponseIds))) {
+          batch.forEach(function (message) {
+            if (message.error) {
+              // reject the whole message if there are any errors
+              _this7.pendingBatches[ids].reject(batch);
+            }
+          });
+
+          _this7.pendingBatches[ids].resolve(batch);
+        }
+      };
+
+      for (var _i = 0, _Object$keys = Object.keys(this.pendingBatches); _i < _Object$keys.length; _i++) {
+        _loop();
+      }
+    }
+  }, {
+    key: "handleNotification",
+    value: function handleNotification(message) {
+      this.dispatchEvent(new CustomEvent("notify", {
+        detail: message
+      }));
+    }
+    /**
+     * @params {String} [method] method to subscribe to
+     * @params {Function} [cb] callback function to invoke on notify
+     */
+
+  }, {
+    key: "subscribe",
+    value: function subscribe(method, cb) {
+      this.addEventListener("notify", function (_ref) {
+        var detail = _ref.detail;
+
+        try {
+          if (detail.method === method) {
+            return cb(undefined, detail);
+          }
+        } catch (e) {
+          return cb(e);
+        }
+      });
     }
   }, {
     key: "listen",
     value: function listen() {
-      var _this3 = this;
+      var _this8 = this;
 
       this.client.onmessage = function (message) {
-        _this3.verifyData(message.data);
+        _this8.verifyData(message.data);
       };
     }
   }, {
     key: "handleResponse",
-    value: function handleResponse() {}
+    value: function handleResponse(message) {
+      if (!(this.pendingCalls[message.id] === undefined)) {
+        var response = this.responseQueue[message.id];
+        this.pendingCalls[message.id].resolve(response);
+        delete this.responseQueue[message.id];
+      }
+    }
   }, {
     key: "handleError",
-    value: function handleError() {
-      this.client.onerror = function (error) {
-        console.log(error);
-      };
+    value: function handleError(error) {
+      var response = error;
+      this.pendingCalls[error.id].reject(response);
+    }
+  }, {
+    key: "sendError",
+    value: function sendError(_ref2) {
+      var jsonrpc = _ref2.jsonrpc,
+          id = _ref2.id,
+          code = _ref2.code,
+          message = _ref2.message;
+      var response;
+
+      if (this.options.version === "2.0") {
+        response = {
+          jsonrpc: jsonrpc || this.options.version,
+          error: {
+            code: code,
+            message: message || "Unknown Error"
+          },
+          id: id
+        };
+      } else {
+        response = {
+          result: null,
+          error: {
+            code: code,
+            message: message || "Unknown Error"
+          },
+          id: id
+        };
+      }
+
+      return response;
     }
   }]);
 
   return WSClient;
-}();
+}(_wrapNativeSuper(EventTarget));
 
 module.exports = WSClient;
 },{"../constants":2,"../functions":3,"lodash":15}],2:[function(require,module,exports){
@@ -17734,10 +17954,14 @@ module.exports = isUndefined;
 },{}],16:[function(require,module,exports){
 const WSClient = require("../../lib/client/ws.js");
 
-const ws = new WSClient({ url: "wss://echo.websocket.org" });
+const ws = new WSClient({ url: "ws://127.0.0.1:8100", delimiter: "\r\n" });
 
 ws.onConnection().then((event) => {
-  ws.request().send("test", []);
+  ws.request()
+    .send("get_config", {})
+    .then((response) => {
+      console.log(response);
+    });
 });
 
 console.log("working");
