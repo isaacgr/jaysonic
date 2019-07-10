@@ -37,14 +37,23 @@ class WSServer extends Server {
     };
 
     this.options = _.merge(defaults, options || {});
-
-    this.initServer();
   }
 
-  initServer() {
-    this.server = new WebSocket.Server(this.options);
-    this.handleData();
-    this.handleError();
+  listen() {
+    /**
+     * WS server needs to override listen method from parent
+     * since the ws library starts listening on instantiation
+     */
+    return new Promise((resolve, reject) => {
+      try {
+        this.server = new WebSocket.Server(this.options);
+        this.handleData();
+        this.handleError();
+        resolve();
+      } catch (e) {
+        reject(e);
+      }
+    });
   }
 
   handleData() {
