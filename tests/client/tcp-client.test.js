@@ -60,6 +60,20 @@ describe("TCP Client", () => {
         done();
       });
     });
+    it("should receive error trying to write while disconnected", (done) => {
+      const badClient = new Jaysonic.client.tcp({
+        host: "127.0.0.1",
+        port: 8101,
+        retries: 0
+      });
+      badClient
+        .request()
+        .send("add", [1, 2])
+        .catch((error) => {
+          expect(error).to.be.instanceOf(Error);
+          done();
+        });
+    });
   });
   describe("requests", () => {
     it("should receive response for positional params", (done) => {
@@ -87,39 +101,13 @@ describe("TCP Client", () => {
         done();
       });
     });
-    it("should receive response for batch request", (done) => {
-      const request = client.batch([
-        client.request().message("add", [1, 2]),
-        client.request().message("add", [3, 4])
-      ]);
-      request.then((response) => {
-        expect(response).to.eql([
-          { result: 3, jsonrpc: "2.0", id: 3 },
-          { result: 7, jsonrpc: "2.0", id: 4 }
-        ]);
-        done();
-      });
-    });
-    // it("should receive 'invalid request' error for non empty array", (done) => {
-    //   const request = client.batch([1]);
-    //   request.catch((response) => {
-    //     expect(response).to.eql([
-    //       {
-    //         jsonrpc: "2.0",
-    //         error: { code: -32600, message: "Invalid Request" },
-    //         id: null
-    //       }
-    //     ]);
-    //     done();
-    //   });
-    // });
     it("should handle 'method not found' error", (done) => {
       const request = client.request().send("nonexistent method", []);
       request.catch((error) => {
         expect(error).to.eql({
           jsonrpc: "2.0",
           error: { code: -32601, message: "Method not found" },
-          id: 5
+          id: 3
         });
         done();
       });
@@ -130,7 +118,7 @@ describe("TCP Client", () => {
         expect(error).to.eql({
           jsonrpc: "2.0",
           error: { code: -32602, message: "Invalid Parameters" },
-          id: 6
+          id: 4
         });
         done();
       });
@@ -141,9 +129,95 @@ describe("TCP Client", () => {
         expect(result).to.eql({
           jsonrpc: "2.0",
           result: data,
-          id: 7
+          id: 5
         });
         done();
+      });
+    });
+  });
+  describe("batches", () => {
+    it("should receive response for batch request", (done) => {
+      const request = client.batch([
+        client.request().message("add", [1, 2]),
+        client.request().message("add", [3, 4])
+      ]);
+      request.then((response) => {
+        expect(response).to.eql([
+          { result: 3, jsonrpc: "2.0", id: 6 },
+          { result: 7, jsonrpc: "2.0", id: 7 }
+        ]);
+        done();
+      });
+    });
+    it("should receive error in batch response if one batch request is bad", (done) => {
+      const request = client.batch([
+        client.request().message("nonexistent", [1, 2]),
+        client.request().message("add", [3, 4])
+      ]);
+      request.catch((response) => {
+        expect(response).to.eql([
+          {
+            jsonrpc: "2.0",
+            error: { code: -32601, message: "Method not found" },
+            id: 8
+          },
+          { result: 7, jsonrpc: "2.0", id: 9 }
+        ]);
+        done();
+      });
+    });
+    it("should receive 'invalid request' error for non empty array", (done) => {
+      const request = client.batch([1]);
+      request.catch((response) => {
+        expect(response).to.eql([
+          {
+            jsonrpc: "2.0",
+            error: { code: -32600, message: "Invalid Request" },
+            id: null
+          }
+        ]);
+        done();
+      });
+    });
+  });
+  describe("multiple requests", () => {
+    it("should get responses for multiple requests at once", (done) => {
+      const request = client.request().send("add", [1, 2]);
+      const request2 = client.request().send("greeting", { name: "Isaac" });
+      const request3 = client.batch([
+        client.request().message("add", [1, 2]),
+        client.request().message("add", [3, 4])
+      ]);
+      const request4 = client.batch([
+        client.request().message("nonexistent", [1, 2]),
+        client.request().message("add", [3, 4])
+      ]);
+      request.then((res1) => {
+        expect(res1).to.eql({ jsonrpc: "2.0", result: 3, id: 10 });
+        request2.then((res2) => {
+          expect(res2).to.eql({
+            jsonrpc: "2.0",
+            result: "Hello Isaac",
+            id: 11
+          });
+          request3.then((res3) => {
+            expect(res3).to.eql([
+              { result: 3, jsonrpc: "2.0", id: 12 },
+              { result: 7, jsonrpc: "2.0", id: 13 }
+            ]);
+            request4.catch((res4) => {
+              expect(res4).to.eql([
+                {
+                  jsonrpc: "2.0",
+                  error: { code: -32601, message: "Method not found" },
+                  id: 14
+                },
+                { result: 7, jsonrpc: "2.0", id: 15 }
+              ]);
+              done();
+            });
+          });
+        });
       });
     });
   });

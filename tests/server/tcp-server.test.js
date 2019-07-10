@@ -166,5 +166,19 @@ describe("TCP Server", () => {
       });
       client.request().notify("notification", []);
     });
+    // it("should handle batch notifications", (done) => {
+    //   server.onNotify("notification", (error, message) => {
+    //     if (error) {
+    //       return done(error);
+    //     }
+    //     expect(message).to.be.eql({
+    //       jsonrpc: "2.0",
+    //       method: "notification",
+    //       params: []
+    //     });
+    //     done();
+    //   });
+    //   client.batch([client.request().message("notification", [], false)]);
+    // });
   });
 });

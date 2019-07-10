@@ -99,120 +99,139 @@ class Server extends EventEmitter {
 
   handleBatchRequest(batch) {
     return new Promise((resolve, reject) => {
-      try {
-        const requests = batch;
-        const batchRequests = requests.map(request => this.validateRequest(request)
-          .then(message => this.getResult(message.json)
-            .then(result => JSON.parse(result))
-            .catch(error => error))
-          .catch(error => error));
-        Promise.all(batchRequests)
-          .then((result) => {
-            resolve(result);
-          })
+      const requests = batch;
+      const batchRequests = requests.map(request => this.validateMessage(request)
+        .then(message => this.getResult(message)
+          .then(result => JSON.parse(result))
           .catch((error) => {
-            reject(error);
-          });
-      } catch (e) {
-        if (e instanceof SyntaxError) {
-          reject(
-            this.sendError(null, ERR_CODES.parseError, ERR_MSGS.parseError)
-          );
-        }
-      }
+            throw error;
+          }))
+        .catch((error) => {
+          throw error;
+        }));
+      Promise.all(
+        batchRequests.map(promise => promise.catch(error => error))
+      )
+        .then((result) => {
+          resolve(result);
+        })
+        .catch((error) => {
+          reject(error);
+        });
     });
   }
 
-  validateRequest(message) {
+  validateRequest(request) {
     return new Promise((resolve, reject) => {
       try {
-        let json = message;
-        // only parse if message isnt json object
-        if (!_.isObject(json)) {
-          json = JSON.parse(message);
-        }
-        if (_.isArray(json)) {
-          // possible batch request
-          if (_.isEmpty(json)) {
-            const error = this.sendError(
-              null,
-              ERR_CODES.invalidRequest,
-              ERR_MSGS.invalidRequest
-            );
-            return reject(error);
-          }
-          return this.handleBatchRequest(json)
-            .then((responses) => {
-              resolve({ batch: responses });
-            })
-            .catch((error) => {
-              reject(JSON.stringify(error));
-            });
-        }
-
-        if (!_.isObject(json)) {
-          reject(
-            this.sendError(
-              null,
-              ERR_CODES.invalidRequest,
-              ERR_MSGS.invalidRequest
-            )
-          );
-        }
-
-        if (!json.id) {
-          // no id, so assume notification
-          this.emit("notify", json);
-          resolve({ notification: json });
-        }
-
-        if (!_.isString(json.method)) {
-          reject(
-            this.sendError(
-              json.id,
-              ERR_CODES.invalidRequest,
-              ERR_MSGS.invalidRequest
-            )
-          );
-        }
-
-        if (json.jsonrpc) {
-          if (this.options.version !== "2.0") {
-            reject(
-              this.sendError(
-                json.id,
-                ERR_CODES.invalidRequest,
-                ERR_MSGS.invalidRequest
-              )
-            );
-          }
-        }
-
-        if (!this.methods[json.method]) {
-          reject(
-            this.sendError(
-              json.id,
-              ERR_CODES.methodNotFound,
-              ERR_MSGS.methodNotFound
-            )
-          );
-        }
-
-        if (!isArray(json.params) && !isObject(json.params)) {
-          reject(
-            this.sendError(
-              json.id,
-              ERR_CODES.invalidParams,
-              ERR_MSGS.invalidParams
-            )
-          );
-        }
-        // data looks good
-        resolve({ json });
+        const message = JSON.parse(request);
+        resolve(message);
       } catch (e) {
         reject(this.sendError(null, ERR_CODES.parseError, ERR_MSGS.parseError));
       }
     });
+  }
+
+  validateMessage(message) {
+    return new Promise((resolve, reject) => {
+      if (_.isArray(message)) {
+        // possible batch request
+        if (_.isEmpty(message)) {
+          const error = this.sendError(
+            null,
+            ERR_CODES.invalidRequest,
+            ERR_MSGS.invalidRequest
+          );
+          return reject(error);
+        }
+        return this.handleBatchRequest(message)
+          .then((responses) => {
+            resolve({ batch: responses });
+          })
+          .catch((error) => {
+            reject(JSON.stringify(error));
+          });
+      }
+
+      if (!_.isObject(message)) {
+        reject(
+          this.sendError(
+            null,
+            ERR_CODES.invalidRequest,
+            ERR_MSGS.invalidRequest
+          )
+        );
+      }
+
+      if (!_.isString(message.method)) {
+        reject(
+          this.sendError(
+            message.id,
+            ERR_CODES.invalidRequest,
+            ERR_MSGS.invalidRequest
+          )
+        );
+      }
+
+      if (!message.id) {
+        // no id, so assume notification
+        resolve({ notification: message });
+      }
+
+      if (message.jsonrpc) {
+        if (this.options.version !== "2.0") {
+          reject(
+            this.sendError(
+              message.id,
+              ERR_CODES.invalidRequest,
+              ERR_MSGS.invalidRequest
+            )
+          );
+        }
+      }
+
+      if (!this.methods[message.method]) {
+        reject(
+          this.sendError(
+            message.id,
+            ERR_CODES.methodNotFound,
+            ERR_MSGS.methodNotFound
+          )
+        );
+      }
+
+      if (!isArray(message.params) && !isObject(message.params)) {
+        reject(
+          this.sendError(
+            message.id,
+            ERR_CODES.invalidParams,
+            ERR_MSGS.invalidParams
+          )
+        );
+      }
+      // data looks good
+      resolve(message);
+    });
+  }
+
+  handleValidation(chunk) {
+    const validRequest = this.validateRequest(chunk)
+      .then(result => result)
+      .catch((error) => {
+        throw error;
+      });
+
+    const validMessage = validRequest
+      .then(result => this.validateMessage(result)
+        .then(message => message)
+        .catch((error) => {
+          throw error;
+        }))
+      .catch((error) => {
+        throw error;
+      });
+
+    return [validRequest, validMessage];
   }
 
   getResult(message) {

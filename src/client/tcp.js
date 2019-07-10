@@ -27,8 +27,6 @@ class TCPClient extends Client {
         this.writer = this.client;
         // start listeners, response handlers and error handlers
         this.listen();
-        this.handleResponse();
-        this.handleError();
         resolve(this.server);
       });
       let { retries } = this.options;
@@ -50,11 +48,11 @@ class TCPClient extends Client {
 
   request() {
     return {
-      message: (method, params) => {
+      message: (method, params, id = true) => {
         const request = formatRequest({
           method,
           params,
-          id: this.message_id,
+          id: id ? this.message_id : undefined,
           options: this.options
         });
         this.message_id += 1;
@@ -64,7 +62,14 @@ class TCPClient extends Client {
       send: (method, params) => new Promise((resolve, reject) => {
         const requestId = this.message_id;
         this.pendingCalls[requestId] = { resolve, reject };
-        this.client.write(this.request().message(method, params));
+        try {
+          this.client.write(this.request().message(method, params));
+        } catch (e) {
+          if (e instanceof TypeError) {
+            // this.client is probably undefined
+            reject(new Error(`Unable to send request. ${e.message}`));
+          }
+        }
         setTimeout(() => {
           if (this.pendingCalls[requestId]) {
             const error = this.sendError({
@@ -84,12 +89,16 @@ class TCPClient extends Client {
           options: this.options
         });
         return new Promise((resolve, reject) => {
-          this.client.write(request, () => {
-            resolve("notification sent");
-          });
-          this.client.on("error", (error) => {
-            reject(error);
-          });
+          try {
+            this.client.write(request, () => {
+              resolve("notification sent");
+            });
+          } catch (e) {
+            if (e instanceof TypeError) {
+              // this.client is probably undefined
+              reject(new Error(`Unable to send request. ${e.message}`));
+            }
+          }
         });
       }
     };
@@ -108,23 +117,38 @@ class TCPClient extends Client {
 
     return new Promise((resolve, reject) => {
       const batchIds = [];
+      const batchRequests = [];
       for (const request of requests) {
         const json = JSON.parse(request);
+        batchRequests.push(json);
         if (json.id) {
           batchIds.push(json.id);
         }
       }
       this.pendingBatches[String(batchIds)] = { resolve, reject };
-
-      const request = JSON.stringify(requests);
-      this.client.write(request + this.options.delimiter);
+      const request = JSON.stringify(batchRequests);
+      try {
+        this.client.write(request + this.options.delimiter);
+      } catch (e) {
+        if (e instanceof TypeError) {
+          // this.client is probably undefined
+          reject(new Error(`Unable to send request. ${e.message}`));
+        }
+      }
+      setTimeout(() => {
+        if (this.pendingBatches[String(batchIds)]) {
+          const error = this.sendError({
+            id: null,
+            code: ERR_CODES.timeout,
+            message: ERR_MSGS.timeout
+          });
+          delete this.pendingBatches[String(batchIds)];
+          reject(error);
+        }
+      }, this.options.timeout);
       this.on("batchResponse", (batch) => {
         const batchResponseIds = [];
         batch.forEach((message) => {
-          if (message.error) {
-            // reject the whole message if there are any errors
-            reject(batch);
-          }
           if (message.id) {
             batchResponseIds.push(message.id);
           }
@@ -136,6 +160,12 @@ class TCPClient extends Client {
           if (
             _.isEmpty(_.difference(JSON.parse(`[${ids}]`), batchResponseIds))
           ) {
+            batch.forEach((message) => {
+              if (message.error) {
+                // reject the whole message if there are any errors
+                this.pendingBatches[ids].reject(batch);
+              }
+            });
             this.pendingBatches[ids].resolve(batch);
           }
         }

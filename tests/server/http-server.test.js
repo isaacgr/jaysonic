@@ -14,15 +14,12 @@ const httpRequest = chai.request("http://localhost:8000");
 const httpRequestV1 = chai.request("http://localhost:8400");
 
 server.method("add", ([a, b]) => a + b);
-
 server.method("greeting", ({ name }) => `Hello ${name}`);
-
 server.method("typeerror", ([a]) => {
   if (typeof a !== "string") {
     throw new TypeError();
   }
 });
-
 server.onNotify("notify", () => "notified");
 
 before((done) => {
@@ -132,6 +129,22 @@ describe("HTTP Server", () => {
             error: { code: -32600, message: "Invalid Request" },
             id: 69
           });
+          done();
+        });
+    });
+    it("should receive 'invalid request' error for non empty array", (done) => {
+      httpRequest
+        .post("/")
+        .set("Content-Type", "application/json")
+        .send([1])
+        .end((error, response) => {
+          expect(JSON.parse(response.text)).to.be.eql([
+            {
+              jsonrpc: "2.0",
+              error: { code: -32600, message: "Invalid Request" },
+              id: null
+            }
+          ]);
           done();
         });
     });
