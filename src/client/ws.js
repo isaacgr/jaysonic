@@ -87,23 +87,22 @@ class WSClient extends EventTarget {
         this.message_id += 1;
         return request;
       },
-      send: (method, params) =>
-        new Promise((resolve, reject) => {
-          const requestId = this.message_id;
-          this.pendingCalls[requestId] = { resolve, reject };
-          this.client.send(this.request().message(method, params));
-          setTimeout(() => {
-            if (this.pendingCalls[requestId]) {
-              const error = this.sendError({
-                id: requestId,
-                code: ERR_CODES.timeout,
-                message: ERR_MSGS.timeout
-              });
-              delete this.pendingCalls[requestId];
-              reject(error);
-            }
-          }, this.options.timeout);
-        }),
+      send: (method, params) => new Promise((resolve, reject) => {
+        const requestId = this.message_id;
+        this.pendingCalls[requestId] = { resolve, reject };
+        this.client.send(this.request().message(method, params));
+        setTimeout(() => {
+          if (this.pendingCalls[requestId]) {
+            const error = this.sendError({
+              id: requestId,
+              code: ERR_CODES.timeout,
+              message: ERR_MSGS.timeout
+            });
+            delete this.pendingCalls[requestId];
+            reject(error);
+          }
+        }, this.options.timeout);
+      }),
       notify: (method, params) => {
         const request = formatRequest({
           method,
@@ -111,7 +110,7 @@ class WSClient extends EventTarget {
           options: this.options
         });
         return new Promise((resolve, reject) => {
-          resolve(this.client.send(request));
+          resolve("notification sent");
           this.client.onerror = (error) => {
             reject(error);
           };
@@ -282,7 +281,9 @@ class WSClient extends EventTarget {
     this.pendingCalls[error.id].reject(response);
   }
 
-  sendError({ jsonrpc, id, code, message }) {
+  sendError({
+    jsonrpc, id, code, message
+  }) {
     let response;
     if (this.options.version === "2.0") {
       response = {
