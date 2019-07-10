@@ -136,7 +136,7 @@ class WSServer extends Server {
     const response = formatResponse({ jsonrpc: "2.0", method, params });
     try {
       this.connectedClients.forEach((client) => {
-        client.write(response + this.options.delimiter);
+        client.send(response + this.options.delimiter);
       });
     } catch (e) {
       // was unable to send data to client, possibly disconnected
