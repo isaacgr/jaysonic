@@ -141,33 +141,37 @@ describe("HTTP Client", () => {
         clienthttp.request().message("nonexistent", [1, 2]),
         clienthttp.request().message("add", [3, 4])
       ]);
-      request.then((res1) => {
-        expect(res1.body).to.eql({ jsonrpc: "2.0", result: 3, id: 10 });
+      try {
+        request.then((res1) => {
+          expect(res1.body).to.eql({ jsonrpc: "2.0", result: 3, id: 10 });
+        });
         request2.then((res2) => {
           expect(res2.body).to.eql({
             jsonrpc: "2.0",
             result: "Hello Isaac",
             id: 11
           });
-          request3.then((res3) => {
-            expect(res3.body).to.eql([
-              { result: 3, jsonrpc: "2.0", id: 12 },
-              { result: 7, jsonrpc: "2.0", id: 13 }
-            ]);
-            request4.catch((res4) => {
-              expect(res4.body).to.eql([
-                {
-                  jsonrpc: "2.0",
-                  error: { code: -32601, message: "Method not found" },
-                  id: 14
-                },
-                { result: 7, jsonrpc: "2.0", id: 15 }
-              ]);
-              done();
-            });
-          });
         });
-      });
+        request3.then((res3) => {
+          expect(res3.body).to.eql([
+            { result: 3, jsonrpc: "2.0", id: 12 },
+            { result: 7, jsonrpc: "2.0", id: 13 }
+          ]);
+        });
+        request4.catch((res4) => {
+          expect(res4.body).to.eql([
+            {
+              jsonrpc: "2.0",
+              error: { code: -32601, message: "Method not found" },
+              id: 14
+            },
+            { result: 7, jsonrpc: "2.0", id: 15 }
+          ]);
+        });
+        done();
+      } catch (e) {
+        done(e);
+      }
     });
   });
   describe("notifications", () => {
