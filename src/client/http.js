@@ -169,11 +169,7 @@ class HTTPClient extends Client {
           }
         });
         if (_.isEmpty(batchResponseIds)) {
-          const response = {
-            body: [],
-            ...this.writer
-          };
-          resolve(response);
+          resolve([]);
         }
         for (const ids of Object.keys(this.pendingBatches)) {
           if (
@@ -186,10 +182,16 @@ class HTTPClient extends Client {
             batch.forEach((message) => {
               if (message.error) {
                 // reject the whole message if there are any errors
-                this.pendingBatches[ids].reject(response);
+                if (this.pendingBatches[ids] !== undefined) {
+                  this.pendingBatches[ids].reject(response);
+                  delete this.pendingBatches[ids];
+                }
               }
             });
-            this.pendingBatches[ids].resolve(response);
+            if (this.pendingBatches[ids] !== undefined) {
+              this.pendingBatches[ids].resolve(response);
+              delete this.pendingBatches[ids];
+            }
           }
         }
       });

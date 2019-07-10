@@ -163,10 +163,16 @@ class TCPClient extends Client {
             batch.forEach((message) => {
               if (message.error) {
                 // reject the whole message if there are any errors
-                this.pendingBatches[ids].reject(batch);
+                if (this.pendingBatches[ids] !== undefined) {
+                  this.pendingBatches[ids].reject(batch);
+                  delete this.pendingBatches[ids];
+                }
               }
             });
-            this.pendingBatches[ids].resolve(batch);
+            if (this.pendingBatches[ids] !== undefined) {
+              this.pendingBatches[ids].resolve(batch);
+              delete this.pendingBatches[ids];
+            }
           }
         }
       });
