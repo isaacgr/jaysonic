@@ -36,18 +36,20 @@ class WSClient extends EventTarget {
     this.options.timeout = this.options.timeout * 1000;
     const { retries } = this.options;
     this.remainingRetries = retries;
-
-    this.initClient();
   }
 
-  initClient() {
-    const { url, protocols } = this.options;
-    this.client = new window.WebSocket(url, protocols);
-    this.close();
-    this.listen();
-    this.client.onerror = (error) => {
-      this.client.close();
-    };
+  connect() {
+    return new Promise((resolve, reject) => {
+      const { url, protocols } = this.options;
+      this.client = new window.WebSocket(url, protocols);
+      this.close();
+      this.listen();
+      this.client.onerror = (error) => {
+        this.client.close();
+        reject(error);
+      };
+      resolve();
+    });
   }
 
   close() {
