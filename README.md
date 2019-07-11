@@ -66,10 +66,16 @@ const server = new Jaysonic.server.http();
 const client = new Jaysonic.client.http();
 // WS
 const wss = new Jaysonic.server.ws();
-const ws = new Jaysonic.client.ws();
 ```
 
 **Note that the web socket client can only be run in the browser.**
+
+To instantiate the web socket client
+
+```js
+const Jaysonic = require("jaysonic/lib/client-ws");
+const ws = new Jaysonic.wsclient();
+```
 
 ### Options
 
