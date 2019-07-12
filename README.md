@@ -120,7 +120,7 @@ The default host and port for the server is `127.0.0.1:8100`. Based on the node 
 
 The default host and port for the TCP client is `127.0.0.1:8100`. Based on the node `net.Socket()` module.
 
-The default host and port for the HTTP client is `http://127.0.0.1:80/`. Based on the node `http.ClientRequest` module.
+The default request URL for the HTTP client is `http://127.0.0.1:8100/`. Based on the node `http.ClientRequest` module.
 
 The default url for the WS client is `ws://127.0.0.1:8100`. Based on the `WebSocket` module from JavaScript.
 
@@ -133,6 +133,7 @@ The default options will be used when instantiating the client or the server. Ov
 ```js
 const Jaysonic = require("jaysonic");
 
+// server with overrides
 const server = new Jaysonic.server.tcp({
   host: "127.0.0.1",
   port: 8100,
@@ -146,6 +147,7 @@ const server = new Jaysonic.server.tcp({
 ```js
 const Jaysonic = require("jaysonic");
 
+// client with overrides
 const client = new Jaysonic.client.http({
     method: "POST",
     headers: {
@@ -161,8 +163,10 @@ const client = new Jaysonic.client.http({
 
 ```js
 const Jaysonic = require("jaysonic");
+const socket = require("jaysonic/lib/client-ws");
 
-const ws = new Jaysonic.client.ws({
+// client and server with overrides
+const ws = new socket.wsclient({
   url: "ws://127.0.0.1:8100"
 });
 
@@ -178,7 +182,7 @@ const wss = new Jaysonic.server.ws({
 ```js
 const Jaysonic = require("jaysonic");
 
-const server = new Jaysonic.server.tcp({ host: "127.0.0.1", port: 8100 });
+const server = new Jaysonic.server.tcp();
 
 server
   .listen()
@@ -236,7 +240,7 @@ server.clientDisconnected(({ host, port }) => {
 
 ```js
 const Jaysonic = require("jaysonic");
-const client = new Jaysonic.client.tcp({ host: "127.0.0.1", port: 8100 });
+const client = new Jaysonic.client.tcp();
 
 client
   .connect()
@@ -247,6 +251,8 @@ client
     console.log(`Client unable to connect, ${error}`);
   });
 ```
+
+**Note that the HTTP client does not have a connect() method and can just begin making requests to the server.**
 
 ##### Listening for server disconnect
 
