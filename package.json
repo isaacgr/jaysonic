@@ -22,7 +22,12 @@
     "ws",
     "web",
     "socket",
-    "sockets"
+    "sockets",
+    "node",
+    "javascript",
+    "js",
+    "browser",
+    "web"
   ],
   "main": "index.js",
   "scripts": {
@@ -56,7 +61,7 @@
     "mocha": "^6.1.4"
   },
   "dependencies": {
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.14",
     "ws": "^7.1.0"
   }
 }
