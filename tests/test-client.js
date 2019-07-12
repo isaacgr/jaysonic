@@ -7,13 +7,11 @@ const clienthttp = new Jaysonic.client.http({ host: "127.0.0.1", port: 8000 });
 const socket = new net.Socket();
 const sock = new net.Socket();
 const clientws = new WebSocket.wsclient({ url: "ws://127.0.0.1:9000" });
-const wstest = new window.WebSocket("ws://127.0.0.1:9000");
 
 module.exports = {
   client,
   clienthttp,
   socket,
   sock,
-  clientws,
-  wstest
+  clientws
 };

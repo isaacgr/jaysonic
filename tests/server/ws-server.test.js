@@ -1,7 +1,7 @@
 const { expect } = require("chai");
 const Jaysonic = require("../../src");
 
-const { clientws, wstest } = require("../test-client");
+const { clientws } = require("../test-client");
 
 const wss = new Jaysonic.server.ws({ port: 9000 });
 wss.method("add", ([a, b]) => a + b);
@@ -75,36 +75,42 @@ describe("WebSocket Server", () => {
       });
     });
     it("should send 'parse error'", (done) => {
-      wstest.send("parse error");
-      wstest.onmessage = (event) => {
-        expect(event.data).to.eql(
-          `${JSON.stringify({
-            jsonrpc: "2.0",
-            error: { code: -32700, message: "Parse Error" },
-            id: null
-          })}\n`
-        );
-        done();
+      const wstest = new window.WebSocket("ws://127.0.0.1:9000");
+      wstest.onopen = () => {
+        wstest.send("parse error");
+        wstest.onmessage = (event) => {
+          expect(event.data).to.eql(
+            `${JSON.stringify({
+              jsonrpc: "2.0",
+              error: { code: -32700, message: "Parse Error" },
+              id: null
+            })}\n`
+          );
+          done();
+        };
       };
     });
     it("should send 'invalid request' error", (done) => {
-      wstest.send(
-        `${JSON.stringify({
-          jsonrpc: "2.0",
-          method: 1,
-          params: [],
-          id: 69
-        })}\n`
-      );
-      wstest.onmessage = (event) => {
-        expect(event.data).to.eql(
+      const wstest = new window.WebSocket("ws://127.0.0.1:9000");
+      wstest.onopen = () => {
+        wstest.send(
           `${JSON.stringify({
             jsonrpc: "2.0",
-            error: { code: -32600, message: "Invalid Request" },
+            method: 1,
+            params: [],
             id: 69
           })}\n`
         );
-        done();
+        wstest.onmessage = (event) => {
+          expect(event.data).to.eql(
+            `${JSON.stringify({
+              jsonrpc: "2.0",
+              error: { code: -32600, message: "Invalid Request" },
+              id: 69
+            })}\n`
+          );
+          done();
+        };
       };
     });
   });
