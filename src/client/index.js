@@ -165,14 +165,14 @@ class Client extends EventEmitter {
           const error = this.sendError({
             id: this.serving_message_id,
             code: ERR_CODES.parseError,
-            message: ERR_MSGS.parseError
+            message: `Unable to parse message ${chunk}`
           });
           this.handleError(error);
         } else {
           const error = this.sendError({
             id: this.serving_message_id,
             code: ERR_CODES.internal,
-            message: ERR_MSGS.internal
+            message: `Unable to parse message ${chunk}`
           });
           this.handleError(error);
         }
@@ -220,7 +220,15 @@ class Client extends EventEmitter {
         ...this.writer
       };
     }
-    this.pendingCalls[error.id].reject(response);
+    try {
+      this.pendingCalls[error.id].reject(response);
+    } catch (e) {
+      if (e instanceof TypeError) {
+        // probably a parse error, which might not have an id
+        // just throw
+        throw new Error(error);
+      }
+    }
   }
 
   sendError({
