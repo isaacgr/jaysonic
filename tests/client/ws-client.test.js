@@ -1,4 +1,6 @@
 const { expect } = require("chai");
+const WebSocket = require("ws");
+const intercept = require("intercept-stdout");
 const { wss } = require("../test-server.js");
 const data = require("../large-data.json");
 
@@ -72,6 +74,53 @@ describe("WebSocket Client", () => {
           id: 5
         });
         done();
+      });
+    });
+    it("should reject message with error when parse error thrown with pending call", (done) => {
+      const server1 = new WebSocket.Server({ host: "127.0.0.1", port: 9902 });
+      server1.on("connection", (someclient) => {
+        someclient.on("message", () => {
+          someclient.send("should get a parse error\r\n");
+        });
+      });
+      const client1 = new Jaysonic.wsclient({ url: "ws://127.0.0.1:9902" });
+      client1.connect().then(() => {
+        client1
+          .request()
+          .send("add", [1, 2])
+          .catch((error) => {
+            expect(error).to.be.eql({
+              jsonrpc: "2.0",
+              error: {
+                code: -32700,
+                message:
+                  "Unable to parse message: 'should get a parse error\r\n'"
+              },
+              id: 1
+            });
+            done();
+          });
+      });
+    });
+    it("should print error to stdout when error received with no pending call", (done) => {
+      let capturedText = "";
+      const unhook = intercept((text) => {
+        capturedText += text;
+      });
+      const badServer = new WebSocket.Server({ host: "127.0.0.1", port: 9903 });
+      badServer.on("connection", (someclient2) => {
+        someclient2.send("should get a parse error\r\n");
+      });
+      const client2 = new Jaysonic.wsclient({ url: "ws://127.0.0.1:9903" });
+      client2.connect().then(() => {
+        // needs a bit of extra time to check the output
+        setTimeout(() => {
+          unhook();
+          expect(capturedText).to.equal(
+            "Message has no outstanding calls: {\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Unable to parse message: 'should get a parse error\\r\\n'\"},\"id\":1}\n\n"
+          );
+          done();
+        }, 100);
       });
     });
   });
