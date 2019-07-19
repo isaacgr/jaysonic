@@ -58,11 +58,11 @@ class WSClient extends EventTarget {
     this.client.onclose = () => {
       if (this.remainingRetries) {
         this.remainingRetries -= 1;
-        // console.log(
-        //   `Connection failed. ${this.remainingRetries} attempts left.`
-        // );
+        console.log(
+          `Connection failed. ${this.remainingRetries} attempts left.`
+        );
         setTimeout(() => {
-          this.initClient();
+          this.connect().catch(() => {});
         }, this.options.timeout);
       }
     };
