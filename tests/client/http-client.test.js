@@ -1,4 +1,5 @@
 const { expect } = require("chai");
+const http = require("http");
 const Jaysonic = require("../../src");
 const data = require("../large-data.json");
 const { serverHttp } = require("../test-server");
@@ -127,6 +128,39 @@ describe("HTTP Client", () => {
         ]);
         done();
       });
+    });
+    it("should reject message with error when parse error thrown with pending call", (done) => {
+      const server1 = new http.Server();
+      server1.listen({ host: "127.0.0.1", port: 9900 });
+      server1.on("request", (request, response) => {
+        request.on("data", () => {
+          // dont care
+        });
+        request.on("end", () => {
+          response.writeHead(200, { "Content-Type": "application/json" });
+          response.write("should get a parse error\r\n", () => {
+            response.end();
+          });
+        });
+      });
+      const httpclient = new Jaysonic.client.http({
+        host: "127.0.0.1",
+        port: 9900
+      });
+      httpclient
+        .request()
+        .send("add", [1, 2])
+        .catch((error) => {
+          expect(error.body).to.be.eql({
+            jsonrpc: "2.0",
+            error: {
+              code: -32700,
+              message: "Unable to parse message: 'should get a parse error\r\n'"
+            },
+            id: 1
+          });
+          done();
+        });
     });
   });
   describe("multiple requests", () => {
