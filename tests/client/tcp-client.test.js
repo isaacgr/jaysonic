@@ -1,4 +1,6 @@
 const { expect } = require("chai");
+const intercept = require("intercept-stdout");
+const net = require("net");
 const { server, serverV1 } = require("../test-server.js");
 const data = require("../large-data.json");
 
@@ -132,6 +134,57 @@ describe("TCP Client", () => {
           id: 5
         });
         done();
+      });
+    });
+    it("should reject message with error when parse error thrown with pending call", (done) => {
+      const server1 = new net.Server();
+      server1.listen({ host: "127.0.0.1", port: 9700 });
+      server1.on("connection", (someclient) => {
+        someclient.write("should get a parse error\r\n");
+      });
+      const client1 = new Jaysonic.client.tcp({
+        host: "127.0.0.1",
+        port: 9700
+      });
+      client1.connect().then(() => {
+        client1
+          .request()
+          .send("add", [1, 2])
+          .catch((error) => {
+            expect(error).to.be.eql({
+              jsonrpc: "2.0",
+              error: {
+                code: -32700,
+                message: "Unable to parse message: 'should get a parse error\r'"
+              },
+              id: 1
+            });
+            done();
+          });
+      });
+    });
+    it("should print error to stdout when error received with no pending call", (done) => {
+      let capturedText = "";
+      const unhook = intercept((text) => {
+        capturedText += text;
+      });
+      const badServer = new net.Server();
+      badServer.listen({ host: "127.0.0.1", port: 9800 });
+      badServer.on("connection", (someclient2) => {
+        someclient2.write("should get a parse error\r\n");
+      });
+      const client2 = new Jaysonic.client.tcp({
+        host: "127.0.0.1",
+        port: 9800
+      });
+      client2.connect().then(() => {
+        setTimeout(() => {
+          unhook();
+          expect(capturedText).to.equal(
+            "Message has no outstanding calls: {\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Unable to parse message: 'should get a parse error\\r'\"},\"id\":1}\n"
+          );
+          done();
+        }, 500);
       });
     });
   });
