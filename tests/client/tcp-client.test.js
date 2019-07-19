@@ -178,13 +178,14 @@ describe("TCP Client", () => {
         port: 9800
       });
       client2.connect().then(() => {
+        // needs a bit of extra time to check the output
         setTimeout(() => {
           unhook();
           expect(capturedText).to.equal(
             "Message has no outstanding calls: {\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Unable to parse message: 'should get a parse error\\r'\"},\"id\":1}\n"
           );
           done();
-        }, 500);
+        }, 100);
       });
     });
   });
