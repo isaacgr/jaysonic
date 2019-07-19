@@ -1,3 +1,4 @@
+/* eslint no-console: 0 */
 const _ = require("lodash");
 const { formatRequest } = require("../functions");
 const { ERR_CODES, ERR_MSGS } = require("../constants");
