@@ -10,13 +10,11 @@ const ws = new Jaysonic.client.ws({ url: "ws://127.0.0.1:8900" });
 const wsV1 = new Jaysonic.client.ws({ url: "ws://127.0.0.1:8900", version: 1 });
 
 before((done) => {
-  wss.listen().then(() => {
-    wsV1.connect();
-    done();
-  });
+  wsV1.connect();
+  done();
 });
 
-describe("WebSocket Client", () => {
+describe("WebSocket Node Client", () => {
   describe("connection", () => {
     it("should connect to server", (done) => {
       ws.connect().then(() => {
@@ -77,13 +75,13 @@ describe("WebSocket Client", () => {
       });
     });
     it("should reject message with error when parse error thrown with pending call", (done) => {
-      const server1 = new WebSocket.Server({ host: "127.0.0.1", port: 9902 });
+      const server1 = new WebSocket.Server({ host: "127.0.0.1", port: 9907 });
       server1.on("connection", (someclient) => {
         someclient.on("message", () => {
           someclient.send("should get a parse error\r\n");
         });
       });
-      const client1 = new Jaysonic.wsclient({ url: "ws://127.0.0.1:9902" });
+      const client1 = new Jaysonic.client.ws({ url: "ws://127.0.0.1:9907" });
       client1.connect().then(() => {
         client1
           .request()
@@ -107,17 +105,17 @@ describe("WebSocket Client", () => {
       const unhook = intercept((text) => {
         capturedText += text;
       });
-      const badServer = new WebSocket.Server({ host: "127.0.0.1", port: 9903 });
+      const badServer = new WebSocket.Server({ host: "127.0.0.1", port: 9906 });
       badServer.on("connection", (someclient2) => {
         someclient2.send("should get a parse error\r\n");
       });
-      const client2 = new Jaysonic.wsclient({ url: "ws://127.0.0.1:9903" });
+      const client2 = new Jaysonic.client.ws({ url: "ws://127.0.0.1:9906" });
       client2.connect().then(() => {
         // needs a bit of extra time to check the output
         setTimeout(() => {
           unhook();
           expect(capturedText).to.equal(
-            'Message has no outstanding calls: {"jsonrpc":"2.0","error":{"code":-32700,"message":"Unable to parse message: \'should get a parse error\\r\\n\'"},"id":1}\n'
+            "Message has no outstanding calls: {\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Unable to parse message: 'should get a parse error\\r\\n'\"},\"id\":1}\n"
           );
           done();
         }, 100);
@@ -212,18 +210,18 @@ describe("WebSocket Client", () => {
   });
   describe("notifications", () => {
     it("should handle receiving a notification", (done) => {
-      ws.subscribe("notification", (error, message) => {
+      ws.subscribe("notter", (error, message) => {
         if (error) {
           return done(error);
         }
         expect(message).to.be.eql({
           jsonrpc: "2.0",
-          method: "notification",
+          method: "notter",
           params: []
         });
         done();
       });
-      wss.notify("notification", []);
+      wss.notify("notter", []);
     });
   });
   describe("v1.0 requests", () => {
