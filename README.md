@@ -1,29 +1,35 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
+
 - [Jaysonic - A persistent JSON-RPC client and server](#jaysonic---a-persistent-json-rpc-client-and-server)
-  - [List of features](#list-of-features)
-  - [Download & Installation](#download--installation)
-  - [Initialization](#initialization)
-  - [Options](#options)
-  - [Code Demos](#code-demos) - [TCP](#tcp) - [HTTP](#http) - [WS](#ws)
-    - [Server side](#server-side)
-      - [Listening](#listening)
-      - [Closing the connection](#closing-the-connection)
-      - [Adding Methods](#adding-methods)
-      - [Listening for client connections](#listening-for-client-connections)
-    - [Client Side](#client-side)
-      - [Connecting](#connecting)
-      - [Listening for server disconnect](#listening-for-server-disconnect)
-      - [Making requests](#making-requests)
-      - [Subscriptions](#subscriptions)
-      - [Batch Requests](#batch-requests)
-      - [HTTP Client Requests](#http-client-requests)
-      - [Notifications](#notifications)
-      - [HTTP Client Notifications](#http-client-notifications)
-  - [Contributing](#contributing)
-  - [Authors or Acknowledgments](#authors-or-acknowledgments)
-  - [License](#license)
+    - [List of features](#list-of-features)
+    - [Download & Installation](#download--installation)
+    - [Initialization](#initialization)
+      - [WS Client for browser](#ws-client-for-browser)
+      - [WS Client for Node](#ws-client-for-node)
+    - [Options](#options)
+    - [Code Demos](#code-demos)
+          - [TCP](#tcp)
+          - [HTTP](#http)
+          - [WS](#ws)
+      - [Server side](#server-side)
+        - [Listening](#listening)
+        - [Closing the connection](#closing-the-connection)
+        - [Adding Methods](#adding-methods)
+        - [Listening for client connections](#listening-for-client-connections)
+      - [Client Side](#client-side)
+        - [Connecting](#connecting)
+        - [Listening for server disconnect](#listening-for-server-disconnect)
+        - [Making requests](#making-requests)
+        - [Subscriptions](#subscriptions)
+        - [Batch Requests](#batch-requests)
+        - [HTTP Client Requests](#http-client-requests)
+        - [Notifications](#notifications)
+        - [HTTP Client Notifications](#http-client-notifications)
+    - [Contributing](#contributing)
+    - [Authors or Acknowledgments](#authors-or-acknowledgments)
+    - [License](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -44,6 +50,7 @@ A TCP, HTTP and WebSocket server and client that implement the JSON-RPC 2.0 Spec
 - TCP server/client
 - HTTP server/client
 - WebSocket server/client
+- WebSocket client supported in the browser
 - Automatic increment of request ID
 - Associate response ID with request
 
@@ -68,13 +75,27 @@ const client = new Jaysonic.client.http();
 const wss = new Jaysonic.server.ws();
 ```
 
-**Note that the web socket client can only be run in the browser.**
+**Note that there are two web socket clients**
+**One can only be run in the browser, and the other can run in a NodeJS environment.**
 
-To instantiate the web socket client
+To instantiate the web socket clients
+
+#### WS Client for browser
+
+The browser ws client is based on the WebSocket class in JavaScript.
 
 ```js
 const Jaysonic = require("jaysonic/lib/client-ws");
 const ws = new Jaysonic.wsclient();
+```
+
+#### WS Client for Node
+
+The Node ws client is based on the `ws` library (same as the server).
+
+```js
+const Jaysonic = require("jaysonic");
+const ws = new Jaysonic.client.ws();
 ```
 
 ### Options
@@ -166,7 +187,13 @@ const Jaysonic = require("jaysonic");
 const socket = require("jaysonic/lib/client-ws");
 
 // client and server with overrides
+
+// client in the browser
 const ws = new socket.wsclient({
+  url: "ws://127.0.0.1:8100"
+});
+// or to work in node
+const ws = new Jaysonic.client.ws({
   url: "ws://127.0.0.1:8100"
 });
 
