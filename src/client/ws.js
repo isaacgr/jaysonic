@@ -1,4 +1,3 @@
-/* eslint no-console: 0 */
 const _ = require("lodash");
 const WebSocket = require("ws");
 const Client = require(".");
@@ -60,8 +59,8 @@ class WSClient extends Client {
     this.client.onclose = () => {
       if (this.remainingRetries) {
         this.remainingRetries -= 1;
-        console.log(
-          `Connection failed. ${this.remainingRetries} attempts left.`
+        process.stdout.write(
+          `Connection failed. ${this.remainingRetries} attempts left.\n`
         );
         setTimeout(() => {
           this.connect().catch(() => {});
@@ -82,23 +81,22 @@ class WSClient extends Client {
         this.message_id += 1;
         return request;
       },
-      send: (method, params) =>
-        new Promise((resolve, reject) => {
-          const requestId = this.message_id;
-          this.pendingCalls[requestId] = { resolve, reject };
-          this.client.send(this.request().message(method, params));
-          setTimeout(() => {
-            if (this.pendingCalls[requestId]) {
-              const error = this.sendError({
-                id: requestId,
-                code: ERR_CODES.timeout,
-                message: ERR_MSGS.timeout
-              });
-              delete this.pendingCalls[requestId];
-              reject(error);
-            }
-          }, this.options.timeout);
-        }),
+      send: (method, params) => new Promise((resolve, reject) => {
+        const requestId = this.message_id;
+        this.pendingCalls[requestId] = { resolve, reject };
+        this.client.send(this.request().message(method, params));
+        setTimeout(() => {
+          if (this.pendingCalls[requestId]) {
+            const error = this.sendError({
+              id: requestId,
+              code: ERR_CODES.timeout,
+              message: ERR_MSGS.timeout
+            });
+            delete this.pendingCalls[requestId];
+            reject(error);
+          }
+        }, this.options.timeout);
+      }),
       notify: (method, params) => {
         const request = formatRequest({
           method,
@@ -246,7 +244,7 @@ class WSClient extends Client {
   }
 
   handleNotification(message) {
-    this.dispatchEvent(new CustomEvent("notify", { detail: message }));
+    this.emit("notify", { detail: message });
   }
 
   /**
@@ -254,7 +252,7 @@ class WSClient extends Client {
    * @params {Function} [cb] callback function to invoke on notify
    */
   subscribe(method, cb) {
-    this.addEventListener("notify", ({ detail }) => {
+    this.on("notify", ({ detail }) => {
       try {
         if (detail.method === method) {
           return cb(null, detail);
@@ -286,14 +284,16 @@ class WSClient extends Client {
     } catch (e) {
       if (e instanceof TypeError) {
         // probably a parse error, which might not have an id
-        console.log(
-          `Message has no outstanding calls: ${JSON.stringify(error)}`
+        process.stdout.write(
+          `Message has no outstanding calls: ${JSON.stringify(error)}\n`
         );
       }
     }
   }
 
-  sendError({ jsonrpc, id, code, message }) {
+  sendError({
+    jsonrpc, id, code, message
+  }) {
     let response;
     if (this.options.version === "2.0") {
       response = {
