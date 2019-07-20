@@ -267,3 +267,10 @@ Client.tcp = require("./tcp");
  * @static
  */
 Client.http = require("./http");
+
+/**
+ * WebSoket client constructor
+ * @type ClientWS
+ * @static
+ */
+Client.ws = require("./ws");
