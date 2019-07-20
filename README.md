@@ -78,11 +78,9 @@ const wss = new Jaysonic.server.ws();
 **Note that there are two web socket clients**
 **One can only be run in the browser, and the other can run in a NodeJS environment.**
 
-To instantiate the web socket clients
-
 #### WS Client for browser
 
-The browser ws client is based on the WebSocket class in JavaScript.
+The browser ws client is based on the `window.WebSocket` class.
 
 ```js
 const Jaysonic = require("jaysonic/lib/client-ws");
