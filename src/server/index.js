@@ -1,7 +1,4 @@
 const EventEmitter = require("events");
-const _ = require("lodash");
-const isObject = require("lodash/isObject");
-const isArray = require("lodash/isArray");
 const { formatResponse } = require("../functions");
 const { ERR_CODES, ERR_MSGS } = require("../constants");
 
@@ -31,7 +28,10 @@ class Server extends EventEmitter {
       delimiter: "\n"
     };
 
-    this.options = _.merge(defaults, options || {});
+    this.options = {
+      ...defaults,
+      ...(options || {})
+    };
     this.messageBuffer = "";
     this.methods = {};
     this.listening = false;
@@ -134,9 +134,9 @@ class Server extends EventEmitter {
 
   validateMessage(message) {
     return new Promise((resolve, reject) => {
-      if (_.isArray(message)) {
+      if (Array.isArray(message)) {
         // possible batch request
-        if (_.isEmpty(message)) {
+        if (message.length === 0) {
           const error = this.sendError(
             null,
             ERR_CODES.invalidRequest,
@@ -153,7 +153,7 @@ class Server extends EventEmitter {
           });
       }
 
-      if (!_.isObject(message)) {
+      if (!(message === Object(message))) {
         reject(
           this.sendError(
             null,
@@ -163,7 +163,7 @@ class Server extends EventEmitter {
         );
       }
 
-      if (!_.isString(message.method)) {
+      if (!(typeof message.method === "string")) {
         reject(
           this.sendError(
             message.id,
@@ -200,7 +200,10 @@ class Server extends EventEmitter {
         );
       }
 
-      if (!isArray(message.params) && !isObject(message.params)) {
+      if (
+        !Array.isArray(message.params)
+        && !(message.params === Object(message.params))
+      ) {
         reject(
           this.sendError(
             message.id,

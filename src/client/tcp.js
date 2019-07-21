@@ -1,5 +1,4 @@
 const net = require("net");
-const _ = require("lodash");
 const Client = require(".");
 const { formatRequest } = require("../functions");
 const { ERR_CODES, ERR_MSGS } = require("../constants");
@@ -153,13 +152,13 @@ class TCPClient extends Client {
             batchResponseIds.push(message.id);
           }
         });
-        if (_.isEmpty(batchResponseIds)) {
+        if (batchResponseIds.length === 0) {
           resolve([]);
         }
         for (const ids of Object.keys(this.pendingBatches)) {
-          if (
-            _.isEmpty(_.difference(JSON.parse(`[${ids}]`), batchResponseIds))
-          ) {
+          const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
+          const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
+          if (difference.length === 0) {
             batch.forEach((message) => {
               if (message.error) {
                 // reject the whole message if there are any errors

@@ -1,5 +1,4 @@
 /* eslint no-console: 0 */
-const _ = require("lodash");
 const { formatRequest } = require("../functions");
 const { ERR_CODES, ERR_MSGS } = require("../constants");
 
@@ -33,7 +32,10 @@ class WSClient extends EventTarget {
      */
     this.messageBuffer = "";
     this.responseQueue = {};
-    this.options = _.merge(defaults, options || {});
+    this.options = {
+      ...defaults,
+      ...(options || {})
+    };
     this.options.timeout = this.options.timeout * 1000;
     const { retries } = this.options;
     this.remainingRetries = retries;
@@ -120,10 +122,10 @@ class WSClient extends EventTarget {
       if (chunk !== "") {
         // will throw an error if not valid json
         const message = JSON.parse(chunk);
-        if (_.isArray(message)) {
+        if (Array.isArray(message)) {
           // possible batch request
           this.handleBatchResponse(message);
-        } else if (!_.isObject(message)) {
+        } else if (!(typeof message === "object")) {
           // error out if it cant be parsed
           const error = this.sendError({
             id: null,
@@ -224,7 +226,9 @@ class WSClient extends EventTarget {
       }
     });
     for (const ids of Object.keys(this.pendingBatches)) {
-      if (_.isEmpty(_.difference(JSON.parse(`[${ids}]`), batchResponseIds))) {
+      const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
+      const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
+      if (difference.length === 0) {
         batch.forEach((message) => {
           if (message.error) {
             // reject the whole message if there are any errors
