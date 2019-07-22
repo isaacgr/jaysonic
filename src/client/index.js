@@ -192,7 +192,7 @@ class Client extends EventEmitter {
         });
       } else {
         const messages = this.messageBuffer.split(this.options.delimiter);
-        if (messages.length > 1) {
+        if (messages.length > 1 && messages[messages.length - 1] === "") {
           // otherwise messages are still coming in and request
           // possibly hasnt finished
           this.messageBuffer = "";

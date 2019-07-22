@@ -93,8 +93,7 @@ describe("WebSocket Client", () => {
               jsonrpc: "2.0",
               error: {
                 code: -32700,
-                message:
-                  "Unable to parse message: 'should get a parse error\r\n'"
+                message: "Unable to parse message: 'should get a parse error\r'"
               },
               id: 1
             });
@@ -117,7 +116,7 @@ describe("WebSocket Client", () => {
         setTimeout(() => {
           unhook();
           expect(capturedText).to.equal(
-            "Message has no outstanding calls: {\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Unable to parse message: 'should get a parse error\\r\\n'\"},\"id\":1}\n"
+            "Message has no outstanding calls: {\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Unable to parse message: 'should get a parse error\\r'\"},\"id\":1}\n"
           );
           done();
         }, 100);

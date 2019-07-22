@@ -113,60 +113,62 @@ class WSClient extends EventTarget {
     };
   }
 
-  verifyData(chunk) {
-    try {
-      // sometimes split messages have empty string at the end
-      // just ignore it
-      if (chunk !== "") {
-        // will throw an error if not valid json
-        const message = JSON.parse(chunk);
-        if (_.isArray(message)) {
-          // possible batch request
-          this.handleBatchResponse(message);
-        } else if (!_.isObject(message)) {
-          // error out if it cant be parsed
-          const error = this.sendError({
-            id: null,
-            code: ERR_CODES.parseError,
-            message: ERR_MSGS.parseError
-          });
-          this.handleError(error);
-        } else if (!message.id) {
-          // no id, so assume notification
-          this.handleNotification(message);
-        } else if (message.error) {
-          // got an error back so reject the message
-          const error = this.sendError({
-            jsonrpc: message.jsonrpc,
-            id: message.id,
-            code: message.error.code,
-            message: message.error.message
-          });
-          this.handleError(error);
-        } else if (!message.method) {
-          // no method, so assume response
-          this.serving_message_id = message.id;
-          this.responseQueue[this.serving_message_id] = message;
-          this.handleResponse(message);
-        } else {
-          throw new Error();
+  verifyData(messages) {
+    for (const chunk of messages) {
+      try {
+        // sometimes split messages have empty string at the end
+        // just ignore it
+        if (chunk !== "") {
+          // will throw an error if not valid json
+          const message = JSON.parse(chunk);
+          if (_.isArray(message)) {
+            // possible batch request
+            this.handleBatchResponse(message);
+          } else if (!_.isObject(message)) {
+            // error out if it cant be parsed
+            const error = this.sendError({
+              id: null,
+              code: ERR_CODES.parseError,
+              message: ERR_MSGS.parseError
+            });
+            this.handleError(error);
+          } else if (!message.id) {
+            // no id, so assume notification
+            this.handleNotification(message);
+          } else if (message.error) {
+            // got an error back so reject the message
+            const error = this.sendError({
+              jsonrpc: message.jsonrpc,
+              id: message.id,
+              code: message.error.code,
+              message: message.error.message
+            });
+            this.handleError(error);
+          } else if (!message.method) {
+            // no method, so assume response
+            this.serving_message_id = message.id;
+            this.responseQueue[this.serving_message_id] = message;
+            this.handleResponse(message);
+          } else {
+            throw new Error();
+          }
         }
-      }
-    } catch (e) {
-      if (e instanceof SyntaxError) {
-        const error = this.sendError({
-          id: this.serving_message_id,
-          code: ERR_CODES.parseError,
-          message: `Unable to parse message: '${chunk}'`
-        });
-        this.handleError(error);
-      } else {
-        const error = this.sendError({
-          id: this.serving_message_id,
-          code: ERR_CODES.internal,
-          message: `Unable to parse message: '${chunk}'`
-        });
-        this.handleError(error);
+      } catch (e) {
+        if (e instanceof SyntaxError) {
+          const error = this.sendError({
+            id: this.serving_message_id,
+            code: ERR_CODES.parseError,
+            message: `Unable to parse message: '${chunk}'`
+          });
+          this.handleError(error);
+        } else {
+          const error = this.sendError({
+            id: this.serving_message_id,
+            code: ERR_CODES.internal,
+            message: `Unable to parse message: '${chunk}'`
+          });
+          this.handleError(error);
+        }
       }
     }
   }
@@ -264,7 +266,12 @@ class WSClient extends EventTarget {
 
   listen() {
     this.client.onmessage = (message) => {
-      this.verifyData(message.data);
+      this.messageBuffer += message.data;
+      const messages = this.messageBuffer.split(this.options.delimiter);
+      if (messages.length > 1 && messages[messages.length - 1] === "") {
+        this.messageBuffer = "";
+        this.verifyData(messages);
+      }
     };
   }
 
