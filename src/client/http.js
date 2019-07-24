@@ -31,7 +31,6 @@ class HTTPClient extends Client {
       },
       path: "/"
     };
-    this.messageBuffer = "";
     this.options = _.merge(defaults, this.options || {});
   }
 

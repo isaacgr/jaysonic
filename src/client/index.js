@@ -2,6 +2,7 @@ const EventEmitter = require("events");
 const _ = require("lodash");
 const http = require("http");
 const { ERR_CODES, ERR_MSGS } = require("../constants");
+const { MessageBuffer } = require("../buffer");
 
 /**
  * @class Client
@@ -36,6 +37,10 @@ class Client extends EventEmitter {
     this.pendingBatches = {};
     this.attached = false;
 
+    this.responseQueue = {};
+    this.options = _.merge(defaults, options || {});
+    this.options.timeout = this.options.timeout * 1000;
+
     /**
      * we can receive whole messages, or parital so we need to buffer
      *
@@ -43,10 +48,7 @@ class Client extends EventEmitter {
      *
      * partial message: {"jsonrpc": 2.0, "params"
      */
-    this.messageBuffer = "";
-    this.responseQueue = {};
-    this.options = _.merge(defaults, options || {});
-    this.options.timeout = this.options.timeout * 1000;
+    this.messageBuffer = new MessageBuffer(this.options.delimiter);
 
     const { host, port } = this.options;
     this.server = { host, port };
@@ -99,105 +101,90 @@ class Client extends EventEmitter {
     }
   }
 
-  verifyData(messages) {
-    for (const chunk of messages) {
-      try {
-        // sometimes split messages have empty string at the end
-        // just ignore it
-        if (chunk !== "") {
-          // will throw an error if not valid json
-          const message = JSON.parse(chunk);
-          if (_.isArray(message)) {
-            // possible batch request
-            try {
-              this.emit("batchResponse", message);
-            } catch (e) {
-              const error = this.sendError({
-                id: null,
-                code: ERR_CODES.parseError,
-                message: ERR_MSGS.parseError
-              });
-              this.emit("batchError", error);
-            }
-          } else if (!_.isObject(message)) {
-            // error out if it cant be parsed
-            const error = this.sendError({
-              id: null,
-              code: ERR_CODES.parseError,
-              message: ERR_MSGS.parseError
-            });
-            this.handleError(error);
-          } else if (!message.id) {
-            // special case http response
-            // may want to still know the body
-            // this is not in spec at all
-            if (this.writer instanceof http.IncomingMessage) {
-              const error = this.sendError({
-                id: this.serving_message_id,
-                code: ERR_CODES.parseError,
-                message: ERR_MSGS.parseError
-              });
-              this.writer.response = message;
-              this.handleError(error);
-            }
-            // no id, so assume notification
-            this.emit("notify", message);
-          } else if (message.error) {
-            // got an error back so reject the message
-            const error = this.sendError({
-              jsonrpc: message.jsonrpc,
-              id: message.id,
-              code: message.error.code,
-              message: message.error.message
-            });
-            this.handleError(error);
-          } else if (!message.method) {
-            // no method, so assume response
-            this.serving_message_id = message.id;
-            this.responseQueue[this.serving_message_id] = message;
-            this.handleResponse(this.serving_message_id);
-          } else {
-            throw new Error();
-          }
+  verifyData(chunk) {
+    try {
+      // will throw an error if not valid json
+      const message = JSON.parse(chunk);
+      if (_.isArray(message)) {
+        // possible batch request
+        try {
+          this.emit("batchResponse", message);
+        } catch (e) {
+          const error = this.sendError({
+            id: null,
+            code: ERR_CODES.parseError,
+            message: ERR_MSGS.parseError
+          });
+          this.emit("batchError", error);
         }
-      } catch (e) {
-        if (e instanceof SyntaxError) {
+      } else if (!_.isObject(message)) {
+        // error out if it cant be parsed
+        const error = this.sendError({
+          id: null,
+          code: ERR_CODES.parseError,
+          message: ERR_MSGS.parseError
+        });
+        this.handleError(error);
+      } else if (!message.id) {
+        // special case http response
+        // may want to still know the body
+        // this is not in spec at all
+        if (this.writer instanceof http.IncomingMessage) {
           const error = this.sendError({
             id: this.serving_message_id,
             code: ERR_CODES.parseError,
-            message: `Unable to parse message: '${chunk}'`
+            message: ERR_MSGS.parseError
           });
-          this.handleError(error);
-        } else {
-          const error = this.sendError({
-            id: this.serving_message_id,
-            code: ERR_CODES.internal,
-            message: `Unable to parse message: '${chunk}'`
-          });
+          this.writer.response = message;
           this.handleError(error);
         }
+        // no id, so assume notification
+        this.emit("notify", message);
+      } else if (message.error) {
+        // got an error back so reject the message
+        const error = this.sendError({
+          jsonrpc: message.jsonrpc,
+          id: message.id,
+          code: message.error.code,
+          message: message.error.message
+        });
+        this.handleError(error);
+      } else if (!message.method) {
+        // no method, so assume response
+        this.serving_message_id = message.id;
+        this.responseQueue[this.serving_message_id] = message;
+        this.handleResponse(this.serving_message_id);
+      } else {
+        throw new Error();
+      }
+    } catch (e) {
+      if (e instanceof SyntaxError) {
+        const error = this.sendError({
+          id: this.serving_message_id,
+          code: ERR_CODES.parseError,
+          message: `Unable to parse message: '${chunk}'`
+        });
+        this.handleError(error);
+      } else {
+        const error = this.sendError({
+          id: this.serving_message_id,
+          code: ERR_CODES.internal,
+          message: `Unable to parse message: '${chunk}'`
+        });
+        this.handleError(error);
       }
     }
   }
 
   listen() {
     this.writer.on("data", (data) => {
-      this.messageBuffer += data;
       if (this.writer instanceof http.IncomingMessage) {
         this.writer.on("end", () => {
           // only expect one response per request for http
-          const messages = this.messageBuffer;
-          this.messageBuffer = "";
-          this.verifyData(Array(messages));
+          this.verifyData(data.toString());
         });
       } else {
-        const messages = this.messageBuffer.split(this.options.delimiter);
-        if (messages.length > 1) {
-          // otherwise messages are still coming in and request
-          // possibly hasnt finished
-          this.messageBuffer = "";
-          this.verifyData(messages);
-        }
+        this.handleData(data);
       }
     });
     this.client.on("close", () => {
@@ -205,6 +192,14 @@ class Client extends EventEmitter {
       this.client.removeAllListeners();
       this.emit("serverDisconnected");
     });
+  }
+
+  handleData(data) {
+    this.messageBuffer.push(data);
+    while (!this.messageBuffer.isFinished()) {
+      const message = this.messageBuffer.handleData();
+      this.verifyData(message);
+    }
   }
 
   serverDisconnected(cb) {
