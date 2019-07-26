@@ -138,7 +138,7 @@ class HTTPClient extends Client {
       }
       this.pendingBatches[String(batchIds)] = { resolve, reject };
 
-      const request = JSON.stringify(batchRequests);
+      const request = JSON.stringify(batchRequests) + this.options.delimiter;
       this.options.headers["Content-Length"] = Buffer.byteLength(
         request,
         this.options.encoding
