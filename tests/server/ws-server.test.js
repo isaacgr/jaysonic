@@ -77,7 +77,7 @@ describe("WebSocket Server", () => {
     it("should send 'parse error'", (done) => {
       const wstest = new window.WebSocket("ws://127.0.0.1:9000");
       wstest.onopen = () => {
-        wstest.send("parse error");
+        wstest.send("parse error\n");
         wstest.onmessage = (event) => {
           expect(event.data).to.eql(
             `${JSON.stringify({

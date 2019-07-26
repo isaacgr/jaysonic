@@ -103,7 +103,7 @@ describe("HTTP Server", () => {
       httpRequest
         .post("/")
         .set("Content-Type", "application/json")
-        .send("{]")
+        .send("{]\n")
         .end((error, response) => {
           expect(JSON.parse(response.text)).to.be.eql({
             jsonrpc: "2.0",
@@ -117,12 +117,14 @@ describe("HTTP Server", () => {
       httpRequest
         .post("/")
         .set("Content-Type", "application/json")
-        .send({
-          jsonrpc: "2.0",
-          method: 1,
-          params: [],
-          id: 69
-        })
+        .send(
+          `${JSON.stringify({
+            jsonrpc: "2.0",
+            method: 1,
+            params: [],
+            id: 69
+          })}\n`
+        )
         .end((error, response) => {
           expect(JSON.parse(response.text)).to.be.eql({
             jsonrpc: "2.0",
@@ -136,7 +138,7 @@ describe("HTTP Server", () => {
       httpRequest
         .post("/")
         .set("Content-Type", "application/json")
-        .send([1])
+        .send("[1]\n")
         .end((error, response) => {
           expect(JSON.parse(response.text)).to.be.eql([
             {
@@ -154,11 +156,13 @@ describe("HTTP Server", () => {
       httpRequest
         .post("/")
         .set("Content-Type", "application/json")
-        .send({
-          method: "add",
-          params: [1, 2],
-          id: 80
-        })
+        .send(
+          `${JSON.stringify({
+            method: "add",
+            params: [1, 2],
+            id: 80
+          })}\n`
+        )
         .end((error, response) => {
           expect(JSON.parse(response.text)).to.be.eql({
             result: 3,
@@ -172,11 +176,13 @@ describe("HTTP Server", () => {
       httpRequestV1
         .post("/")
         .set("Content-Type", "application/json")
-        .send({
-          method: "add",
-          params: {},
-          id: 1
-        })
+        .send(
+          `${JSON.stringify({
+            method: "add",
+            params: {},
+            id: 1
+          })}\n`
+        )
         .end((error, response) => {
           expect(JSON.parse(response.text)).to.be.eql({
             result: null,
