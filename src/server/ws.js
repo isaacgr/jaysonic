@@ -59,30 +59,25 @@ class WSServer extends Server {
       this.emit("clientConnected", client);
       this.connectedClients.push(client);
       client.on("message", (data) => {
-        this.messageBuffer += data;
-        const messages = this.messageBuffer.split(this.options.delimiter);
-        this.messageBuffer = "";
-        for (const chunk of messages) {
-          if (chunk !== "") {
-            Promise.all(this.handleValidation(chunk))
-              .then((validationResult) => {
-                const message = validationResult[1];
-                if (message.batch) {
-                  client.send(
-                    JSON.stringify(message.batch) + this.options.delimiter
-                  );
-                } else if (message.notification) {
-                  this.emit("notify", message.notification);
-                } else {
-                  this.getResult(message)
-                    .then(result => client.send(result + this.options.delimiter))
-                    .catch(error => client.send(
-                      JSON.stringify(error) + this.options.delimiter
-                    ));
-                }
-              })
-              .catch(error => client.send(JSON.stringify(error) + this.options.delimiter));
-          }
+        this.messageBuffer.push(data);
+        while (!this.messageBuffer.isFinished()) {
+          const chunk = this.messageBuffer.handleData();
+          Promise.all(this.handleValidation(chunk))
+            .then((validationResult) => {
+              const message = validationResult[1];
+              if (message.batch) {
+                client.send(
+                  JSON.stringify(message.batch) + this.options.delimiter
+                );
+              } else if (message.notification) {
+                this.emit("notify", message.notification);
+              } else {
+                this.getResult(message)
+                  .then(result => client.send(result + this.options.delimiter))
+                  .catch(error => client.send(JSON.stringify(error) + this.options.delimiter));
+              }
+            })
+            .catch(error => client.send(JSON.stringify(error) + this.options.delimiter));
         }
       });
       client.on("close", () => {

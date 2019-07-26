@@ -4,6 +4,7 @@ const isObject = require("lodash/isObject");
 const isArray = require("lodash/isArray");
 const { formatResponse } = require("../functions");
 const { ERR_CODES, ERR_MSGS } = require("../constants");
+const { MessageBuffer } = require("../buffer");
 
 /**
  * @class Server
@@ -32,7 +33,7 @@ class Server extends EventEmitter {
     };
 
     this.options = _.merge(defaults, options || {});
-    this.messageBuffer = "";
+    this.messageBuffer = new MessageBuffer(this.options.delimiter);
     this.methods = {};
     this.listening = false;
   }
