@@ -1,4 +1,6 @@
-const formatRequest = ({ method, params, id, options }) => {
+const formatRequest = ({
+  method, params, id, options
+}) => {
   if (!(typeof method === "string")) {
     throw new TypeError(`${method} must be a string`);
   }
@@ -18,8 +20,8 @@ const formatRequest = ({ method, params, id, options }) => {
 
   if (params) {
     if (
-      (!(params === Object(params)) && !Array.isArray(params)) ||
-      typeof params === "function"
+      (!(params === Object(params)) && !Array.isArray(params))
+      || typeof params === "function"
     ) {
       throw new TypeError(`${params} must be an object or array`);
     }
@@ -35,7 +37,9 @@ const formatRequest = ({ method, params, id, options }) => {
   return messageString;
 };
 
-const formatResponse = ({ jsonrpc, id, method, result, params }) => {
+const formatResponse = ({
+  jsonrpc, id, method, result, params
+}) => {
   const response = {};
 
   response.result = result;
