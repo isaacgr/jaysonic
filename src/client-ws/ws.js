@@ -125,7 +125,7 @@ class WSClient extends EventTarget {
         if (Array.isArray(message)) {
           // possible batch request
           this.handleBatchResponse(message);
-        } else if (!(typeof message === "object")) {
+        } else if (!(message === Object(message))) {
           // error out if it cant be parsed
           const error = this.sendError({
             id: null,
