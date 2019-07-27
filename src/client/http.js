@@ -1,4 +1,3 @@
-const _ = require("lodash");
 const http = require("http");
 const Client = require(".");
 const { formatRequest } = require("../functions");
@@ -32,7 +31,10 @@ class HTTPClient extends Client {
       path: "/"
     };
     this.messageBuffer = "";
-    this.options = _.merge(defaults, this.options || {});
+    this.options = {
+      ...defaults,
+      ...(this.options || {})
+    };
   }
 
   initClient() {
@@ -168,13 +170,13 @@ class HTTPClient extends Client {
             batchResponseIds.push(message.id);
           }
         });
-        if (_.isEmpty(batchResponseIds)) {
+        if (batchResponseIds.length === 0) {
           resolve([]);
         }
         for (const ids of Object.keys(this.pendingBatches)) {
-          if (
-            _.isEmpty(_.difference(JSON.parse(`[${ids}]`), batchResponseIds))
-          ) {
+          const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
+          const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
+          if (difference.length === 0) {
             const response = {
               body: batch,
               ...this.writer

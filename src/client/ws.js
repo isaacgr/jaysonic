@@ -1,4 +1,3 @@
-const _ = require("lodash");
 const WebSocket = require("ws");
 const Client = require(".");
 const { formatRequest } = require("../functions");
@@ -34,7 +33,10 @@ class WSClient extends Client {
      */
     this.messageBuffer = "";
     this.responseQueue = {};
-    this.options = _.merge(defaults, options || {});
+    this.options = {
+      ...defaults,
+      ...(options || {})
+    };
     this.options.timeout = this.options.timeout * 1000;
     const { retries } = this.options;
     this.remainingRetries = retries;
@@ -121,10 +123,10 @@ class WSClient extends Client {
       if (chunk !== "") {
         // will throw an error if not valid json
         const message = JSON.parse(chunk);
-        if (_.isArray(message)) {
+        if (Array.isArray(message)) {
           // possible batch request
           this.handleBatchResponse(message);
-        } else if (!_.isObject(message)) {
+        } else if (!(message === Object(message))) {
           // error out if it cant be parsed
           const error = this.sendError({
             id: null,
@@ -225,7 +227,9 @@ class WSClient extends Client {
       }
     });
     for (const ids of Object.keys(this.pendingBatches)) {
-      if (_.isEmpty(_.difference(JSON.parse(`[${ids}]`), batchResponseIds))) {
+      const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
+      const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
+      if (difference.length === 0) {
         batch.forEach((message) => {
           if (message.error) {
             // reject the whole message if there are any errors

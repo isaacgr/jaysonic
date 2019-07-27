@@ -1,5 +1,4 @@
 const EventEmitter = require("events");
-const _ = require("lodash");
 const http = require("http");
 const { ERR_CODES, ERR_MSGS } = require("../constants");
 
@@ -45,7 +44,10 @@ class Client extends EventEmitter {
      */
     this.messageBuffer = "";
     this.responseQueue = {};
-    this.options = _.merge(defaults, options || {});
+    this.options = {
+      ...defaults,
+      ...(options || {})
+    };
     this.options.timeout = this.options.timeout * 1000;
 
     const { host, port } = this.options;
@@ -107,7 +109,7 @@ class Client extends EventEmitter {
         if (chunk !== "") {
           // will throw an error if not valid json
           const message = JSON.parse(chunk);
-          if (_.isArray(message)) {
+          if (Array.isArray(message)) {
             // possible batch request
             try {
               this.emit("batchResponse", message);
@@ -119,7 +121,7 @@ class Client extends EventEmitter {
               });
               this.emit("batchError", error);
             }
-          } else if (!_.isObject(message)) {
+          } else if (!(message === Object(message))) {
             // error out if it cant be parsed
             const error = this.sendError({
               id: null,
