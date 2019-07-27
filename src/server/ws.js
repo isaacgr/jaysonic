@@ -1,5 +1,4 @@
 const WebSocket = require("ws");
-const _ = require("lodash");
 const Server = require(".");
 const { formatResponse } = require("../functions");
 
@@ -34,7 +33,10 @@ class WSServer extends Server {
       }
     };
 
-    this.options = _.merge(defaults, options || {});
+    this.options = {
+      ...defaults,
+      ...(options || {})
+    };
   }
 
   listen() {

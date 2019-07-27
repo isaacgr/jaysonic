@@ -1,12 +1,7 @@
-const isString = require("lodash/isString");
-const isUndefined = require("lodash/isUndefined");
-const isObject = require("lodash/isObject");
-const isArray = require("lodash/isArray");
-
 const formatRequest = ({
   method, params, id, options
 }) => {
-  if (!isString(method)) {
+  if (!(typeof method === "string")) {
     throw new TypeError(`${method} must be a string`);
   }
 
@@ -24,14 +19,17 @@ const formatRequest = ({
   }
 
   if (params) {
-    if (!isObject(params) && !isArray(params)) {
+    if (
+      (!(params === Object(params)) && !Array.isArray(params))
+      || typeof params === "function"
+    ) {
       throw new TypeError(`${params} must be an object or array`);
     }
     request.params = params;
   }
 
   // assume notification otherwise
-  if (!isUndefined(id)) {
+  if (!(typeof id === "undefined")) {
     request.id = id;
   }
 
