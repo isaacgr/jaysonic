@@ -75,7 +75,7 @@ const client = new Jaysonic.client.http();
 const wss = new Jaysonic.server.ws();
 ```
 
-**Note that there are two web socket clients**
+**Note that there are two web socket clients**\
 **One can only be run in the browser, and the other can run in a NodeJS environment.**
 
 #### WS Client for browser
