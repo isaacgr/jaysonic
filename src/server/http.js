@@ -35,14 +35,12 @@ class HTTPServer extends Server {
   handleData() {
     this.server.on("request", (request, response) => {
       request.on("data", (data) => {
-        this.messageBuffer += data;
+        this.messageBuffer.push(data);
       });
       request.on("end", () => {
-        const messages = this.messageBuffer.split(this.options.delimiter);
-        this.messageBuffer = "";
-        messages
-          .filter(messageString => messageString !== "")
-          .map(chunk => Promise.all(this.handleValidation(chunk))
+        while (!this.messageBuffer.isFinished()) {
+          const chunk = this.messageBuffer.handleData();
+          Promise.all(this.handleValidation(chunk))
             .then((validationResult) => {
               const message = validationResult[1];
               if (message.batch) {
@@ -89,7 +87,8 @@ class HTTPServer extends Server {
                   response.end();
                 }
               );
-            }));
+            });
+        }
       });
     });
   }

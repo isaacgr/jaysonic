@@ -91,7 +91,7 @@ describe("TCP Server", () => {
     });
     it("should send 'parse error'", (done) => {
       let message = "";
-      socket.write("test");
+      socket.write("test\n");
       socket.on("data", (data) => {
         message += data;
         const messages = message.split("\n");

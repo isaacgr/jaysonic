@@ -80,7 +80,7 @@ describe("WebSocket Client", () => {
       const server1 = new WebSocket.Server({ host: "127.0.0.1", port: 9902 });
       server1.on("connection", (someclient) => {
         someclient.on("message", () => {
-          someclient.send("should get a parse error\r\n");
+          someclient.send("should get a parse error\n");
         });
       });
       const client1 = new Jaysonic.wsclient({ url: "ws://127.0.0.1:9902" });
@@ -93,8 +93,7 @@ describe("WebSocket Client", () => {
               jsonrpc: "2.0",
               error: {
                 code: -32700,
-                message:
-                  "Unable to parse message: 'should get a parse error\r\n'"
+                message: "Unable to parse message: 'should get a parse error'"
               },
               id: 1
             });
@@ -109,7 +108,7 @@ describe("WebSocket Client", () => {
       });
       const badServer = new WebSocket.Server({ host: "127.0.0.1", port: 9903 });
       badServer.on("connection", (someclient2) => {
-        someclient2.send("should get a parse error\r\n");
+        someclient2.send("should get a parse error\n");
       });
       const client2 = new Jaysonic.wsclient({ url: "ws://127.0.0.1:9903" });
       client2.connect().then(() => {
@@ -117,7 +116,7 @@ describe("WebSocket Client", () => {
         setTimeout(() => {
           unhook();
           expect(capturedText).to.equal(
-            "Message has no outstanding calls: {\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Unable to parse message: 'should get a parse error\\r\\n'\"},\"id\":1}\n"
+            "Message has no outstanding calls: {\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Unable to parse message: 'should get a parse error'\"},\"id\":1}\n"
           );
           done();
         }, 100);
