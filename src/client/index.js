@@ -128,8 +128,7 @@ class Client extends EventEmitter {
         });
         this.handleError(error);
       } else if (!message.id) {
-        // special case http response
-        // may want to still know the body
+        // special case http response since it cant get notifications
         // this is not in spec at all
         if (this.writer instanceof http.IncomingMessage) {
           const error = this.sendError({
@@ -137,7 +136,6 @@ class Client extends EventEmitter {
             code: ERR_CODES.parseError,
             message: ERR_MSGS.parseError
           });
-          this.writer.response = message;
           this.handleError(error);
         }
         // no id, so assume notification
@@ -182,8 +180,9 @@ class Client extends EventEmitter {
     this.writer.on("data", (data) => {
       if (this.writer instanceof http.IncomingMessage) {
         this.writer.on("end", () => {
-          // only expect one response per request for http
-          this.verifyData(data.toString());
+          // may still want to know the data if there are errors
+          this.writer.response = data.toString();
+          this.handleData(data);
         });
       } else {
         this.handleData(data);
