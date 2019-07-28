@@ -1,6 +1,7 @@
 /* eslint no-console: 0 */
 const { formatRequest } = require("../functions");
 const { ERR_CODES, ERR_MSGS } = require("../constants");
+const { MessageBuffer } = require("../buffer");
 
 class WSClient extends EventTarget {
   constructor(options) {
@@ -23,6 +24,12 @@ class WSClient extends EventTarget {
     this.pendingBatches = {};
     this.attached = false;
 
+    this.responseQueue = {};
+    this.options = {
+      ...defaults,
+      ...(options || {})
+    };
+    this.options.timeout = this.options.timeout * 1000;
     /**
      * we can receive whole messages, or parital so we need to buffer
      *
@@ -30,13 +37,8 @@ class WSClient extends EventTarget {
      *
      * partial message: {"jsonrpc": 2.0, "params"
      */
-    this.messageBuffer = "";
-    this.responseQueue = {};
-    this.options = {
-      ...defaults,
-      ...(options || {})
-    };
-    this.options.timeout = this.options.timeout * 1000;
+    this.messageBuffer = new MessageBuffer(this.options.delimiter);
+
     const { retries } = this.options;
     this.remainingRetries = retries;
   }
@@ -117,42 +119,38 @@ class WSClient extends EventTarget {
 
   verifyData(chunk) {
     try {
-      // sometimes split messages have empty string at the end
-      // just ignore it
-      if (chunk !== "") {
-        // will throw an error if not valid json
-        const message = JSON.parse(chunk);
-        if (Array.isArray(message)) {
-          // possible batch request
-          this.handleBatchResponse(message);
-        } else if (!(message === Object(message))) {
-          // error out if it cant be parsed
-          const error = this.sendError({
-            id: null,
-            code: ERR_CODES.parseError,
-            message: ERR_MSGS.parseError
-          });
-          this.handleError(error);
-        } else if (!message.id) {
-          // no id, so assume notification
-          this.handleNotification(message);
-        } else if (message.error) {
-          // got an error back so reject the message
-          const error = this.sendError({
-            jsonrpc: message.jsonrpc,
-            id: message.id,
-            code: message.error.code,
-            message: message.error.message
-          });
-          this.handleError(error);
-        } else if (!message.method) {
-          // no method, so assume response
-          this.serving_message_id = message.id;
-          this.responseQueue[this.serving_message_id] = message;
-          this.handleResponse(message);
-        } else {
-          throw new Error();
-        }
+      // will throw an error if not valid json
+      const message = JSON.parse(chunk);
+      if (Array.isArray(message)) {
+        // possible batch request
+        this.handleBatchResponse(message);
+      } else if (!(message === Object(message))) {
+        // error out if it cant be parsed
+        const error = this.sendError({
+          id: null,
+          code: ERR_CODES.parseError,
+          message: ERR_MSGS.parseError
+        });
+        this.handleError(error);
+      } else if (!message.id) {
+        // no id, so assume notification
+        this.handleNotification(message);
+      } else if (message.error) {
+        // got an error back so reject the message
+        const error = this.sendError({
+          jsonrpc: message.jsonrpc,
+          id: message.id,
+          code: message.error.code,
+          message: message.error.message
+        });
+        this.handleError(error);
+      } else if (!message.method) {
+        // no method, so assume response
+        this.serving_message_id = message.id;
+        this.responseQueue[this.serving_message_id] = message;
+        this.handleResponse(message);
+      } else {
+        throw new Error();
       }
     } catch (e) {
       if (e instanceof SyntaxError) {
@@ -268,8 +266,16 @@ class WSClient extends EventTarget {
 
   listen() {
     this.client.onmessage = (message) => {
-      this.verifyData(message.data);
+      this.handleData(message.data);
     };
+  }
+
+  handleData(data) {
+    this.messageBuffer.push(data);
+    while (!this.messageBuffer.isFinished()) {
+      const message = this.messageBuffer.handleData();
+      this.verifyData(message);
+    }
   }
 
   handleResponse(message) {
