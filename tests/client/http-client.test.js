@@ -138,7 +138,7 @@ describe("HTTP Client", () => {
         });
         request.on("end", () => {
           response.writeHead(200, { "Content-Type": "application/json" });
-          response.write("should get a parse error\r\n", () => {
+          response.write("should get a parse error\n", () => {
             response.end();
           });
         });
@@ -155,7 +155,7 @@ describe("HTTP Client", () => {
             jsonrpc: "2.0",
             error: {
               code: -32700,
-              message: "Unable to parse message: 'should get a parse error\r\n'"
+              message: "Unable to parse message: 'should get a parse error'"
             },
             id: 1
           });
@@ -227,10 +227,10 @@ describe("HTTP Client", () => {
       request.catch((error) => {
         expect(error.body).to.be.eql({
           jsonrpc: "2.0",
-          error: { code: -32700, message: "Parse Error" },
+          error: { code: -32700, message: "Unable to parse message: '{'" },
           id: 1
         });
-        expect(error.response.headers).to.include({
+        expect(JSON.parse(error.response).headers).to.include({
           "Content-Length": String(length)
         });
         done();
