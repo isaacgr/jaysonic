@@ -15,21 +15,19 @@ server.method("typeerror", ([a]) => {
 });
 server.method(
   "promiseresolve",
-  () =>
-    new Promise((resolve, reject) => {
-      setTimeout(() => {
-        resolve("worked");
-      }, 1000);
-    })
+  () => new Promise((resolve) => {
+    setTimeout(() => {
+      resolve("worked");
+    }, 10);
+  })
 );
 server.method(
   "promisereject",
-  () =>
-    new Promise((resolve, reject) => {
-      setTimeout(() => {
-        reject("broke");
-      }, 1000);
-    })
+  () => new Promise((resolve, reject) => {
+    setTimeout(() => {
+      reject(new Error("broke"));
+    }, 10);
+  })
 );
 
 before((done) => {
@@ -205,10 +203,25 @@ describe("TCP Server", () => {
         .request()
         .send("promiseresolve", [])
         .then((result) => {
-          console.log(result);
-        })
-        .catch((error) => {
-          console.log(error);
+          expect(result).to.be.eql({
+            result: ["worked"],
+            jsonrpc: "2.0",
+            id: 5
+          });
+          done();
+        });
+    });
+    it("should reject promise method", (done) => {
+      client
+        .request()
+        .send("promisereject", [])
+        .catch((result) => {
+          expect(result).to.be.eql({
+            jsonrpc: "2.0",
+            error: { code: -32603, message: "\"broke\"" },
+            id: 6
+          });
+          done();
         });
     });
   });
