@@ -101,21 +101,17 @@ class Server extends EventEmitter {
   handleBatchRequest(batch) {
     return new Promise((resolve, reject) => {
       const requests = batch;
-      const batchRequests = requests.map((request) =>
-        this.validateMessage(request)
-          .then((message) =>
-            this.getResult(message)
-              .then((result) => JSON.parse(result))
-              .catch((error) => {
-                throw error;
-              })
-          )
+      const batchRequests = requests.map(request => this.validateMessage(request)
+        .then(message => this.getResult(message)
+          .then(result => JSON.parse(result))
           .catch((error) => {
             throw error;
-          })
-      );
+          }))
+        .catch((error) => {
+          throw error;
+        }));
       Promise.all(
-        batchRequests.map((promise) => promise.catch((error) => error))
+        batchRequests.map(promise => promise.catch(error => error))
       )
         .then((result) => {
           resolve(result);
@@ -206,8 +202,8 @@ class Server extends EventEmitter {
       }
 
       if (
-        !Array.isArray(message.params) &&
-        !(message.params === Object(message.params))
+        !Array.isArray(message.params)
+        && !(message.params === Object(message.params))
       ) {
         reject(
           this.sendError(
@@ -224,19 +220,17 @@ class Server extends EventEmitter {
 
   handleValidation(chunk) {
     const validRequest = this.validateRequest(chunk)
-      .then((result) => result)
+      .then(result => result)
       .catch((error) => {
         throw error;
       });
 
     const validMessage = validRequest
-      .then((result) =>
-        this.validateMessage(result)
-          .then((message) => message)
-          .catch((error) => {
-            throw error;
-          })
-      )
+      .then(result => this.validateMessage(result)
+        .then(message => message)
+        .catch((error) => {
+          throw error;
+        }))
       .catch((error) => {
         throw error;
       });
@@ -247,19 +241,34 @@ class Server extends EventEmitter {
   getResult(message) {
     const { params } = message;
     return new Promise((resolve, reject) => {
+      let error = this.sendError(message.id, ERR_CODES.internal);
       try {
         const result = this.methods[message.method](params);
+        let response = formatResponse({
+          jsonrpc: message.jsonrpc,
+          id: message.id,
+          result: result || {}
+        });
         if (typeof result.then === "function" || result instanceof Promise) {
-          Promise.all([result]).then((results) => {
-            const response = formatResponse({
-              jsonrpc: message.jsonrpc,
-              id: message.id,
-              result: results || {}
+          Promise.all([result])
+            .then((results) => {
+              response = formatResponse({
+                jsonrpc: message.jsonrpc,
+                id: message.id,
+                result: results || {}
+              });
+              resolve(response);
+            })
+            .catch((resError) => {
+              error = this.sendError(
+                message.id,
+                ERR_CODES.internal,
+                `${JSON.stringify(resError.message || resError)}`
+              );
+              reject(error);
             });
-            resolve(response);
-          });
         } else {
-          const response = formatResponse({
+          response = formatResponse({
             jsonrpc: message.jsonrpc,
             id: message.id,
             result: result || {}
@@ -267,7 +276,6 @@ class Server extends EventEmitter {
           resolve(response);
         }
       } catch (e) {
-        let error = this.sendError(message.id, ERR_CODES.internal);
         if (e instanceof TypeError) {
           error = this.sendError(
             message.id,
