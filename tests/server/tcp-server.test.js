@@ -13,16 +13,24 @@ server.method("typeerror", ([a]) => {
     throw new TypeError();
   }
 });
-server.method("promiseresolve", () => new Promise((resolve, reject) => {
-  setTimeout(() => {
-    resolve("worked");
-  }, 1000);
-}));
-server.method("promisereject", () => new Promise((resolve, reject) => {
-  setTimeout(() => {
-    reject("broke");
-  }, 1000);
-}));
+server.method(
+  "promiseresolve",
+  () =>
+    new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve("worked");
+      }, 1000);
+    })
+);
+server.method(
+  "promisereject",
+  () =>
+    new Promise((resolve, reject) => {
+      setTimeout(() => {
+        reject("broke");
+      }, 1000);
+    })
+);
 
 before((done) => {
   server.listen().then(() => {
