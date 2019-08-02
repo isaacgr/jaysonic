@@ -241,6 +241,14 @@ server.method("add", ([a, b]) => a + b);
 const add = ([a, b]) => a + b;
 
 server.method("add", add);
+
+// or promises
+const add = ([a, b]) =>
+  new Promise((resolve, reject) => {
+    resolve(a + b);
+  });
+
+server.method("add", add);
 ```
 
 _Note: The same syntax for all the above methods is used for the HTTP and WS server_
