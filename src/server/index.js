@@ -241,16 +241,41 @@ class Server extends EventEmitter {
   getResult(message) {
     const { params } = message;
     return new Promise((resolve, reject) => {
+      let error = this.sendError(message.id, ERR_CODES.internal);
       try {
         const result = this.methods[message.method](params);
-        const response = formatResponse({
+        let response = formatResponse({
           jsonrpc: message.jsonrpc,
           id: message.id,
-          result
+          result: result || {}
         });
-        resolve(response);
+        if (typeof result.then === "function" || result instanceof Promise) {
+          Promise.all([result])
+            .then((results) => {
+              response = formatResponse({
+                jsonrpc: message.jsonrpc,
+                id: message.id,
+                result: results || {}
+              });
+              resolve(response);
+            })
+            .catch((resError) => {
+              error = this.sendError(
+                message.id,
+                ERR_CODES.internal,
+                `${JSON.stringify(resError.message || resError)}`
+              );
+              reject(error);
+            });
+        } else {
+          response = formatResponse({
+            jsonrpc: message.jsonrpc,
+            id: message.id,
+            result: result || {}
+          });
+          resolve(response);
+        }
       } catch (e) {
-        let error = this.sendError(message.id, ERR_CODES.internal);
         if (e instanceof TypeError) {
           error = this.sendError(
             message.id,
