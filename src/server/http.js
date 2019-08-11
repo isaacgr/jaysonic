@@ -1,6 +1,7 @@
 const http = require("http");
 const Server = require(".");
 const { errorToStatus } = require("../constants");
+const { MessageBuffer } = require("../buffer");
 
 /**
  * Constructor for Jsonic HTTP server
@@ -22,6 +23,7 @@ class HTTPServer extends Server {
   initserver() {
     this.server = new http.Server();
     this.server.on("connection", (client) => {
+      this.messageBuffer = new MessageBuffer(this.options.delimiter);
       this.connectedClients.push(client);
       client.on("close", () => {
         this.emit("clientDisconnected");

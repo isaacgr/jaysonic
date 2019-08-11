@@ -1,6 +1,7 @@
 const WebSocket = require("ws");
 const Server = require(".");
 const { formatResponse } = require("../functions");
+const { MessageBuffer } = require("../buffer");
 
 /**
  * Constructor for Jsonic WS client
@@ -58,6 +59,7 @@ class WSServer extends Server {
 
   handleData() {
     this.server.on("connection", (client) => {
+      this.messageBuffer = new MessageBuffer(this.options.delimiter);
       this.emit("clientConnected", client);
       this.connectedClients.push(client);
       client.on("message", (data) => {

@@ -1,6 +1,7 @@
 const net = require("net");
 const Server = require(".");
 const { formatResponse } = require("../functions");
+const { MessageBuffer } = require("../buffer");
 
 /**
  * Constructor for Jsonic TCP client
@@ -25,6 +26,7 @@ class TCPServer extends Server {
 
   handleData() {
     this.server.on("connection", (client) => {
+      this.messageBuffer = new MessageBuffer(this.options.delimiter);
       this.connectedClients.push(client);
       this.emit("clientConnected", client);
       client.on("data", (data) => {
