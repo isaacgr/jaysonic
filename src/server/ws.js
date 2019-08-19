@@ -1,7 +1,7 @@
 const WebSocket = require("ws");
 const Server = require(".");
 const { formatResponse } = require("../functions");
-const { MessageBuffer } = require("../buffer");
+const { WSServerProtocol } = require("../ServerProtocol");
 
 /**
  * Constructor for Jsonic WS client
@@ -59,37 +59,14 @@ class WSServer extends Server {
 
   handleData() {
     this.server.on("connection", (client) => {
-      this.messageBuffer = new MessageBuffer(this.options.delimiter);
       this.emit("clientConnected", client);
       this.connectedClients.push(client);
-      client.on("message", (data) => {
-        this.messageBuffer.push(data);
-        while (!this.messageBuffer.isFinished()) {
-          const chunk = this.messageBuffer.handleData();
-          Promise.all(this.handleValidation(chunk))
-            .then((validationResult) => {
-              const message = validationResult[1];
-              if (message.batch) {
-                client.send(
-                  JSON.stringify(message.batch) + this.options.delimiter
-                );
-              } else if (message.notification) {
-                this.emit("notify", message.notification);
-              } else {
-                this.getResult(message)
-                  .then(result => client.send(result + this.options.delimiter))
-                  .catch(error => client.send(JSON.stringify(error) + this.options.delimiter));
-              }
-            })
-            .catch(error => client.send(JSON.stringify(error) + this.options.delimiter));
-        }
-      });
-      client.on("close", () => {
-        this.emit("clientDisconnected", client);
-      });
-      client.on("end", () => {
-        this.emit("clientDisconnected", client);
-      });
+      const wsServerProtocol = new WSServerProtocol(
+        client,
+        this.options.delimiter
+      );
+      wsServerProtocol.factory = this;
+      wsServerProtocol.clientConnected();
     });
   }
 
