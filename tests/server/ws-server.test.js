@@ -34,7 +34,7 @@ describe("WebSocket Server", () => {
       client1.connect().then(() => {
         client2.connect().then(() => {
           const req1 = client1.request().send("add", [1, 2]);
-          const req2 = client2.request().send("add", [1, 2]);
+          const req2 = client2.request().send("greeting", { name: "Isaac" });
           Promise.all([req1, req2]).then((results) => {
             const [res1, res2] = results;
             expect(res1).to.eql({
@@ -44,7 +44,7 @@ describe("WebSocket Server", () => {
             });
             expect(res2).to.eql({
               jsonrpc: "2.0",
-              result: 3,
+              result: "Hello Isaac",
               id: 1
             });
             done();

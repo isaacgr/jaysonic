@@ -51,7 +51,7 @@ describe("HTTP Server", () => {
       const client1 = new Jaysonic.client.http({ port: 8000 });
       const client2 = new Jaysonic.client.http({ port: 8000 });
       const req1 = client1.request().send("add", [1, 2]);
-      const req2 = client2.request().send("add", [1, 2]);
+      const req2 = client2.request().send("greeting", { name: "Isaac" });
       Promise.all([req1, req2]).then((results) => {
         const [res1, res2] = results;
         expect(res1.body).to.eql({
@@ -61,7 +61,7 @@ describe("HTTP Server", () => {
         });
         expect(res2.body).to.eql({
           jsonrpc: "2.0",
-          result: 3,
+          result: "Hello Isaac",
           id: 1
         });
         done();
