@@ -2,10 +2,10 @@ const { expect } = require("chai");
 const chai = require("chai");
 const chaiHttp = require("chai-http");
 
-const Jayson = require("../../src");
+const Jaysonic = require("../../src");
 
-const server = new Jayson.server.http({ port: 8000 });
-const serverV1 = new Jayson.server.http({ port: 8400, version: 1 });
+const server = new Jaysonic.server.http({ port: 8000 });
+const serverV1 = new Jaysonic.server.http({ port: 8400, version: 1 });
 const { clienthttp } = require("../test-client");
 
 chai.use(chaiHttp);
@@ -44,6 +44,26 @@ describe("HTTP Server", () => {
       const conn = server.listen();
       conn.catch((error) => {
         expect(error.message).to.be.a("string");
+        done();
+      });
+    });
+    it("should handle requests from multiple clients", (done) => {
+      const client1 = new Jaysonic.client.http({ port: 8000 });
+      const client2 = new Jaysonic.client.http({ port: 8000 });
+      const req1 = client1.request().send("add", [1, 2]);
+      const req2 = client2.request().send("add", [1, 2]);
+      Promise.all([req1, req2]).then((results) => {
+        const [res1, res2] = results;
+        expect(res1.body).to.eql({
+          jsonrpc: "2.0",
+          result: 3,
+          id: 1
+        });
+        expect(res2.body).to.eql({
+          jsonrpc: "2.0",
+          result: 3,
+          id: 1
+        });
         done();
       });
     });

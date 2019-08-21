@@ -59,6 +59,30 @@ describe("TCP Server", () => {
         done();
       });
     });
+    it("should handle requests from multiple clients", (done) => {
+      const client1 = new Jaysonic.client.tcp({ port: 6969 });
+      const client2 = new Jaysonic.client.tcp({ port: 6969 });
+      client1.connect().then(() => {
+        client2.connect().then(() => {
+          const req1 = client1.request().send("add", [1, 2]);
+          const req2 = client2.request().send("add", [1, 2]);
+          Promise.all([req1, req2]).then((results) => {
+            const [res1, res2] = results;
+            expect(res1).to.eql({
+              jsonrpc: "2.0",
+              result: 3,
+              id: 1
+            });
+            expect(res2).to.eql({
+              jsonrpc: "2.0",
+              result: 3,
+              id: 1
+            });
+            done();
+          });
+        });
+      });
+    });
   });
   describe("requests", () => {
     it("should handle call with positional params", (done) => {
