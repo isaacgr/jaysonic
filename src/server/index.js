@@ -1,7 +1,6 @@
 const EventEmitter = require("events");
 const { formatResponse } = require("../functions");
 const { ERR_CODES, ERR_MSGS } = require("../constants");
-const { MessageBuffer } = require("../buffer");
 
 /**
  * @class Server
@@ -33,7 +32,7 @@ class Server extends EventEmitter {
       ...defaults,
       ...(options || {})
     };
-    this.messageBuffer = new MessageBuffer(this.options.delimiter);
+
     this.methods = {};
     this.listening = false;
   }

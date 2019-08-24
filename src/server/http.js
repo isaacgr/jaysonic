@@ -1,6 +1,7 @@
 const http = require("http");
 const Server = require(".");
 const { errorToStatus } = require("../constants");
+const { HttpServerProtocol } = require("../ServerProtocol");
 
 /**
  * Constructor for Jsonic HTTP server
@@ -34,62 +35,13 @@ class HTTPServer extends Server {
 
   handleData() {
     this.server.on("request", (request, response) => {
-      request.on("data", (data) => {
-        this.messageBuffer.push(data);
-      });
-      request.on("end", () => {
-        while (!this.messageBuffer.isFinished()) {
-          const chunk = this.messageBuffer.handleData();
-          Promise.all(this.handleValidation(chunk))
-            .then((validationResult) => {
-              const message = validationResult[1];
-              if (message.batch) {
-                this.setResponseHeader({ response });
-                response.write(
-                  JSON.stringify(message.batch) + this.options.delimiter,
-                  () => {
-                    response.end();
-                  }
-                );
-              } else if (message.notification) {
-                this.setResponseHeader({ response, notification: true });
-                response.end();
-              } else {
-                this.getResult(message)
-                  .then((result) => {
-                    this.setResponseHeader({ response });
-                    response.write(result + this.options.delimiter, () => {
-                      response.end();
-                    });
-                  })
-                  .catch((error) => {
-                    this.setResponseHeader({
-                      response,
-                      errorCode: error.error.code
-                    });
-                    response.write(
-                      JSON.stringify(error) + this.options.delimiter,
-                      () => {
-                        response.end();
-                      }
-                    );
-                  });
-              }
-            })
-            .catch((error) => {
-              this.setResponseHeader({
-                response,
-                errorCode: error.code
-              });
-              response.write(
-                JSON.stringify(error) + this.options.delimiter,
-                () => {
-                  response.end();
-                }
-              );
-            });
-        }
-      });
+      const httpProtocol = new HttpServerProtocol(
+        request,
+        response,
+        this.options.delimiter
+      );
+      httpProtocol.factory = this;
+      httpProtocol.clientConnected();
     });
   }
 

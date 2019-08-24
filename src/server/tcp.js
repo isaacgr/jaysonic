@@ -1,6 +1,7 @@
 const net = require("net");
 const Server = require(".");
 const { formatResponse } = require("../functions");
+const { TCPServerProtocol } = require("../ServerProtocol");
 
 /**
  * Constructor for Jsonic TCP client
@@ -27,34 +28,12 @@ class TCPServer extends Server {
     this.server.on("connection", (client) => {
       this.connectedClients.push(client);
       this.emit("clientConnected", client);
-      client.on("data", (data) => {
-        this.messageBuffer.push(data);
-        while (!this.messageBuffer.isFinished()) {
-          const chunk = this.messageBuffer.handleData();
-          Promise.all(this.handleValidation(chunk))
-            .then((validationResult) => {
-              const message = validationResult[1];
-              if (message.batch) {
-                client.write(
-                  JSON.stringify(message.batch) + this.options.delimiter
-                );
-              } else if (message.notification) {
-                this.emit("notify", message.notification);
-              } else {
-                this.getResult(message)
-                  .then(result => client.write(result + this.options.delimiter))
-                  .catch(error => client.write(JSON.stringify(error) + this.options.delimiter));
-              }
-            })
-            .catch(error => client.write(JSON.stringify(error) + this.options.delimiter));
-        }
-      });
-      client.on("close", () => {
-        this.emit("clientDisconnected", client);
-      });
-      client.on("end", () => {
-        this.emit("clientDisconnected", client);
-      });
+      const tcpServerProtocol = new TCPServerProtocol(
+        client,
+        this.options.delimiter
+      );
+      tcpServerProtocol.factory = this;
+      tcpServerProtocol.clientConnected();
     });
   }
 
