@@ -1,9 +1,9 @@
 const { MessageBuffer } = require("./buffer");
 
 class TCPServerProtocol {
-  constructor(client, delimiter) {
+  constructor(factory, client, delimiter) {
     this.client = client;
-    this.factory = null;
+    this.factory = factory;
     this.delimiter = delimiter;
     this.messageBuffer = new MessageBuffer(delimiter);
   }
@@ -13,9 +13,9 @@ class TCPServerProtocol {
       this.messageBuffer.push(data);
       while (!this.messageBuffer.isFinished()) {
         const chunk = this.messageBuffer.handleData();
-        Promise.all(this.factory.handleValidation(chunk))
-          .then((validationResult) => {
-            const message = validationResult[1];
+        this.factory
+          .handleValidation(chunk)
+          .then((message) => {
             if (message.batch) {
               this.client.write(JSON.stringify(message.batch) + this.delimiter);
             } else if (message.notification) {
@@ -24,10 +24,14 @@ class TCPServerProtocol {
               this.factory
                 .getResult(message)
                 .then(result => this.client.write(result + this.delimiter))
-                .catch(error => this.client.write(JSON.stringify(error) + this.delimiter));
+                .catch((error) => {
+                  this.client.write(JSON.stringify(error) + this.delimiter);
+                });
             }
           })
-          .catch(error => this.client.write(JSON.stringify(error) + this.delimiter));
+          .catch((error) => {
+            this.client.write(JSON.stringify(error) + this.delimiter);
+          });
       }
     });
     this.client.on("close", () => {
@@ -40,9 +44,9 @@ class TCPServerProtocol {
 }
 
 class WSServerProtocol {
-  constructor(client, delimiter) {
+  constructor(factory, client, delimiter) {
     this.client = client;
-    this.factory = null;
+    this.factory = factory;
     this.delimiter = delimiter;
     this.messageBuffer = new MessageBuffer(delimiter);
   }
@@ -52,9 +56,9 @@ class WSServerProtocol {
       this.messageBuffer.push(data);
       while (!this.messageBuffer.isFinished()) {
         const chunk = this.messageBuffer.handleData();
-        Promise.all(this.factory.handleValidation(chunk))
-          .then((validationResult) => {
-            const message = validationResult[1];
+        this.factory
+          .handleValidation(chunk)
+          .then((message) => {
             if (message.batch) {
               this.client.send(JSON.stringify(message.batch) + this.delimiter);
             } else if (message.notification) {
@@ -63,10 +67,14 @@ class WSServerProtocol {
               this.factory
                 .getResult(message)
                 .then(result => this.client.send(result + this.delimiter))
-                .catch(error => this.client.send(JSON.stringify(error) + this.delimiter));
+                .catch((error) => {
+                  this.client.send(JSON.stringify(error) + this.delimiter);
+                });
             }
           })
-          .catch(error => this.client.send(JSON.stringify(error) + this.delimiter));
+          .catch((error) => {
+            this.client.send(JSON.stringify(error) + this.delimiter);
+          });
       }
     });
     this.client.on("close", () => {
@@ -79,11 +87,11 @@ class WSServerProtocol {
 }
 
 class HttpServerProtocol {
-  constructor(request, response, delimiter) {
+  constructor(factory, request, response, delimiter) {
     this.client = request;
     this.response = response;
     this.delimiter = delimiter;
-    this.factory = null;
+    this.factory = factory;
     this.messageBuffer = new MessageBuffer(delimiter);
   }
 
@@ -94,9 +102,9 @@ class HttpServerProtocol {
     this.client.on("end", () => {
       while (!this.messageBuffer.isFinished()) {
         const chunk = this.messageBuffer.handleData();
-        Promise.all(this.factory.handleValidation(chunk))
-          .then((validationResult) => {
-            const message = validationResult[1];
+        this.factory
+          .handleValidation(chunk)
+          .then((message) => {
             if (message.batch) {
               this.factory.setResponseHeader({ response: this.response });
               this.response.write(
@@ -121,29 +129,24 @@ class HttpServerProtocol {
                   });
                 })
                 .catch((error) => {
-                  this.factory.setResponseHeader({
-                    response: this.response,
-                    errorCode: error.error.code
-                  });
-                  this.response.write(
-                    JSON.stringify(error) + this.delimiter,
-                    () => {
-                      this.response.end();
-                    }
-                  );
+                  this.sendError(error);
                 });
             }
           })
           .catch((error) => {
-            this.factory.setResponseHeader({
-              response: this.response,
-              errorCode: error.code
-            });
-            this.response.write(JSON.stringify(error) + this.delimiter, () => {
-              this.response.end();
-            });
+            this.sendError(error);
           });
       }
+    });
+  }
+
+  sendError(error) {
+    this.factory.setResponseHeader({
+      response: this.response,
+      errorCode: error.error.code || 500
+    });
+    this.response.write(JSON.stringify(error) + this.delimiter, () => {
+      this.response.end();
     });
   }
 }
