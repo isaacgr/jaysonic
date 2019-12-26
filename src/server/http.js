@@ -36,11 +36,11 @@ class HTTPServer extends Server {
   handleData() {
     this.server.on("request", (request, response) => {
       const httpProtocol = new HttpServerProtocol(
+        this,
         request,
         response,
         this.options.delimiter
       );
-      httpProtocol.factory = this;
       httpProtocol.clientConnected();
     });
   }

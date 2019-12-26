@@ -14,9 +14,7 @@ const { TCPServerProtocol } = require("../ServerProtocol");
 class TCPServer extends Server {
   constructor(options) {
     super(options);
-
     this.connectedClients = [];
-
     this.initServer();
   }
 
@@ -29,10 +27,10 @@ class TCPServer extends Server {
       this.connectedClients.push(client);
       this.emit("clientConnected", client);
       const tcpServerProtocol = new TCPServerProtocol(
+        this,
         client,
         this.options.delimiter
       );
-      tcpServerProtocol.factory = this;
       tcpServerProtocol.clientConnected();
     });
   }

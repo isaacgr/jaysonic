@@ -62,10 +62,10 @@ class WSServer extends Server {
       this.emit("clientConnected", client);
       this.connectedClients.push(client);
       const wsServerProtocol = new WSServerProtocol(
+        this,
         client,
         this.options.delimiter
       );
-      wsServerProtocol.factory = this;
       wsServerProtocol.clientConnected();
     });
   }
