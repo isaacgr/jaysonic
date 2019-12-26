@@ -97,9 +97,8 @@ class Server extends EventEmitter {
     throw new Error("function must be overwritten in subsclass");
   }
 
-  handleBatchRequest(batch) {
+  handleBatchRequest(requests) {
     return new Promise((resolve, reject) => {
-      const requests = batch;
       const batchRequests = requests.map(request => this.validateMessage(request)
         .then(message => this.getResult(message)
           .then(result => JSON.parse(result))
@@ -154,7 +153,7 @@ class Server extends EventEmitter {
       }
 
       if (!(message === Object(message))) {
-        reject(
+        return reject(
           this.sendError(
             null,
             ERR_CODES.invalidRequest,
@@ -164,7 +163,7 @@ class Server extends EventEmitter {
       }
 
       if (!(typeof message.method === "string")) {
-        reject(
+        return reject(
           this.sendError(
             message.id,
             ERR_CODES.invalidRequest,
@@ -175,12 +174,12 @@ class Server extends EventEmitter {
 
       if (!message.id) {
         // no id, so assume notification
-        resolve({ notification: message });
+        return resolve({ notification: message });
       }
 
       if (message.jsonrpc) {
         if (this.options.version !== "2.0") {
-          reject(
+          return reject(
             this.sendError(
               message.id,
               ERR_CODES.invalidRequest,
@@ -191,7 +190,7 @@ class Server extends EventEmitter {
       }
 
       if (!this.methods[message.method]) {
-        reject(
+        return reject(
           this.sendError(
             message.id,
             ERR_CODES.methodNotFound,
@@ -204,7 +203,7 @@ class Server extends EventEmitter {
         !Array.isArray(message.params)
         && !(message.params === Object(message.params))
       ) {
-        reject(
+        return reject(
           this.sendError(
             message.id,
             ERR_CODES.invalidParams,
@@ -218,13 +217,7 @@ class Server extends EventEmitter {
   }
 
   handleValidation(chunk) {
-    const validRequest = this.validateRequest(chunk)
-      .then(result => result)
-      .catch((error) => {
-        throw error;
-      });
-
-    const validMessage = validRequest
+    return this.validateRequest(chunk)
       .then(result => this.validateMessage(result)
         .then(message => message)
         .catch((error) => {
@@ -233,8 +226,6 @@ class Server extends EventEmitter {
       .catch((error) => {
         throw error;
       });
-
-    return [validRequest, validMessage];
   }
 
   getResult(message) {
