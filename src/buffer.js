@@ -6,8 +6,8 @@ class MessageBuffer {
 
   isFinished() {
     if (
-      this.buffer.length === 0
-      || this.buffer.indexOf(this.delimiter) === -1
+      this.buffer.length === 0 ||
+      this.buffer.indexOf(this.delimiter) === -1
     ) {
       return true;
     }
@@ -35,8 +35,7 @@ class MessageBuffer {
      * If the server isnt sending delimiters for some reason
      * then nothing will ever come back for these requests
      */
-    const message = this.getMessage();
-    return message;
+    return this.getMessage();
   }
 }
 
