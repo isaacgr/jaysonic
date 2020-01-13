@@ -60,10 +60,23 @@ class TCPServer extends Server {
 
   // only available for TCP server
   notify(method, params) {
-    const response = formatResponse({ jsonrpc: "2.0", method, params });
+    let response;
+    if (this.options.version === "2.0") {
+      response = {
+        jsonrpc: this.options.version,
+        method,
+        params
+      };
+    } else {
+      response = {
+        method,
+        result: params,
+        error: null
+      };
+    }
     try {
       this.connectedClients.forEach((client) => {
-        client.write(response + this.options.delimiter);
+        client.write(formatResponse(response) + this.options.delimiter);
       });
     } catch (e) {
       // was unable to send data to client, possibly disconnected
