@@ -3,7 +3,7 @@ const net = require("net");
 const intercept = require("intercept-stdout");
 const Jaysonic = require("../../src");
 
-const tcpServer = new Jaysonic.server.tcp({ port: 8888 });
+const tcpServer = new Jaysonic.server.tcp({ port: 8989 });
 const tcpclient = new Jaysonic.client.tcp({
   host: "127.0.0.1",
   port: 8887
@@ -51,7 +51,7 @@ describe("Message Buffer", () => {
       )}\n`;
       const badChunk = "test";
       let messageBuffer = "";
-      socket.connect(8888, "127.0.0.1", () => {
+      socket.connect(8989, "127.0.0.1", () => {
         socket.write(chunk + badChunk);
         socket.on("data", (data) => {
           messageBuffer += data;
@@ -85,7 +85,7 @@ describe("Message Buffer", () => {
       const chunk = `${JSON.stringify(message1)}\n`;
       let messageBuffer = "";
       const socket = new net.Socket();
-      socket.connect(8888, "127.0.0.1", () => {
+      socket.connect(8989, "127.0.0.1", () => {
         socket.write(chunk);
         socket.on("data", (data) => {
           messageBuffer += data;
@@ -119,7 +119,7 @@ describe("Message Buffer", () => {
         message2
       )}\n`;
       let messageBuffer = "";
-      socket.connect(8888, "127.0.0.1", () => {
+      socket.connect(8989, "127.0.0.1", () => {
         socket.write(chunk);
         socket.on("data", (data) => {
           messageBuffer += data;
