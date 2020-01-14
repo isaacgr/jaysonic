@@ -84,22 +84,23 @@ class WSClient extends Client {
         this.message_id += 1;
         return request;
       },
-      send: (method, params) => new Promise((resolve, reject) => {
-        const requestId = this.message_id;
-        this.pendingCalls[requestId] = { resolve, reject };
-        this.client.send(this.request().message(method, params));
-        setTimeout(() => {
-          if (this.pendingCalls[requestId]) {
-            const error = this.sendError({
-              id: requestId,
-              code: ERR_CODES.timeout,
-              message: ERR_MSGS.timeout
-            });
-            delete this.pendingCalls[requestId];
-            reject(error);
-          }
-        }, this.options.timeout);
-      }),
+      send: (method, params) =>
+        new Promise((resolve, reject) => {
+          const requestId = this.message_id;
+          this.pendingCalls[requestId] = { resolve, reject };
+          this.client.send(this.request().message(method, params));
+          setTimeout(() => {
+            if (this.pendingCalls[requestId]) {
+              const error = this.formatError({
+                id: requestId,
+                code: ERR_CODES.timeout,
+                message: ERR_MSGS.timeout
+              });
+              delete this.pendingCalls[requestId];
+              reject(error);
+            }
+          }, this.options.timeout);
+        }),
       notify: (method, params) => {
         const request = formatRequest({
           method,
@@ -126,7 +127,7 @@ class WSClient extends Client {
         this.handleBatchResponse(message);
       } else if (!(message === Object(message))) {
         // error out if it cant be parsed
-        const error = this.sendError({
+        const error = this.formatError({
           id: null,
           code: ERR_CODES.parseError,
           message: ERR_MSGS.parseError
@@ -137,7 +138,7 @@ class WSClient extends Client {
         this.handleNotification(message);
       } else if (message.error) {
         // got an error back so reject the message
-        const error = this.sendError({
+        const error = this.formatError({
           jsonrpc: message.jsonrpc,
           id: message.id,
           code: message.error.code,
@@ -154,14 +155,14 @@ class WSClient extends Client {
       }
     } catch (e) {
       if (e instanceof SyntaxError) {
-        const error = this.sendError({
+        const error = this.formatError({
           id: this.serving_message_id,
           code: ERR_CODES.parseError,
           message: `Unable to parse message: '${chunk}'`
         });
         this.handleError(error);
       } else {
-        const error = this.sendError({
+        const error = this.formatError({
           id: this.serving_message_id,
           code: ERR_CODES.internal,
           message: `Unable to parse message: '${chunk}'`
@@ -204,7 +205,7 @@ class WSClient extends Client {
       }
       setTimeout(() => {
         if (this.pendingBatches[String(batchIds)]) {
-          const error = this.sendError({
+          const error = this.formatError({
             id: null,
             code: ERR_CODES.timeout,
             message: ERR_MSGS.timeout
@@ -225,7 +226,9 @@ class WSClient extends Client {
     });
     for (const ids of Object.keys(this.pendingBatches)) {
       const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
-      const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
+      const difference = arrays.reduce((a, b) =>
+        a.filter((c) => !b.includes(c))
+      );
       if (difference.length === 0) {
         batch.forEach((message) => {
           if (message.error) {
@@ -300,9 +303,7 @@ class WSClient extends Client {
     }
   }
 
-  sendError({
-    jsonrpc, id, code, message
-  }) {
+  formatError({ jsonrpc, id, code, message }) {
     let response;
     if (this.options.version === "2.0") {
       response = {

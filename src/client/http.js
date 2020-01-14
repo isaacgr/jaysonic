@@ -56,33 +56,34 @@ class HTTPClient extends Client {
         return request;
       },
 
-      send: (method, params) => new Promise((resolve, reject) => {
-        const requestId = this.message_id;
-        this.pendingCalls[requestId] = { resolve, reject };
-        const request = this.request().message(method, params);
-        this.options.headers["Content-Length"] = Buffer.byteLength(
-          request,
-          this.options.encoding
-        );
-        this.initClient();
-        this.client.write(request, this.options.encoding);
-        this.client.end();
-        this.client.on("error", (error) => {
-          reject(error);
-        });
-        setTimeout(() => {
-          if (this.pendingCalls[requestId]) {
-            const error = this.sendError({
-              id: requestId,
-              code: ERR_CODES.timeout,
-              message: ERR_MSGS.timeout
-            });
-            delete this.pendingCalls[requestId];
-            this.client.end();
+      send: (method, params) =>
+        new Promise((resolve, reject) => {
+          const requestId = this.message_id;
+          this.pendingCalls[requestId] = { resolve, reject };
+          const request = this.request().message(method, params);
+          this.options.headers["Content-Length"] = Buffer.byteLength(
+            request,
+            this.options.encoding
+          );
+          this.initClient();
+          this.client.write(request, this.options.encoding);
+          this.client.end();
+          this.client.on("error", (error) => {
             reject(error);
-          }
-        }, this.options.timeout);
-      }),
+          });
+          setTimeout(() => {
+            if (this.pendingCalls[requestId]) {
+              const error = this.formatError({
+                id: requestId,
+                code: ERR_CODES.timeout,
+                message: ERR_MSGS.timeout
+              });
+              delete this.pendingCalls[requestId];
+              this.client.end();
+              reject(error);
+            }
+          }, this.options.timeout);
+        }),
 
       /**
        * The spec for HTTP notifications states a 204 error response with an empty body
@@ -153,7 +154,7 @@ class HTTPClient extends Client {
       });
       setTimeout(() => {
         if (this.pendingBatches[String(batchIds)]) {
-          const error = this.sendError({
+          const error = this.formatError({
             id: null,
             code: ERR_CODES.timeout,
             message: ERR_MSGS.timeout
@@ -174,7 +175,9 @@ class HTTPClient extends Client {
         }
         for (const ids of Object.keys(this.pendingBatches)) {
           const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
-          const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
+          const difference = arrays.reduce((a, b) =>
+            a.filter((c) => !b.includes(c))
+          );
           if (difference.length === 0) {
             const response = {
               body: batch,

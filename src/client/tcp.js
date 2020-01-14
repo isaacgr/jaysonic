@@ -58,29 +58,30 @@ class TCPClient extends Client {
         return request;
       },
 
-      send: (method, params) => new Promise((resolve, reject) => {
-        const requestId = this.message_id;
-        this.pendingCalls[requestId] = { resolve, reject };
-        try {
-          this.client.write(this.request().message(method, params));
-        } catch (e) {
-          if (e instanceof TypeError) {
-            // this.client is probably undefined
-            reject(new Error(`Unable to send request. ${e.message}`));
+      send: (method, params) =>
+        new Promise((resolve, reject) => {
+          const requestId = this.message_id;
+          this.pendingCalls[requestId] = { resolve, reject };
+          try {
+            this.client.write(this.request().message(method, params));
+          } catch (e) {
+            if (e instanceof TypeError) {
+              // this.client is probably undefined
+              reject(new Error(`Unable to send request. ${e.message}`));
+            }
           }
-        }
-        setTimeout(() => {
-          if (this.pendingCalls[requestId]) {
-            const error = this.sendError({
-              id: requestId,
-              code: ERR_CODES.timeout,
-              message: ERR_MSGS.timeout
-            });
-            delete this.pendingCalls[requestId];
-            reject(error);
-          }
-        }, this.options.timeout);
-      }),
+          setTimeout(() => {
+            if (this.pendingCalls[requestId]) {
+              const error = this.formatError({
+                id: requestId,
+                code: ERR_CODES.timeout,
+                message: ERR_MSGS.timeout
+              });
+              delete this.pendingCalls[requestId];
+              reject(error);
+            }
+          }, this.options.timeout);
+        }),
       notify: (method, params) => {
         const request = formatRequest({
           method,
@@ -136,7 +137,7 @@ class TCPClient extends Client {
       }
       setTimeout(() => {
         if (this.pendingBatches[String(batchIds)]) {
-          const error = this.sendError({
+          const error = this.formatError({
             id: null,
             code: ERR_CODES.timeout,
             message: ERR_MSGS.timeout
@@ -157,7 +158,9 @@ class TCPClient extends Client {
         }
         for (const ids of Object.keys(this.pendingBatches)) {
           const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
-          const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
+          const difference = arrays.reduce((a, b) =>
+            a.filter((c) => !b.includes(c))
+          );
           if (difference.length === 0) {
             batch.forEach((message) => {
               if (message.error) {
