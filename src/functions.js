@@ -67,7 +67,16 @@ const formatResponse = ({
   return JSON.stringify(response);
 };
 
+class BatchRequest extends Error {
+  constructor(message, request = undefined) {
+    super(message);
+    this.name = "BatchRequest";
+    this.request = request;
+  }
+}
+
 module.exports = {
   formatRequest,
-  formatResponse
+  formatResponse,
+  BatchRequest
 };

@@ -23,14 +23,14 @@ class TCPServerProtocol {
             } else {
               this.factory
                 .getResult(message)
-                .then((result) => this.client.write(result + this.delimiter))
+                .then(result => this.client.write(result + this.delimiter))
                 .catch((error) => {
-                  this.client.write(JSON.stringify(error) + this.delimiter);
+                  this.client.write(error + this.delimiter);
                 });
             }
           })
           .catch((error) => {
-            this.client.write(JSON.stringify(error) + this.delimiter);
+            this.client.write(error.message + this.delimiter);
           });
       }
     });
@@ -66,14 +66,14 @@ class WSServerProtocol {
             } else {
               this.factory
                 .getResult(message)
-                .then((result) => this.client.send(result + this.delimiter))
+                .then(result => this.client.send(result + this.delimiter))
                 .catch((error) => {
-                  this.client.send(JSON.stringify(error) + this.delimiter);
+                  this.client.send(error + this.delimiter);
                 });
             }
           })
           .catch((error) => {
-            this.client.send(JSON.stringify(error) + this.delimiter);
+            this.client.send(error.message + this.delimiter);
           });
       }
     });
@@ -129,12 +129,12 @@ class HttpServerProtocol {
                   });
                 })
                 .catch((error) => {
-                  this.sendError(JSON.parse(error.message));
+                  this.sendError(error);
                 });
             }
           })
           .catch((error) => {
-            this.sendError(JSON.parse(error.message));
+            this.sendError(error.message);
           });
       }
     });

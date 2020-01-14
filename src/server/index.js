@@ -1,5 +1,5 @@
 const EventEmitter = require("events");
-const { formatResponse } = require("../functions");
+const { formatResponse, BatchRequest } = require("../functions");
 const { ERR_CODES, ERR_MSGS } = require("../constants");
 
 /**
@@ -107,20 +107,16 @@ class Server extends EventEmitter {
       try {
         const message = this.validateMessage(request);
         return this.getResult(message)
-          .then((result) => JSON.parse(result))
+          .then(result => JSON.parse(result))
           .catch((error) => {
             throw error;
           });
       } catch (e) {
-        throw e;
+        return Promise.reject(e);
       }
     });
     return Promise.all(
-      batchRequests.map((promise) =>
-        promise.catch((error) => {
-          throw error;
-        })
-      )
+      batchRequests.map(promise => promise.catch(error => JSON.parse(error.message)))
     );
   }
 
@@ -146,13 +142,7 @@ class Server extends EventEmitter {
         );
         throw new Error(error);
       }
-      return this.handleBatchRequest(message)
-        .then((responses) => {
-          return { batch: responses };
-        })
-        .catch((error) => {
-          throw error;
-        });
+      throw new BatchRequest(undefined, message);
     }
 
     if (!(message === Object(message))) {
@@ -203,8 +193,8 @@ class Server extends EventEmitter {
     }
 
     if (
-      !Array.isArray(message.params) &&
-      !(message.params === Object(message.params))
+      !Array.isArray(message.params)
+      && !(message.params === Object(message.params))
     ) {
       throw new Error(
         this.formatError(
@@ -225,7 +215,17 @@ class Server extends EventEmitter {
         const message = this.validateMessage(result);
         resolve(message);
       } catch (e) {
-        reject(e);
+        if (e instanceof BatchRequest) {
+          this.handleBatchRequest(e.request)
+            .then((result) => {
+              resolve({ batch: result });
+            })
+            .catch((error) => {
+              reject(error);
+            });
+        } else {
+          reject(e);
+        }
       }
     });
   }
@@ -254,7 +254,7 @@ class Server extends EventEmitter {
                 ERR_CODES.internal,
                 `${JSON.stringify(resError.message || resError)}`
               );
-              throw new Error(error);
+              reject(error);
             });
         } else {
           resolve(
@@ -273,7 +273,7 @@ class Server extends EventEmitter {
             ERR_MSGS.invalidParams
           );
         }
-        throw new Error(error);
+        reject(error);
       }
     });
   }
