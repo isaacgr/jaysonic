@@ -143,9 +143,9 @@ class HttpServerProtocol {
   sendError(error) {
     this.factory.setResponseHeader({
       response: this.response,
-      errorCode: error.error.code || 500
+      errorCode: JSON.parse(error).error.code || 500
     });
-    this.response.write(JSON.stringify(error) + this.delimiter, () => {
+    this.response.write(error + this.delimiter, () => {
       this.response.end();
     });
   }

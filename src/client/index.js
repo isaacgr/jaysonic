@@ -228,7 +228,9 @@ class Client extends EventEmitter {
     }
   }
 
-  formatError({ jsonrpc, id, code, message }) {
+  formatError({
+    jsonrpc, id, code, message
+  }) {
     let response;
     if (this.options.version === "2.0") {
       response = {
