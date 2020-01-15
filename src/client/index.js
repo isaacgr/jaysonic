@@ -84,7 +84,7 @@ class Client extends EventEmitter {
   handleResponse(id) {
     if (this.pendingCalls[id] === undefined) {
       const error = this.formatError({
-        id: id,
+        id,
         code: ERR_CODES.unknownId,
         message: ERR_MSGS.unknownId
       });
@@ -231,7 +231,9 @@ class Client extends EventEmitter {
     }
   }
 
-  formatError({ jsonrpc, id, code, message }) {
+  formatError({
+    jsonrpc, id, code, message
+  }) {
     let response;
     if (this.options.version === "2.0") {
       response = {

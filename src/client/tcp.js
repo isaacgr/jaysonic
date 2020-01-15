@@ -58,34 +58,33 @@ class TCPClient extends Client {
         return request;
       },
 
-      send: (method, params) =>
-        new Promise((resolve, reject) => {
-          const requestId = this.message_id;
-          this.pendingCalls[requestId] = { resolve, reject };
-          try {
-            this.client.write(this.request().message(method, params));
-          } catch (e) {
-            // this.client is probably undefined
-            reject(e.message);
-          }
-          setTimeout(() => {
-            if (this.pendingCalls[requestId] === undefined) {
-              const error = this.formatError({
-                id: requestId,
-                code: ERR_CODES.unknownId,
-                message: ERR_MSGS.unknownId
-              });
-              return reject(error);
-            }
+      send: (method, params) => new Promise((resolve, reject) => {
+        const requestId = this.message_id;
+        this.pendingCalls[requestId] = { resolve, reject };
+        try {
+          this.client.write(this.request().message(method, params));
+        } catch (e) {
+          // this.client is probably undefined
+          reject(e);
+        }
+        setTimeout(() => {
+          if (this.pendingCalls[requestId] === undefined) {
             const error = this.formatError({
               id: requestId,
-              code: ERR_CODES.timeout,
-              message: ERR_MSGS.timeout
+              code: ERR_CODES.unknownId,
+              message: ERR_MSGS.unknownId
             });
-            delete this.pendingCalls[requestId];
-            reject(error);
-          }, this.options.timeout);
-        }),
+            return reject(error);
+          }
+          const error = this.formatError({
+            id: requestId,
+            code: ERR_CODES.timeout,
+            message: ERR_MSGS.timeout
+          });
+          delete this.pendingCalls[requestId];
+          reject(error);
+        }, this.options.timeout);
+      }),
       notify: (method, params) => {
         const request = formatRequest({
           method,
@@ -99,7 +98,7 @@ class TCPClient extends Client {
             });
           } catch (e) {
             // this.client is probably undefined
-            reject(e.message);
+            reject(e);
           }
         });
       }
@@ -145,7 +144,7 @@ class TCPClient extends Client {
           return reject(error);
         }
         const error = this.formatError({
-          id: requestId,
+          id: null,
           code: ERR_CODES.timeout,
           message: ERR_MSGS.timeout
         });
@@ -164,9 +163,7 @@ class TCPClient extends Client {
         }
         for (const ids of Object.keys(this.pendingBatches)) {
           const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
-          const difference = arrays.reduce((a, b) =>
-            a.filter((c) => !b.includes(c))
-          );
+          const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
           if (difference.length === 0) {
             batch.forEach((message) => {
               if (message.error) {
@@ -174,6 +171,13 @@ class TCPClient extends Client {
                 if (this.pendingBatches[ids] !== undefined) {
                   this.pendingBatches[ids].reject(batch);
                   delete this.pendingBatches[ids];
+                } else {
+                  const error = this.formatError({
+                    id: null,
+                    code: ERR_CODES.unknownId,
+                    message: ERR_MSGS.unknownId
+                  });
+                  throw new Error(error);
                 }
               }
             });

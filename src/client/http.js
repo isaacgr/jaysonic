@@ -65,22 +65,32 @@ class HTTPClient extends Client {
           this.options.encoding
         );
         this.initClient();
-        this.client.write(request, this.options.encoding);
-        this.client.end();
-        this.client.on("error", (error) => {
-          reject(error);
-        });
+        try {
+          this.client.write(request, this.options.encoding);
+          this.client.end();
+          this.client.on("error", (error) => {
+            reject(error);
+          });
+        } catch (e) {
+          reject(e);
+        }
+
         setTimeout(() => {
-          if (this.pendingCalls[requestId]) {
+          if (this.pendingCalls[requestId] === undefined) {
             const error = this.formatError({
               id: requestId,
-              code: ERR_CODES.timeout,
-              message: ERR_MSGS.timeout
+              code: ERR_CODES.unknownId,
+              message: ERR_MSGS.unknownId
             });
-            delete this.pendingCalls[requestId];
-            this.client.end();
-            reject(error);
+            return reject(error);
           }
+          const error = this.formatError({
+            id: null,
+            code: ERR_CODES.timeout,
+            message: ERR_MSGS.timeout
+          });
+          delete this.pendingCalls[requestId];
+          reject(error);
         }, this.options.timeout);
       }),
 
@@ -107,11 +117,15 @@ class HTTPClient extends Client {
               reject(new Error("no response receieved for notification"));
             }
           });
-          notification.write(request, this.options.encoding);
-          notification.end();
-          notification.on("error", (error) => {
-            reject(error);
-          });
+          try {
+            notification.write(request, this.options.encoding);
+            notification.end();
+            notification.on("error", (error) => {
+              reject(error);
+            });
+          } catch (e) {
+            reject(e);
+          }
         });
       }
     };
@@ -146,21 +160,31 @@ class HTTPClient extends Client {
         this.options.encoding
       );
       this.initClient();
-      this.client.write(request, this.options.encoding);
-      this.client.end();
-      this.client.on("error", (error) => {
-        reject(error);
-      });
+      try {
+        this.client.write(request, this.options.encoding);
+        this.client.end();
+        this.client.on("error", (error) => {
+          reject(error);
+        });
+      } catch (e) {
+        reject(e);
+      }
       setTimeout(() => {
-        if (this.pendingBatches[String(batchIds)]) {
+        if (this.pendingBatches[String(batchIds)] === undefined) {
           const error = this.formatError({
             id: null,
-            code: ERR_CODES.timeout,
-            message: ERR_MSGS.timeout
+            code: ERR_CODES.unknownId,
+            message: ERR_MSGS.unknownId
           });
-          delete this.pendingBatches[String(batchIds)];
-          reject(error);
+          return reject(error);
         }
+        const error = this.formatError({
+          id: null,
+          code: ERR_CODES.timeout,
+          message: ERR_MSGS.timeout
+        });
+        delete this.pendingBatches[String(batchIds)];
+        reject(error);
       }, this.options.timeout);
       this.on("batchResponse", (batch) => {
         const batchResponseIds = [];

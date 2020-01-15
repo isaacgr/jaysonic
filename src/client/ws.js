@@ -78,23 +78,32 @@ class WSClient extends Client {
         this.message_id += 1;
         return request;
       },
-      send: (method, params) =>
-        new Promise((resolve, reject) => {
-          const requestId = this.message_id;
-          this.pendingCalls[requestId] = { resolve, reject };
+      send: (method, params) => new Promise((resolve, reject) => {
+        const requestId = this.message_id;
+        this.pendingCalls[requestId] = { resolve, reject };
+        try {
           this.client.send(this.request().message(method, params));
-          setTimeout(() => {
-            if (this.pendingCalls[requestId]) {
-              const error = this.formatError({
-                id: requestId,
-                code: ERR_CODES.timeout,
-                message: ERR_MSGS.timeout
-              });
-              delete this.pendingCalls[requestId];
-              reject(error);
-            }
-          }, this.options.timeout);
-        }),
+        } catch (e) {
+          reject(e);
+        }
+        setTimeout(() => {
+          if (this.pendingCalls[requestId] === undefined) {
+            const error = this.formatError({
+              id: requestId,
+              code: ERR_CODES.unknownId,
+              message: ERR_MSGS.unknownId
+            });
+            return reject(error);
+          }
+          const error = this.formatError({
+            id: requestId,
+            code: ERR_CODES.timeout,
+            message: ERR_MSGS.timeout
+          });
+          delete this.pendingCalls[requestId];
+          reject(error);
+        }, this.options.timeout);
+      }),
       notify: (method, params) => {
         const request = formatRequest({
           method,
@@ -102,11 +111,15 @@ class WSClient extends Client {
           options: this.options
         });
         return new Promise((resolve, reject) => {
-          this.client.send(request);
-          resolve("notification sent");
-          this.client.onerror = (error) => {
-            reject(error);
-          };
+          try {
+            this.client.send(request);
+            resolve("notification sent");
+            this.client.onerror = (error) => {
+              reject(error);
+            };
+          } catch (e) {
+            reject(e);
+          }
         });
       }
     };
@@ -126,7 +139,7 @@ class WSClient extends Client {
           code: ERR_CODES.parseError,
           message: ERR_MSGS.parseError
         });
-        this.handleError(error);
+        throw new Error(error);
       } else if (!message.id) {
         // no id, so assume notification
         this.handleNotification(message);
@@ -138,14 +151,19 @@ class WSClient extends Client {
           code: message.error.code,
           message: message.error.message
         });
-        this.handleError(error);
+        throw new Error(error);
       } else if (!message.method) {
         // no method, so assume response
         this.serving_message_id = message.id;
         this.responseQueue[this.serving_message_id] = message;
         this.handleResponse(message);
       } else {
-        throw new Error();
+        const error = this.formatError({
+          id: null,
+          code: ERR_CODES.unknown,
+          message: ERR_MSGS.unknown
+        });
+        throw new Error(error);
       }
     } catch (e) {
       if (e instanceof SyntaxError) {
@@ -154,14 +172,9 @@ class WSClient extends Client {
           code: ERR_CODES.parseError,
           message: `Unable to parse message: '${chunk}'`
         });
-        this.handleError(error);
+        throw new Error(error);
       } else {
-        const error = this.formatError({
-          id: this.serving_message_id,
-          code: ERR_CODES.internal,
-          message: `Unable to parse message: '${chunk}'`
-        });
-        this.handleError(error);
+        throw e;
       }
     }
   }
@@ -220,9 +233,7 @@ class WSClient extends Client {
     });
     for (const ids of Object.keys(this.pendingBatches)) {
       const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
-      const difference = arrays.reduce((a, b) =>
-        a.filter((c) => !b.includes(c))
-      );
+      const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
       if (difference.length === 0) {
         batch.forEach((message) => {
           if (message.error) {
@@ -271,7 +282,11 @@ class WSClient extends Client {
     this.messageBuffer.push(data);
     while (!this.messageBuffer.isFinished()) {
       const message = this.messageBuffer.handleData();
-      this.verifyData(message);
+      try {
+        this.verifyData(message);
+      } catch (e) {
+        this.handleError(JSON.parse(e.message));
+      }
     }
   }
 
@@ -297,7 +312,9 @@ class WSClient extends Client {
     }
   }
 
-  formatError({ jsonrpc, id, code, message }) {
+  formatError({
+    jsonrpc, id, code, message
+  }) {
     let response;
     if (this.options.version === "2.0") {
       response = {
@@ -312,7 +329,7 @@ class WSClient extends Client {
         id
       };
     }
-    return response;
+    return JSON.stringify(response);
   }
 }
 
