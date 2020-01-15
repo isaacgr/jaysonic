@@ -1,4 +1,11 @@
 class MessageBuffer {
+  /**
+   * we can receive whole messages, or parital so we need to buffer
+   *
+   * whole message: {"jsonrpc": 2.0, "params": ["hello"], id: 1}\n
+   *
+   * partial message: {"jsonrpc": 2.0, "params"
+   */
   constructor(delimiter) {
     this.delimiter = delimiter;
     this.buffer = "";
@@ -6,8 +13,8 @@ class MessageBuffer {
 
   isFinished() {
     if (
-      this.buffer.length === 0
-      || this.buffer.indexOf(this.delimiter) === -1
+      this.buffer.length === 0 ||
+      this.buffer.indexOf(this.delimiter) === -1
     ) {
       return true;
     }

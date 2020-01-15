@@ -58,19 +58,25 @@ class TCPClient extends Client {
         return request;
       },
 
-      send: (method, params) => new Promise((resolve, reject) => {
-        const requestId = this.message_id;
-        this.pendingCalls[requestId] = { resolve, reject };
-        try {
-          this.client.write(this.request().message(method, params));
-        } catch (e) {
-          if (e instanceof TypeError) {
+      send: (method, params) =>
+        new Promise((resolve, reject) => {
+          const requestId = this.message_id;
+          this.pendingCalls[requestId] = { resolve, reject };
+          try {
+            this.client.write(this.request().message(method, params));
+          } catch (e) {
             // this.client is probably undefined
-            reject(new Error(`Unable to send request. ${e.message}`));
+            reject(e.message);
           }
-        }
-        setTimeout(() => {
-          if (this.pendingCalls[requestId]) {
+          setTimeout(() => {
+            if (this.pendingCalls[requestId] === undefined) {
+              const error = this.formatError({
+                id: requestId,
+                code: ERR_CODES.unknownId,
+                message: ERR_MSGS.unknownId
+              });
+              return reject(error);
+            }
             const error = this.formatError({
               id: requestId,
               code: ERR_CODES.timeout,
@@ -78,9 +84,8 @@ class TCPClient extends Client {
             });
             delete this.pendingCalls[requestId];
             reject(error);
-          }
-        }, this.options.timeout);
-      }),
+          }, this.options.timeout);
+        }),
       notify: (method, params) => {
         const request = formatRequest({
           method,
@@ -90,13 +95,11 @@ class TCPClient extends Client {
         return new Promise((resolve, reject) => {
           try {
             this.client.write(request, () => {
-              resolve("notification sent");
+              resolve(request);
             });
           } catch (e) {
-            if (e instanceof TypeError) {
-              // this.client is probably undefined
-              reject(new Error(`Unable to send request. ${e.message}`));
-            }
+            // this.client is probably undefined
+            reject(e.message);
           }
         });
       }
@@ -129,21 +132,25 @@ class TCPClient extends Client {
       try {
         this.client.write(request + this.options.delimiter);
       } catch (e) {
-        if (e instanceof TypeError) {
-          // this.client is probably undefined
-          reject(new Error(`Unable to send request. ${e.message}`));
-        }
+        // this.client is probably undefined
+        reject(e.message);
       }
       setTimeout(() => {
-        if (this.pendingBatches[String(batchIds)]) {
+        if (this.pendingBatches[String(batchIds)] === undefined) {
           const error = this.formatError({
             id: null,
-            code: ERR_CODES.timeout,
-            message: ERR_MSGS.timeout
+            code: ERR_CODES.unknownId,
+            message: ERR_MSGS.unknownId
           });
-          delete this.pendingBatches[String(batchIds)];
-          reject(error);
+          return reject(error);
         }
+        const error = this.formatError({
+          id: requestId,
+          code: ERR_CODES.timeout,
+          message: ERR_MSGS.timeout
+        });
+        delete this.pendingBatches[String(batchIds)];
+        reject(error);
       }, this.options.timeout);
       this.on("batchResponse", (batch) => {
         const batchResponseIds = [];
@@ -157,7 +164,9 @@ class TCPClient extends Client {
         }
         for (const ids of Object.keys(this.pendingBatches)) {
           const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
-          const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
+          const difference = arrays.reduce((a, b) =>
+            a.filter((c) => !b.includes(c))
+          );
           if (difference.length === 0) {
             batch.forEach((message) => {
               if (message.error) {

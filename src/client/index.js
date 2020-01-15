@@ -43,13 +43,6 @@ class Client extends EventEmitter {
     };
     this.options.timeout = this.options.timeout * 1000;
 
-    /**
-     * we can receive whole messages, or parital so we need to buffer
-     *
-     * whole message: {"jsonrpc": 2.0, "params": ["hello"], id: 1}
-     *
-     * partial message: {"jsonrpc": 2.0, "params"
-     */
     this.messageBuffer = new MessageBuffer(this.options.delimiter);
 
     const { host, port } = this.options;
@@ -65,7 +58,7 @@ class Client extends EventEmitter {
     return new Promise((resolve, reject) => {
       this.client.end((error) => {
         if (error) {
-          reject();
+          reject(error);
         }
         resolve();
       });
@@ -89,18 +82,24 @@ class Client extends EventEmitter {
   }
 
   handleResponse(id) {
-    if (!(this.pendingCalls[id] === undefined)) {
-      let response = this.responseQueue[id];
-      if (this.writer instanceof http.IncomingMessage) {
-        // want to allow users to access the headers, status code etc.
-        response = {
-          body: this.responseQueue[id],
-          ...this.writer
-        };
-      }
-      this.pendingCalls[id].resolve(response);
-      delete this.responseQueue[id];
+    if (this.pendingCalls[id] === undefined) {
+      const error = this.formatError({
+        id: id,
+        code: ERR_CODES.unknownId,
+        message: ERR_MSGS.unknownId
+      });
+      throw new Error(error);
     }
+    let response = this.responseQueue[id];
+    if (this.writer instanceof http.IncomingMessage) {
+      // want to allow users to access the headers, status code etc.
+      response = {
+        body: this.responseQueue[id],
+        ...this.writer
+      };
+    }
+    this.pendingCalls[id].resolve(response);
+    delete this.responseQueue[id];
   }
 
   verifyData(chunk) {
@@ -126,8 +125,9 @@ class Client extends EventEmitter {
           code: ERR_CODES.parseError,
           message: ERR_MSGS.parseError
         });
-        this.handleError(error);
+        throw new Error(error);
       } else if (!message.id) {
+        // no id, so assume notification
         // special case http response since it cant get notifications
         // this is not in spec at all
         if (this.writer instanceof http.IncomingMessage) {
@@ -136,9 +136,8 @@ class Client extends EventEmitter {
             code: ERR_CODES.parseError,
             message: ERR_MSGS.parseError
           });
-          this.handleError(error);
+          throw new Error(error);
         }
-        // no id, so assume notification
         this.emit("notify", message);
       } else if (message.error) {
         // got an error back so reject the message
@@ -148,14 +147,19 @@ class Client extends EventEmitter {
           code: message.error.code,
           message: message.error.message
         });
-        this.handleError(error);
+        throw new Error(error);
       } else if (!message.method) {
         // no method, so assume response
         this.serving_message_id = message.id;
         this.responseQueue[this.serving_message_id] = message;
         this.handleResponse(this.serving_message_id);
       } else {
-        throw new Error();
+        const error = this.formatError({
+          id: null,
+          code: ERR_CODES.unknown,
+          message: ERR_MSGS.unknown
+        });
+        throw new Error(error);
       }
     } catch (e) {
       if (e instanceof SyntaxError) {
@@ -164,14 +168,9 @@ class Client extends EventEmitter {
           code: ERR_CODES.parseError,
           message: `Unable to parse message: '${chunk}'`
         });
-        this.handleError(error);
+        throw new Error(error);
       } else {
-        const error = this.formatError({
-          id: this.serving_message_id,
-          code: ERR_CODES.internal,
-          message: `Unable to parse message: '${chunk}'`
-        });
-        this.handleError(error);
+        throw e;
       }
     }
   }
@@ -199,7 +198,11 @@ class Client extends EventEmitter {
     this.messageBuffer.push(data);
     while (!this.messageBuffer.isFinished()) {
       const message = this.messageBuffer.handleData();
-      this.verifyData(message);
+      try {
+        this.verifyData(message);
+      } catch (e) {
+        this.handleError(JSON.parse(e.message));
+      }
     }
   }
 
@@ -228,9 +231,7 @@ class Client extends EventEmitter {
     }
   }
 
-  formatError({
-    jsonrpc, id, code, message
-  }) {
+  formatError({ jsonrpc, id, code, message }) {
     let response;
     if (this.options.version === "2.0") {
       response = {
@@ -245,7 +246,7 @@ class Client extends EventEmitter {
         id
       };
     }
-    return response;
+    return JSON.stringify(response);
   }
 }
 module.exports = Client;

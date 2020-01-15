@@ -31,13 +31,7 @@ class WSClient extends Client {
       ...(options || {})
     };
     this.options.timeout = this.options.timeout * 1000;
-    /**
-     * we can receive whole messages, or parital so we need to buffer
-     *
-     * whole message: {"jsonrpc": 2.0, "params": ["hello"], id: 1}
-     *
-     * partial message: {"jsonrpc": 2.0, "params"
-     */
+
     this.messageBuffer = new MessageBuffer(this.options.delimiter);
     const { retries } = this.options;
     this.remainingRetries = retries;
@@ -84,22 +78,23 @@ class WSClient extends Client {
         this.message_id += 1;
         return request;
       },
-      send: (method, params) => new Promise((resolve, reject) => {
-        const requestId = this.message_id;
-        this.pendingCalls[requestId] = { resolve, reject };
-        this.client.send(this.request().message(method, params));
-        setTimeout(() => {
-          if (this.pendingCalls[requestId]) {
-            const error = this.formatError({
-              id: requestId,
-              code: ERR_CODES.timeout,
-              message: ERR_MSGS.timeout
-            });
-            delete this.pendingCalls[requestId];
-            reject(error);
-          }
-        }, this.options.timeout);
-      }),
+      send: (method, params) =>
+        new Promise((resolve, reject) => {
+          const requestId = this.message_id;
+          this.pendingCalls[requestId] = { resolve, reject };
+          this.client.send(this.request().message(method, params));
+          setTimeout(() => {
+            if (this.pendingCalls[requestId]) {
+              const error = this.formatError({
+                id: requestId,
+                code: ERR_CODES.timeout,
+                message: ERR_MSGS.timeout
+              });
+              delete this.pendingCalls[requestId];
+              reject(error);
+            }
+          }, this.options.timeout);
+        }),
       notify: (method, params) => {
         const request = formatRequest({
           method,
@@ -225,7 +220,9 @@ class WSClient extends Client {
     });
     for (const ids of Object.keys(this.pendingBatches)) {
       const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
-      const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
+      const difference = arrays.reduce((a, b) =>
+        a.filter((c) => !b.includes(c))
+      );
       if (difference.length === 0) {
         batch.forEach((message) => {
           if (message.error) {
@@ -300,9 +297,7 @@ class WSClient extends Client {
     }
   }
 
-  formatError({
-    jsonrpc, id, code, message
-  }) {
+  formatError({ jsonrpc, id, code, message }) {
     let response;
     if (this.options.version === "2.0") {
       response = {
