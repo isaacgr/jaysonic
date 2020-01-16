@@ -71,15 +71,17 @@ class WSServer extends Server {
   }
 
   clientConnected(cb) {
-    this.on("clientConnected", client => cb({
-      host: client.remoteAddress,
-      port: client.remotePort
-    }));
+    this.on("clientConnected", (client) =>
+      cb({
+        host: client.remoteAddress,
+        port: client.remotePort
+      })
+    );
   }
 
   clientDisconnected(cb) {
     this.on("clientDisconnected", (client) => {
-      const clientIndex = this.connectedClients.findIndex(c => client === c);
+      const clientIndex = this.connectedClients.findIndex((c) => client === c);
       if (clientIndex === -1) {
         return "unknown";
       }
@@ -91,12 +93,26 @@ class WSServer extends Server {
     });
   }
 
-  // only available for TCP server
+  // only available for TCP and ws server
   notify(method, params) {
-    const response = formatResponse({ jsonrpc: "2.0", method, params });
+    let response;
+    if (this.options.version === "2.0") {
+      response = {
+        jsonrpc: "2.0",
+        method: method,
+        params: params,
+        delimiter: this.options.delimiter
+      };
+    } else {
+      response = {
+        method: method,
+        params: params,
+        delimiter: this.options.delimiter
+      };
+    }
     try {
       this.connectedClients.forEach((client) => {
-        client.send(response + this.options.delimiter);
+        client.send(formatResponse(response));
       });
     } catch (e) {
       // was unable to send data to client, possibly disconnected
