@@ -107,7 +107,7 @@ class Server extends EventEmitter {
       try {
         const message = this.validateMessage(request);
         return this.getResult(message)
-          .then((result) => JSON.parse(result))
+          .then(result => JSON.parse(result))
           .catch((error) => {
             throw error;
           });
@@ -116,9 +116,7 @@ class Server extends EventEmitter {
       }
     });
     return Promise.all(
-      batchRequests.map((promise) =>
-        promise.catch((error) => JSON.parse(error.message))
-      )
+      batchRequests.map(promise => promise.catch(error => JSON.parse(error.message)))
     );
   }
 
@@ -195,8 +193,8 @@ class Server extends EventEmitter {
     }
 
     if (
-      !Array.isArray(message.params) &&
-      !(message.params === Object(message.params))
+      !Array.isArray(message.params)
+      && !(message.params === Object(message.params))
     ) {
       throw new Error(
         this.formatError(

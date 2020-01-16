@@ -46,7 +46,7 @@ class TCPServer extends Server {
 
   clientDisconnected(cb) {
     this.on("clientDisconnected", (client) => {
-      const clientIndex = this.connectedClients.findIndex((c) => client === c);
+      const clientIndex = this.connectedClients.findIndex(c => client === c);
       if (clientIndex === -1) {
         return "unknown";
       }
@@ -64,25 +64,25 @@ class TCPServer extends Server {
     if (this.options.version === "2.0") {
       response = {
         jsonrpc: "2.0",
-        method: method,
-        params: params,
+        method,
+        params,
         delimiter: this.options.delimiter
       };
     } else {
       response = {
-        method: method,
-        params: params,
+        method,
+        params,
         delimiter: this.options.delimiter
       };
     }
-    try {
-      this.connectedClients.forEach((client) => {
+    this.connectedClients.forEach((client) => {
+      try {
         client.write(formatResponse(response));
-      });
-    } catch (e) {
-      // was unable to send data to client, possibly disconnected
-      this.emit("error", e);
-    }
+      } catch (e) {
+        // was unable to send data to client, possibly disconnected
+        this.emit("error", e);
+      }
+    });
   }
 }
 

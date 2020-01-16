@@ -23,7 +23,7 @@ class TCPServerProtocol {
             } else {
               this.factory
                 .getResult(message)
-                .then(result => this.client.write(result + this.delimiter))
+                .then(result => this.client.write(result))
                 .catch((error) => {
                   this.client.write(error + this.delimiter);
                 });
@@ -66,7 +66,7 @@ class WSServerProtocol {
             } else {
               this.factory
                 .getResult(message)
-                .then(result => this.client.send(result + this.delimiter))
+                .then(result => this.client.send(result))
                 .catch((error) => {
                   this.client.send(error + this.delimiter);
                 });
@@ -124,7 +124,7 @@ class HttpServerProtocol {
                 .getResult(message)
                 .then((result) => {
                   this.factory.setResponseHeader({ response: this.response });
-                  this.response.write(result + this.delimiter, () => {
+                  this.response.write(result, () => {
                     this.response.end();
                   });
                 })

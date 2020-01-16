@@ -38,33 +38,45 @@ const formatRequest = ({
 };
 
 const formatResponse = ({
-  jsonrpc, id, method, result, params
+  jsonrpc, id, method, result, params, delimiter
 }) => {
   const response = {};
+  if (params && result) {
+    throw new Error("Cannot send response with both params and result");
+  }
 
-  response.result = result;
+  if (method && id) {
+    throw new Error("Cannot send response with both a method and non-null id");
+  }
 
   if (params) {
     response.params = params;
   }
 
-  if (!jsonrpc || jsonrpc === 1) {
+  if (result) {
+    response.result = result;
+  }
+
+  if (!jsonrpc) {
     // 1.0 response
     response.error = null;
   } else {
-    // 2.0 response, dont include null error and include jsonrpc version
+    // assume 2.0 response, dont include null error and include jsonrpc version
     response.jsonrpc = "2.0";
   }
 
-  if (id) {
+  if (!id) {
+    if (method) {
+      response.method = method;
+    }
+    if (!jsonrpc) {
+      response.id = null;
+    }
+  } else {
     response.id = id;
   }
 
-  // could be notification
-  if (method && !id) {
-    response.method = method;
-  }
-  return JSON.stringify(response);
+  return JSON.stringify(response) + delimiter;
 };
 
 class BatchRequest extends Error {
