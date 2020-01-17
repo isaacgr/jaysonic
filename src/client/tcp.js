@@ -1,6 +1,6 @@
 const net = require("net");
 const Client = require(".");
-const { formatRequest } = require("../functions");
+const { formatRequest, formatError } = require("../functions");
 const { ERR_CODES, ERR_MSGS } = require("../constants");
 
 /**
@@ -69,14 +69,18 @@ class TCPClient extends Client {
         }
         setTimeout(() => {
           if (this.pendingCalls[requestId] === undefined) {
-            const error = this.formatError({
+            const error = formatError({
+              jsonrpc: this.options.version,
+              delimiter: this.options.delimiter,
               id: requestId,
               code: ERR_CODES.unknownId,
               message: ERR_MSGS.unknownId
             });
             return reject(error);
           }
-          const error = this.formatError({
+          const error = formatError({
+            jsonrpc: this.options.version,
+            delimiter: this.options.delimiter,
             id: requestId,
             code: ERR_CODES.timeout,
             message: ERR_MSGS.timeout
@@ -136,14 +140,18 @@ class TCPClient extends Client {
       }
       setTimeout(() => {
         if (this.pendingBatches[String(batchIds)] === undefined) {
-          const error = this.formatError({
+          const error = formatError({
+            jsonrpc: this.options.version,
+            delimiter: this.options.delimiter,
             id: null,
             code: ERR_CODES.unknownId,
             message: ERR_MSGS.unknownId
           });
           return reject(error);
         }
-        const error = this.formatError({
+        const error = formatError({
+          jsonrpc: this.options.version,
+          delimiter: this.options.delimiter,
           id: null,
           code: ERR_CODES.timeout,
           message: ERR_MSGS.timeout
@@ -172,7 +180,9 @@ class TCPClient extends Client {
                   this.pendingBatches[ids].reject(batch);
                   delete this.pendingBatches[ids];
                 } else {
-                  const error = this.formatError({
+                  const error = formatError({
+                    jsonrpc: this.options.version,
+                    delimiter: this.options.delimiter,
                     id: null,
                     code: ERR_CODES.unknownId,
                     message: ERR_MSGS.unknownId

@@ -1,5 +1,6 @@
 const EventEmitter = require("events");
 const http = require("http");
+const { formatError } = require("../functions");
 const { ERR_CODES, ERR_MSGS } = require("../constants");
 const { MessageBuffer } = require("../buffer");
 
@@ -83,10 +84,12 @@ class Client extends EventEmitter {
 
   handleResponse(id) {
     if (this.pendingCalls[id] === undefined) {
-      const error = this.formatError({
+      const error = formatError({
+        jsonrpc: this.options.version,
         id,
         code: ERR_CODES.unknownId,
-        message: ERR_MSGS.unknownId
+        message: ERR_MSGS.unknownId,
+        delimiter: this.options.delimiter
       });
       throw new Error(error);
     }
@@ -111,16 +114,20 @@ class Client extends EventEmitter {
         try {
           this.emit("batchResponse", message);
         } catch (e) {
-          const error = this.formatError({
+          const error = formatError({
+            jsonrpc: this.options.version,
             id: null,
             code: ERR_CODES.parseError,
-            message: ERR_MSGS.parseError
+            message: ERR_MSGS.parseError,
+            delimiter: this.options.delimiter
           });
           this.emit("batchError", error);
         }
       } else if (!(message === Object(message))) {
         // error out if it cant be parsed
-        const error = this.formatError({
+        const error = formatError({
+          jsonrpc: this.options.version,
+          delimiter: this.options.delimiter,
           id: null,
           code: ERR_CODES.parseError,
           message: ERR_MSGS.parseError
@@ -131,7 +138,9 @@ class Client extends EventEmitter {
         // special case http response since it cant get notifications
         // this is not in spec at all
         if (this.writer instanceof http.IncomingMessage) {
-          const error = this.formatError({
+          const error = formatError({
+            jsonrpc: this.options.version,
+            delimiter: this.options.delimiter,
             id: this.serving_message_id,
             code: ERR_CODES.parseError,
             message: ERR_MSGS.parseError
@@ -141,8 +150,9 @@ class Client extends EventEmitter {
         this.emit("notify", message);
       } else if (message.error) {
         // got an error back so reject the message
-        const error = this.formatError({
-          jsonrpc: message.jsonrpc,
+        const error = formatError({
+          jsonrpc: this.options.version,
+          delimiter: this.options.delimiter,
           id: message.id,
           code: message.error.code,
           message: message.error.message
@@ -154,7 +164,9 @@ class Client extends EventEmitter {
         this.responseQueue[this.serving_message_id] = message;
         this.handleResponse(this.serving_message_id);
       } else {
-        const error = this.formatError({
+        const error = formatError({
+          jsonrpc: this.options.version,
+          delimiter: this.options.delimiter,
           id: null,
           code: ERR_CODES.unknown,
           message: ERR_MSGS.unknown
@@ -163,7 +175,9 @@ class Client extends EventEmitter {
       }
     } catch (e) {
       if (e instanceof SyntaxError) {
-        const error = this.formatError({
+        const error = formatError({
+          jsonrpc: this.options.version,
+          delimiter: this.options.delimiter,
           id: this.serving_message_id,
           code: ERR_CODES.parseError,
           message: `Unable to parse message: '${chunk}'`
@@ -229,26 +243,6 @@ class Client extends EventEmitter {
         );
       }
     }
-  }
-
-  formatError({
-    jsonrpc, id, code, message
-  }) {
-    let response;
-    if (this.options.version === "2.0") {
-      response = {
-        jsonrpc: jsonrpc || this.options.version,
-        error: { code, message: message || "Unknown Error" },
-        id
-      };
-    } else {
-      response = {
-        result: null,
-        error: { code, message: message || "Unknown Error" },
-        id
-      };
-    }
-    return JSON.stringify(response);
   }
 }
 module.exports = Client;

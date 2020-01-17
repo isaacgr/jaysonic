@@ -68,12 +68,12 @@ class WSServerProtocol {
                 .getResult(message)
                 .then(result => this.client.send(result))
                 .catch((error) => {
-                  this.client.send(error + this.delimiter);
+                  this.client.send(error);
                 });
             }
           })
           .catch((error) => {
-            this.client.send(error.message + this.delimiter);
+            this.client.send(error.message);
           });
       }
     });
@@ -145,7 +145,7 @@ class HttpServerProtocol {
       response: this.response,
       errorCode: JSON.parse(error).error.code || 500
     });
-    this.response.write(error + this.delimiter, () => {
+    this.response.write(error, () => {
       this.response.end();
     });
   }

@@ -1,5 +1,5 @@
 const EventEmitter = require("events");
-const { formatResponse, BatchRequest } = require("../functions");
+const { formatResponse, formatError, BatchRequest } = require("../functions");
 const { ERR_CODES, ERR_MSGS } = require("../constants");
 
 /**
@@ -126,7 +126,13 @@ class Server extends EventEmitter {
       return message;
     } catch (e) {
       throw new Error(
-        this.formatError(null, ERR_CODES.parseError, ERR_MSGS.parseError)
+        formatError({
+          jsonrpc: this.options.version,
+          id: null,
+          code: ERR_CODES.parseError,
+          message: ERR_MSGS.parseError,
+          delimiter: this.options.delimiter
+        })
       );
     }
   }
@@ -135,11 +141,13 @@ class Server extends EventEmitter {
     if (Array.isArray(message)) {
       // possible batch request
       if (message.length === 0) {
-        const error = this.formatError(
-          null,
-          ERR_CODES.invalidRequest,
-          ERR_MSGS.invalidRequest
-        );
+        const error = formatError({
+          jsonrpc: this.options.version,
+          id: null,
+          code: ERR_CODES.invalidRequest,
+          message: ERR_MSGS.invalidRequest,
+          delimiter: this.options.delimiter
+        });
         throw new Error(error);
       }
       throw new BatchRequest(undefined, message);
@@ -147,21 +155,25 @@ class Server extends EventEmitter {
 
     if (!(message === Object(message))) {
       throw new Error(
-        this.formatError(
-          null,
-          ERR_CODES.invalidRequest,
-          ERR_MSGS.invalidRequest
-        )
+        formatError({
+          jsonrpc: this.options.version,
+          id: null,
+          code: ERR_CODES.invalidRequest,
+          message: ERR_MSGS.invalidRequest,
+          delimiter: this.options.delimiter
+        })
       );
     }
 
     if (!(typeof message.method === "string")) {
       throw new Error(
-        this.formatError(
-          message.id,
-          ERR_CODES.invalidRequest,
-          ERR_MSGS.invalidRequest
-        )
+        formatError({
+          jsonrpc: message.jsonrpc,
+          id: message.id,
+          code: ERR_CODES.invalidRequest,
+          message: ERR_MSGS.invalidRequest,
+          delimiter: this.options.delimiter
+        })
       );
     }
 
@@ -173,22 +185,25 @@ class Server extends EventEmitter {
     if (message.jsonrpc) {
       if (this.options.version !== "2.0") {
         throw new Error(
-          this.formatError(
-            message.id,
-            ERR_CODES.invalidRequest,
-            ERR_MSGS.invalidRequest
-          )
+          formatError({
+            id: message.id,
+            code: ERR_CODES.invalidRequest,
+            message: ERR_MSGS.invalidRequest,
+            delimiter: this.options.delimiter
+          })
         );
       }
     }
 
     if (!this.methods[message.method]) {
       throw new Error(
-        this.formatError(
-          message.id,
-          ERR_CODES.methodNotFound,
-          ERR_MSGS.methodNotFound
-        )
+        formatError({
+          jsonrpc: message.jsonrpc,
+          id: message.id,
+          code: ERR_CODES.methodNotFound,
+          message: ERR_MSGS.methodNotFound,
+          delimiter: this.options.delimiter
+        })
       );
     }
 
@@ -197,11 +212,13 @@ class Server extends EventEmitter {
       && !(message.params === Object(message.params))
     ) {
       throw new Error(
-        this.formatError(
-          message.id,
-          ERR_CODES.invalidParams,
-          ERR_MSGS.invalidParams
-        )
+        formatError({
+          jsonrpc: message.jsonrpc,
+          id: message.id,
+          code: ERR_CODES.invalidParams,
+          message: ERR_MSGS.invalidParams,
+          delimiter: this.options.delimiter
+        })
       );
     }
     // data looks good
@@ -234,7 +251,13 @@ class Server extends EventEmitter {
     // function needs to be async since the method can be a promise
     return new Promise((resolve, reject) => {
       const { params } = message;
-      let error = this.formatError(message.id, ERR_CODES.internal);
+      let error = formatError({
+        jsonrpc: message.jsonrpc,
+        id: message.id,
+        code: ERR_CODES.internal,
+        message: ERR_CODES.unknown,
+        delimiter: this.options.delimiter
+      });
       try {
         const result = this.methods[message.method](params);
         if (typeof result.then === "function" || result instanceof Promise) {
@@ -250,11 +273,13 @@ class Server extends EventEmitter {
               );
             })
             .catch((resError) => {
-              error = this.formatError(
-                message.id,
-                ERR_CODES.internal,
-                `${JSON.stringify(resError.message || resError)}`
-              );
+              error = formatError({
+                jsonrpc: message.jsonrpc,
+                id: message.id,
+                code: ERR_CODES.internal,
+                message: `${JSON.stringify(resError.message || resError)}`,
+                delimiter: this.options.delimiter
+              });
               reject(error);
             });
         } else {
@@ -269,11 +294,13 @@ class Server extends EventEmitter {
         }
       } catch (e) {
         if (e instanceof TypeError) {
-          error = this.formatError(
-            message.id,
-            ERR_CODES.invalidParams,
-            ERR_MSGS.invalidParams
-          );
+          error = formatError({
+            jsonrpc: message.jsonrpc,
+            id: message.id,
+            code: ERR_CODES.invalidParams,
+            message: ERR_MSGS.invalidParams,
+            delimiter: this.options.delimiter
+          });
         }
         reject(error);
       }
@@ -293,24 +320,6 @@ class Server extends EventEmitter {
       this.listening = false;
       throw error;
     });
-  }
-
-  formatError(id, code, message = null) {
-    let response;
-    if (this.options.version === "2.0") {
-      response = {
-        jsonrpc: this.options.version,
-        error: { code, message: message || "Unknown Error" },
-        id
-      };
-    } else {
-      response = {
-        result: null,
-        error: { code, message: message || "Unknown Error" },
-        id
-      };
-    }
-    return JSON.stringify(response);
   }
 }
 

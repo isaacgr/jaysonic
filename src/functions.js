@@ -79,6 +79,32 @@ const formatResponse = ({
   return JSON.stringify(response) + delimiter;
 };
 
+const formatError = ({
+  jsonrpc, id, code, message, data, delimiter
+}) => {
+  if (!message) {
+    throw new Error("Must include message in error response");
+  }
+  let response;
+  if (jsonrpc === "2.0") {
+    response = {
+      jsonrpc,
+      error: { code, message },
+      id
+    };
+  } else {
+    response = {
+      result: null,
+      error: { code, message },
+      id
+    };
+  }
+  if (data) {
+    response.error.data = data;
+  }
+  return JSON.stringify(response) + delimiter;
+};
+
 class BatchRequest extends Error {
   constructor(message, request = undefined) {
     super(message);
@@ -90,5 +116,6 @@ class BatchRequest extends Error {
 module.exports = {
   formatRequest,
   formatResponse,
+  formatError,
   BatchRequest
 };
