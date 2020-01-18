@@ -266,7 +266,7 @@ class WSClient extends Client {
   }
 
   handleNotification(message) {
-    this.emit("notify", { detail: message });
+    this.emit(message.method, { detail: message });
   }
 
   /**
@@ -274,11 +274,9 @@ class WSClient extends Client {
    * @params {Function} [cb] callback function to invoke on notify
    */
   subscribe(method, cb) {
-    this.on("notify", ({ detail }) => {
+    this.on(method, ({ detail }) => {
       try {
-        if (detail.method === method) {
-          return cb(null, detail);
-        }
+        return cb(null, detail);
       } catch (e) {
         return cb(e);
       }

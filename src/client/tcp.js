@@ -209,11 +209,9 @@ class TCPClient extends Client {
    * @params {Function} [cb] callback function to invoke on notify
    */
   subscribe(method, cb) {
-    this.on("notify", (message) => {
+    this.on(method, (message) => {
       try {
-        if (message.method === method) {
-          return cb(undefined, message);
-        }
+        return cb(undefined, message);
       } catch (e) {
         return cb(e);
       }
