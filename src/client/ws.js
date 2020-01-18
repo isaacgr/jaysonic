@@ -237,11 +237,26 @@ class WSClient extends Client {
   subscribe(method, cb) {
     this.on(method, ({ detail }) => {
       try {
-        return cb(null, detail);
+        cb(null, detail);
       } catch (e) {
-        return cb(e);
+        cb(e);
       }
     });
+  }
+
+  /**
+   * @params {String} [method] method to unsubscribe from
+   * @params {Function} [cb] name of function to remove
+   */
+  unsubscribe(method, cb) {
+    this.removeListener(method, cb);
+  }
+
+  /**
+   * @params {String} [method] method to unsubscribe all listeners from
+   */
+  unsubscribeAll(method) {
+    this.removeAllListeners([method]);
   }
 }
 
