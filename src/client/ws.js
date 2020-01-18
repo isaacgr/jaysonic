@@ -66,6 +66,12 @@ class WSClient extends Client {
     };
   }
 
+  listen() {
+    this.client.onmessage = (message) => {
+      this.handleData(message.data);
+    };
+  }
+
   request() {
     return {
       message: (method, params) => {
@@ -129,67 +135,6 @@ class WSClient extends Client {
     };
   }
 
-  verifyData(chunk) {
-    try {
-      // will throw an error if not valid json
-      const message = JSON.parse(chunk);
-      if (Array.isArray(message)) {
-        // possible batch request
-        this.handleBatchResponse(message);
-      } else if (!(message === Object(message))) {
-        // error out if it cant be parsed
-        const error = formatError({
-          jsonrpc: this.options.version,
-          delimiter: this.options.delimiter,
-          id: null,
-          code: ERR_CODES.parseError,
-          message: ERR_MSGS.parseError
-        });
-        throw new Error(error);
-      } else if (!message.id) {
-        // no id, so assume notification
-        this.handleNotification(message);
-      } else if (message.error) {
-        // got an error back so reject the message
-        const error = formatError({
-          jsonrpc: this.options.version,
-          delimiter: this.options.delimiter,
-          id: message.id,
-          code: message.error.code,
-          message: message.error.message
-        });
-        throw new Error(error);
-      } else if (!message.method) {
-        // no method, so assume response
-        this.serving_message_id = message.id;
-        this.responseQueue[this.serving_message_id] = message;
-        this.handleResponse(message);
-      } else {
-        const error = formatError({
-          jsonrpc: this.options.version,
-          delimiter: this.options.delimiter,
-          id: null,
-          code: ERR_CODES.unknown,
-          message: ERR_MSGS.unknown
-        });
-        throw new Error(error);
-      }
-    } catch (e) {
-      if (e instanceof SyntaxError) {
-        const error = formatError({
-          jsonrpc: this.options.version,
-          delimiter: this.options.delimiter,
-          id: this.serving_message_id,
-          code: ERR_CODES.parseError,
-          message: `Unable to parse message: '${chunk}'`
-        });
-        throw new Error(error);
-      } else {
-        throw e;
-      }
-    }
-  }
-
   batch(requests) {
     /**
      * should receive a list of request objects
@@ -216,57 +161,73 @@ class WSClient extends Client {
       try {
         this.client.send(request + this.options.delimiter);
       } catch (e) {
-        if (e instanceof TypeError) {
-          // this.client is probably undefined
-          reject(new Error(`Unable to send request. ${e.message}`));
-        }
+        // this.client is probably undefined
+        reject(e.message);
       }
       setTimeout(() => {
-        if (this.pendingBatches[String(batchIds)]) {
+        if (this.pendingBatches[String(batchIds)] === undefined) {
           const error = formatError({
             jsonrpc: this.options.version,
             delimiter: this.options.delimiter,
             id: null,
-            code: ERR_CODES.timeout,
-            message: ERR_MSGS.timeout
+            code: ERR_CODES.unknownId,
+            message: ERR_MSGS.unknownId
           });
-          delete this.pendingBatches[String(batchIds)];
-          reject(error);
+          return reject(error);
         }
+        const error = formatError({
+          jsonrpc: this.options.version,
+          delimiter: this.options.delimiter,
+          id: null,
+          code: ERR_CODES.timeout,
+          message: ERR_MSGS.timeout
+        });
+        delete this.pendingBatches[String(batchIds)];
+        reject(error);
       }, this.options.timeout);
-    });
-  }
-
-  handleBatchResponse(batch) {
-    const batchResponseIds = [];
-    batch.forEach((message) => {
-      if (message.id) {
-        batchResponseIds.push(message.id);
-      }
-    });
-    for (const ids of Object.keys(this.pendingBatches)) {
-      const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
-      const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
-      if (difference.length === 0) {
+      this.on("batchResponse", (batch) => {
+        const batchResponseIds = [];
         batch.forEach((message) => {
-          if (message.error) {
-            // reject the whole message if there are any errors
+          if (message.id) {
+            batchResponseIds.push(message.id);
+          }
+        });
+        if (batchResponseIds.length === 0) {
+          resolve([]);
+        }
+        for (const ids of Object.keys(this.pendingBatches)) {
+          const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
+          const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
+          if (difference.length === 0) {
+            batch.forEach((message) => {
+              if (message.error) {
+                // reject the whole message if there are any errors
+                if (this.pendingBatches[ids] !== undefined) {
+                  this.pendingBatches[ids].reject(batch);
+                  delete this.pendingBatches[ids];
+                } else {
+                  const error = formatError({
+                    jsonrpc: this.options.version,
+                    delimiter: this.options.delimiter,
+                    id: null,
+                    code: ERR_CODES.unknownId,
+                    message: ERR_MSGS.unknownId
+                  });
+                  throw new Error(error);
+                }
+              }
+            });
             if (this.pendingBatches[ids] !== undefined) {
-              this.pendingBatches[ids].reject(batch);
+              this.pendingBatches[ids].resolve(batch);
               delete this.pendingBatches[ids];
             }
           }
-        });
-        if (this.pendingBatches[ids] !== undefined) {
-          this.pendingBatches[ids].resolve(batch);
-          delete this.pendingBatches[ids];
         }
-      }
-    }
-  }
-
-  handleNotification(message) {
-    this.emit(message.method, { detail: message });
+      });
+      this.on("batchError", (error) => {
+        reject(error);
+      });
+    });
   }
 
   /**
@@ -281,66 +242,6 @@ class WSClient extends Client {
         return cb(e);
       }
     });
-  }
-
-  listen() {
-    this.client.onmessage = (message) => {
-      this.handleData(message.data);
-    };
-  }
-
-  handleData(data) {
-    this.messageBuffer.push(data);
-    while (!this.messageBuffer.isFinished()) {
-      const message = this.messageBuffer.handleData();
-      try {
-        this.verifyData(message);
-      } catch (e) {
-        this.handleError(JSON.parse(e.message));
-      }
-    }
-  }
-
-  handleResponse(message) {
-    if (!(this.pendingCalls[message.id] === undefined)) {
-      const response = this.responseQueue[message.id];
-      this.pendingCalls[message.id].resolve(response);
-      delete this.responseQueue[message.id];
-    }
-  }
-
-  handleError(error) {
-    const response = error;
-    try {
-      this.pendingCalls[error.id].reject(response);
-    } catch (e) {
-      if (e instanceof TypeError) {
-        // probably a parse error, which might not have an id
-        process.stdout.write(
-          `Message has no outstanding calls: ${JSON.stringify(error)}\n`
-        );
-      }
-    }
-  }
-
-  formatError({
-    jsonrpc, id, code, message
-  }) {
-    let response;
-    if (this.options.version === "2.0") {
-      response = {
-        jsonrpc: jsonrpc || this.options.version,
-        error: { code, message: message || "Unknown Error" },
-        id
-      };
-    } else {
-      response = {
-        result: null,
-        error: { code, message: message || "Unknown Error" },
-        id
-      };
-    }
-    return JSON.stringify(response);
   }
 }
 
