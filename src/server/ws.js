@@ -50,7 +50,7 @@ class WSServer extends Server {
         this.server = new WebSocket.Server(this.options);
         this.handleData();
         this.handleError();
-        resolve();
+        resolve({ ...this.options });
       } catch (e) {
         reject(e);
       }
