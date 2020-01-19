@@ -91,7 +91,6 @@ class WSServer extends Server {
     });
   }
 
-  // only available for TCP and ws server
   notify(method, params) {
     let response;
     if (this.options.version === "2.0") {
@@ -108,12 +107,15 @@ class WSServer extends Server {
         delimiter: this.options.delimiter
       };
     }
-    this.connectedClients.forEach((client) => {
+    /**
+     * Returns list of error objects if there was an error sending to any client
+     */
+    return this.connectedClients.map((client) => {
       try {
-        client.send(formatResponse(response));
+        return client.write(formatResponse(response));
       } catch (e) {
-        // was unable to send data to client, possibly disconnected
-        this.emit("error", e);
+        // possibly client disconnected
+        return e;
       }
     });
   }

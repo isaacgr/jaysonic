@@ -75,12 +75,15 @@ class TCPServer extends Server {
         delimiter: this.options.delimiter
       };
     }
-    this.connectedClients.forEach((client) => {
+    /**
+     * Returns list of error objects if there was an error sending to any client
+     */
+    return this.connectedClients.map((client) => {
       try {
-        client.write(formatResponse(response));
+        return client.write(formatResponse(response));
       } catch (e) {
-        // was unable to send data to client, possibly disconnected
-        this.emit("error", e);
+        // possibly client disconnected
+        return e;
       }
     });
   }
