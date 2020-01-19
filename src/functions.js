@@ -49,7 +49,17 @@ const formatResponse = ({
     throw new Error("Cannot send response with both a method and non-null id");
   }
 
+  if (method && !(typeof method === "string")) {
+    throw new TypeError(`${method} must be a string`);
+  }
+
   if (params) {
+    if (
+      (!(params === Object(params)) && !Array.isArray(params))
+      || typeof params === "function"
+    ) {
+      throw new TypeError(`${params} must be an object or array`);
+    }
     response.params = params;
   }
 
