@@ -1,5 +1,5 @@
 /* eslint no-console: 0 */
-const { formatRequest } = require("../functions");
+const { formatRequest, formatError } = require("../functions");
 const { ERR_CODES, ERR_MSGS } = require("../constants");
 const { MessageBuffer } = require("../buffer");
 
@@ -30,15 +30,8 @@ class WSClient extends EventTarget {
       ...(options || {})
     };
     this.options.timeout = this.options.timeout * 1000;
-    /**
-     * we can receive whole messages, or parital so we need to buffer
-     *
-     * whole message: {"jsonrpc": 2.0, "params": ["hello"], id: 1}
-     *
-     * partial message: {"jsonrpc": 2.0, "params"
-     */
-    this.messageBuffer = new MessageBuffer(this.options.delimiter);
 
+    this.messageBuffer = new MessageBuffer(this.options.delimiter);
     const { retries } = this.options;
     this.remainingRetries = retries;
   }
@@ -68,8 +61,92 @@ class WSClient extends EventTarget {
         setTimeout(() => {
           this.connect().catch(() => {});
         }, this.options.timeout);
+      } else {
+        console.log("Connection to server failed.");
       }
     };
+  }
+
+  listen() {
+    this.client.onmessage = (message) => {
+      this.handleData(message.data);
+    };
+  }
+
+  verifyData(chunk) {
+    try {
+      // will throw an error if not valid json
+      const message = JSON.parse(chunk);
+      if (Array.isArray(message)) {
+        // possible batch request
+        try {
+          this.dispatchEvent(
+            new CustomEvent("batchResponse", { detail: message })
+          );
+        } catch (e) {
+          const error = formatError({
+            jsonrpc: this.options.version,
+            id: null,
+            code: ERR_CODES.parseError,
+            message: ERR_MSGS.parseError,
+            delimiter: this.options.delimiter
+          });
+          this.dispatchEvent(new CustomEvent("batchError", { detail: error }));
+        }
+      } else if (!(message === Object(message))) {
+        // error out if it cant be parsed
+        const error = formatError({
+          jsonrpc: this.options.version,
+          delimiter: this.options.delimiter,
+          id: null,
+          code: ERR_CODES.parseError,
+          message: ERR_MSGS.parseError
+        });
+        throw new Error(error);
+      } else if (!message.id) {
+        // no id, so assume notification
+        this.dispatchEvent(
+          new CustomEvent(message.method, { detail: message })
+        );
+      } else if (message.error) {
+        // got an error back so reject the message
+        const error = formatError({
+          jsonrpc: this.options.version,
+          delimiter: this.options.delimiter,
+          id: message.id,
+          code: message.error.code,
+          message: message.error.message
+        });
+        throw new Error(error);
+      } else if (!message.method) {
+        // no method, so assume response
+        this.serving_message_id = message.id;
+        this.responseQueue[this.serving_message_id] = message;
+        this.handleResponse(this.serving_message_id);
+      } else {
+        const error = formatError({
+          jsonrpc: this.options.version,
+          delimiter: this.options.delimiter,
+          id: null,
+          code: ERR_CODES.unknown,
+          message: ERR_MSGS.unknown
+        });
+        throw new Error(error);
+      }
+    } catch (e) {
+      if (e instanceof SyntaxError) {
+        const error = formatError({
+          jsonrpc: this.options.version,
+          delimiter: this.options.delimiter,
+          id: this.serving_message_id,
+          code: ERR_CODES.parseError,
+          message: `Unable to parse message: '${chunk}'`
+        });
+        throw new Error(error);
+      } else {
+        throw e;
+      }
+    }
   }
 
   request() {
@@ -87,17 +164,31 @@ class WSClient extends EventTarget {
       send: (method, params) => new Promise((resolve, reject) => {
         const requestId = this.message_id;
         this.pendingCalls[requestId] = { resolve, reject };
-        this.client.send(this.request().message(method, params));
+        try {
+          this.client.send(this.request().message(method, params));
+        } catch (e) {
+          reject(e);
+        }
         setTimeout(() => {
-          if (this.pendingCalls[requestId]) {
-            const error = this.sendError({
+          if (this.pendingCalls[requestId] === undefined) {
+            const error = formatError({
+              jsonrpc: this.options.version,
+              delimiter: this.options.delimiter,
               id: requestId,
-              code: ERR_CODES.timeout,
-              message: ERR_MSGS.timeout
+              code: ERR_CODES.unknownId,
+              message: ERR_MSGS.unknownId
             });
-            delete this.pendingCalls[requestId];
-            reject(error);
+            return reject(error);
           }
+          const error = formatError({
+            jsonrpc: this.options.version,
+            delimiter: this.options.delimiter,
+            id: requestId,
+            code: ERR_CODES.timeout,
+            message: ERR_MSGS.timeout
+          });
+          delete this.pendingCalls[requestId];
+          reject(error);
         }, this.options.timeout);
       }),
       notify: (method, params) => {
@@ -107,68 +198,18 @@ class WSClient extends EventTarget {
           options: this.options
         });
         return new Promise((resolve, reject) => {
-          this.client.send(request);
-          resolve("notification sent");
-          this.client.onerror = (error) => {
-            reject(error);
-          };
+          try {
+            this.client.send(request);
+            resolve("notification sent");
+            this.client.onerror = (error) => {
+              reject(error);
+            };
+          } catch (e) {
+            reject(e);
+          }
         });
       }
     };
-  }
-
-  verifyData(chunk) {
-    try {
-      // will throw an error if not valid json
-      const message = JSON.parse(chunk);
-      if (Array.isArray(message)) {
-        // possible batch request
-        this.handleBatchResponse(message);
-      } else if (!(message === Object(message))) {
-        // error out if it cant be parsed
-        const error = this.sendError({
-          id: null,
-          code: ERR_CODES.parseError,
-          message: ERR_MSGS.parseError
-        });
-        this.handleError(error);
-      } else if (!message.id) {
-        // no id, so assume notification
-        this.handleNotification(message);
-      } else if (message.error) {
-        // got an error back so reject the message
-        const error = this.sendError({
-          jsonrpc: message.jsonrpc,
-          id: message.id,
-          code: message.error.code,
-          message: message.error.message
-        });
-        this.handleError(error);
-      } else if (!message.method) {
-        // no method, so assume response
-        this.serving_message_id = message.id;
-        this.responseQueue[this.serving_message_id] = message;
-        this.handleResponse(message);
-      } else {
-        throw new Error();
-      }
-    } catch (e) {
-      if (e instanceof SyntaxError) {
-        const error = this.sendError({
-          id: this.serving_message_id,
-          code: ERR_CODES.parseError,
-          message: `Unable to parse message: '${chunk}'`
-        });
-        this.handleError(error);
-      } else {
-        const error = this.sendError({
-          id: this.serving_message_id,
-          code: ERR_CODES.internal,
-          message: `Unable to parse message: '${chunk}'`
-        });
-        this.handleError(error);
-      }
-    }
   }
 
   batch(requests) {
@@ -197,93 +238,106 @@ class WSClient extends EventTarget {
       try {
         this.client.send(request + this.options.delimiter);
       } catch (e) {
-        if (e instanceof TypeError) {
-          // this.client is probably undefined
-          reject(new Error(`Unable to send request. ${e.message}`));
-        }
+        // this.client is probably undefined
+        reject(e.message);
       }
       setTimeout(() => {
-        if (this.pendingBatches[String(batchIds)]) {
-          const error = this.sendError({
+        if (this.pendingBatches[String(batchIds)] === undefined) {
+          const error = formatError({
+            jsonrpc: this.options.version,
+            delimiter: this.options.delimiter,
             id: null,
-            code: ERR_CODES.timeout,
-            message: ERR_MSGS.timeout
+            code: ERR_CODES.unknownId,
+            message: ERR_MSGS.unknownId
           });
-          delete this.pendingBatches[String(batchIds)];
-          reject(error);
+          return reject(error);
         }
+        const error = formatError({
+          jsonrpc: this.options.version,
+          delimiter: this.options.delimiter,
+          id: null,
+          code: ERR_CODES.timeout,
+          message: ERR_MSGS.timeout
+        });
+        delete this.pendingBatches[String(batchIds)];
+        reject(error);
       }, this.options.timeout);
-    });
-  }
-
-  handleBatchResponse(batch) {
-    const batchResponseIds = [];
-    batch.forEach((message) => {
-      if (message.id) {
-        batchResponseIds.push(message.id);
-      }
-    });
-    for (const ids of Object.keys(this.pendingBatches)) {
-      const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
-      const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
-      if (difference.length === 0) {
+      this.addEventListener("batchResponse", ({ detail }) => {
+        const batch = detail;
+        const batchResponseIds = [];
         batch.forEach((message) => {
-          if (message.error) {
-            // reject the whole message if there are any errors
+          if (message.id) {
+            batchResponseIds.push(message.id);
+          }
+        });
+        if (batchResponseIds.length === 0) {
+          resolve([]);
+        }
+        for (const ids of Object.keys(this.pendingBatches)) {
+          const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
+          const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
+          if (difference.length === 0) {
+            batch.forEach((message) => {
+              if (message.error) {
+                // reject the whole message if there are any errors
+                if (this.pendingBatches[ids] !== undefined) {
+                  this.pendingBatches[ids].reject(batch);
+                  delete this.pendingBatches[ids];
+                } else {
+                  const error = formatError({
+                    jsonrpc: this.options.version,
+                    delimiter: this.options.delimiter,
+                    id: null,
+                    code: ERR_CODES.unknownId,
+                    message: ERR_MSGS.unknownId
+                  });
+                  throw new Error(error);
+                }
+              }
+            });
             if (this.pendingBatches[ids] !== undefined) {
-              this.pendingBatches[ids].reject(batch);
+              this.pendingBatches[ids].resolve(batch);
               delete this.pendingBatches[ids];
             }
           }
-        });
-        if (this.pendingBatches[ids] !== undefined) {
-          this.pendingBatches[ids].resolve(batch);
-          delete this.pendingBatches[ids];
         }
-      }
-    }
-  }
-
-  handleNotification(message) {
-    this.dispatchEvent(new CustomEvent("notify", { detail: message }));
-  }
-
-  /**
-   * @params {String} [method] method to subscribe to
-   * @params {Function} [cb] callback function to invoke on notify
-   */
-  subscribe(method, cb) {
-    this.addEventListener("notify", ({ detail }) => {
-      try {
-        if (detail.method === method) {
-          return cb(null, detail);
-        }
-      } catch (e) {
-        return cb(e);
-      }
+      });
+      this.addEventListener("batchError", ({ detail }) => {
+        reject(detail);
+      });
     });
   }
 
-  listen() {
-    this.client.onmessage = (message) => {
-      this.handleData(message.data);
-    };
+  handleResponse(id) {
+    if (this.pendingCalls[id] === undefined) {
+      const error = formatError({
+        jsonrpc: this.options.version,
+        id,
+        code: ERR_CODES.unknownId,
+        message: ERR_MSGS.unknownId,
+        delimiter: this.options.delimiter
+      });
+      throw new Error(error);
+    }
+    const response = this.responseQueue[id];
+    this.pendingCalls[id].resolve(response);
+    delete this.responseQueue[id];
   }
 
   handleData(data) {
     this.messageBuffer.push(data);
     while (!this.messageBuffer.isFinished()) {
       const message = this.messageBuffer.handleData();
-      this.verifyData(message);
+      try {
+        this.verifyData(message);
+      } catch (e) {
+        this.handleError(JSON.parse(e.message));
+      }
     }
   }
 
-  handleResponse(message) {
-    if (!(this.pendingCalls[message.id] === undefined)) {
-      const response = this.responseQueue[message.id];
-      this.pendingCalls[message.id].resolve(response);
-      delete this.responseQueue[message.id];
-    }
+  serverDisconnected(cb) {
+    this.addEventListener("serverDisconnected", () => cb());
   }
 
   handleError(error) {
@@ -300,24 +354,26 @@ class WSClient extends EventTarget {
     }
   }
 
-  sendError({
-    jsonrpc, id, code, message
-  }) {
-    let response;
-    if (this.options.version === "2.0") {
-      response = {
-        jsonrpc: jsonrpc || this.options.version,
-        error: { code, message: message || "Unknown Error" },
-        id
-      };
-    } else {
-      response = {
-        result: null,
-        error: { code, message: message || "Unknown Error" },
-        id
-      };
-    }
-    return response;
+  /**
+   * @params {String} [method] method to subscribe to
+   * @params {Function} [cb] callback function to invoke on notify
+   */
+  subscribe(method, cb) {
+    this.addEventListener(method, ({ detail }) => {
+      try {
+        cb(null, detail);
+      } catch (e) {
+        cb(e);
+      }
+    });
+  }
+
+  /**
+   * @params {String} [method] method to unsubscribe from
+   * @params {Function} [cb] name of function to remove
+   */
+  unsubscribe(method, cb) {
+    this.removeEventListener(method, cb);
   }
 }
 
