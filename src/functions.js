@@ -95,20 +95,18 @@ const formatError = ({
   if (!message) {
     throw new Error("Must include message in error response");
   }
-  let response;
-  if (jsonrpc === "2.0") {
-    response = {
+  const response = jsonrpc === "2.0"
+    ? {
       jsonrpc,
       error: { code, message },
       id
-    };
-  } else {
-    response = {
+    }
+    : {
       result: null,
       error: { code, message },
       id
     };
-  }
+
   if (data) {
     response.error.data = data;
   }
