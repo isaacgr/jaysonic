@@ -190,6 +190,9 @@ class WSClient extends Client {
         batch.forEach((message) => {
           if (message.id) {
             batchResponseIds.push(message.id);
+          } else {
+            // assume notification in the batch
+            this.emit(message.method, { detail: message });
           }
         });
         if (batchResponseIds.length === 0) {
