@@ -258,14 +258,17 @@ class Server extends EventEmitter {
       });
       try {
         const result = this.methods[message.method](params);
-        if (typeof result.then === "function" || result instanceof Promise) {
+        if (
+          result
+          && (typeof result.then === "function" || result instanceof Promise)
+        ) {
           Promise.all([result])
             .then((results) => {
               resolve(
                 formatResponse({
                   jsonrpc: message.jsonrpc,
                   id: message.id,
-                  result: results || {},
+                  result: results || 0,
                   delimiter: this.options.delimiter
                 })
               );
@@ -285,7 +288,7 @@ class Server extends EventEmitter {
             formatResponse({
               jsonrpc: message.jsonrpc,
               id: message.id,
-              result: result || {},
+              result: result || 0,
               delimiter: this.options.delimiter
             })
           );
