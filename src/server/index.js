@@ -87,13 +87,11 @@ class Server extends EventEmitter {
   }
 
   onNotify(method, cb) {
-    this.on("notify", (message) => {
+    this.on(method, (message) => {
       try {
-        if (message.method === method) {
-          return cb(undefined, message);
-        }
+        cb(undefined, message);
       } catch (e) {
-        return cb(e);
+        cb(e);
       }
     });
   }
