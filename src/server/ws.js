@@ -92,27 +92,24 @@ class WSServer extends Server {
   }
 
   notify(method, params) {
-    let response;
-    if (this.options.version === "2.0") {
-      response = {
+    const response = this.options.version === "2.0"
+      ? {
         jsonrpc: "2.0",
         method,
         params,
         delimiter: this.options.delimiter
-      };
-    } else {
-      response = {
+      }
+      : {
         method,
         params,
         delimiter: this.options.delimiter
       };
-    }
     /**
      * Returns list of error objects if there was an error sending to any client
      */
     return this.connectedClients.map((client) => {
       try {
-        return client.write(formatResponse(response));
+        return client.send(formatResponse(response));
       } catch (e) {
         // possibly client disconnected
         return e;
