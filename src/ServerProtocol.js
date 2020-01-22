@@ -19,7 +19,10 @@ class TCPServerProtocol {
             if (message.batch) {
               this.client.write(JSON.stringify(message.batch) + this.delimiter);
             } else if (message.notification) {
-              this.factory.emit("notify", message.notification);
+              this.factory.emit(
+                message.notification.method,
+                message.notification
+              );
             } else {
               this.factory
                 .getResult(message)
@@ -62,7 +65,10 @@ class WSServerProtocol {
             if (message.batch) {
               this.client.send(JSON.stringify(message.batch) + this.delimiter);
             } else if (message.notification) {
-              this.factory.emit("notify", message.notification);
+              this.factory.emit(
+                message.notification.method,
+                message.notification
+              );
             } else {
               this.factory
                 .getResult(message)
