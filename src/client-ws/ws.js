@@ -336,10 +336,6 @@ class WSClient extends EventTarget {
     }
   }
 
-  serverDisconnected(cb) {
-    this.addEventListener("serverDisconnected", () => cb());
-  }
-
   handleError(error) {
     const response = error;
     try {
