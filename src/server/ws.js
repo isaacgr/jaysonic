@@ -17,6 +17,8 @@ class WSServer extends Server {
 
     this.connectedClients = [];
     const defaults = {
+      host: "127.0.0.1",
+      path: null,
       port: 8100,
       version: "2.0",
       delimiter: "\n",
@@ -50,7 +52,11 @@ class WSServer extends Server {
         this.server = new WebSocket.Server(this.options);
         this.handleData();
         this.handleError();
-        resolve({ ...this.options });
+        resolve({
+          host: this.options.host,
+          port: this.options.port,
+          path: this.options.path
+        });
       } catch (e) {
         reject(e);
       }

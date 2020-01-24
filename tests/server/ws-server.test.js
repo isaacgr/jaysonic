@@ -13,7 +13,8 @@ wss.method("typeerror", ([a]) => {
 });
 
 before((done) => {
-  wss.listen().then(() => {
+  wss.listen().then((conn) => {
+    expect(conn).to.have.all.keys("host", "port", "path");
     done();
   });
 });
