@@ -6,6 +6,10 @@ const {
   formatError
 } = require("../../src/functions");
 
+const Jaysonic = require("../../src");
+
+const server = new Jaysonic.server.tcp();
+
 describe("formatRequest", () => {
   describe("methods", () => {
     it("should throw error if method is number", (done) => {
@@ -287,5 +291,23 @@ describe("formatError", () => {
       );
       done();
     });
+  });
+});
+
+describe("getResult()", () => {
+  it("should return 'invalid params' if result is undefined", (done) => {
+    server
+      .getResult({
+        jsonrpc: "2.0",
+        method: "test",
+        id: 1,
+        params: [1, 2, 3, 4, 5]
+      })
+      .catch((error) => {
+        expect(error).to.eql(
+          "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32602,\"message\":\"Invalid Parameters\"},\"id\":1}\n"
+        );
+        done();
+      });
   });
 });
