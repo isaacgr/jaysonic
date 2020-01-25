@@ -103,35 +103,13 @@ describe("TCP Client", () => {
         done();
       });
     });
-    it("should handle 'method not found' error", (done) => {
-      const request = client.request().send("nonexistent method", []);
-      request.catch((error) => {
-        expect(error).to.eql({
-          jsonrpc: "2.0",
-          error: { code: -32601, message: "Method not found" },
-          id: 3
-        });
-        done();
-      });
-    });
-    it("should handle 'invalid params' error", (done) => {
-      const request = client.request().send("typeerror", [1]);
-      request.catch((error) => {
-        expect(error).to.eql({
-          jsonrpc: "2.0",
-          error: { code: -32602, message: "Invalid Parameters" },
-          id: 4
-        });
-        done();
-      });
-    });
     it("should retreive large dataset", (done) => {
       const request = client.request().send("large.data", []);
       request.then((result) => {
         expect(result).to.eql({
           jsonrpc: "2.0",
           result: data,
-          id: 5
+          id: 3
         });
         done();
       });
@@ -197,8 +175,8 @@ describe("TCP Client", () => {
       ]);
       request.then((response) => {
         expect(response).to.eql([
-          { result: 3, jsonrpc: "2.0", id: 6 },
-          { result: 7, jsonrpc: "2.0", id: 7 }
+          { result: 3, jsonrpc: "2.0", id: 4 },
+          { result: 7, jsonrpc: "2.0", id: 5 }
         ]);
         done();
       });
@@ -213,9 +191,9 @@ describe("TCP Client", () => {
           {
             jsonrpc: "2.0",
             error: { code: -32601, message: "Method not found" },
-            id: 8
+            id: 6
           },
-          { result: 7, jsonrpc: "2.0", id: 9 }
+          { result: 7, jsonrpc: "2.0", id: 7 }
         ]);
         done();
       });
@@ -248,19 +226,19 @@ describe("TCP Client", () => {
       ]);
       try {
         request.then((res1) => {
-          expect(res1).to.eql({ jsonrpc: "2.0", result: 3, id: 10 });
+          expect(res1).to.eql({ jsonrpc: "2.0", result: 3, id: 8 });
         });
         request2.then((res2) => {
           expect(res2).to.eql({
             jsonrpc: "2.0",
             result: "Hello Isaac",
-            id: 11
+            id: 9
           });
         });
         request3.then((res3) => {
           expect(res3).to.eql([
-            { result: 3, jsonrpc: "2.0", id: 12 },
-            { result: 7, jsonrpc: "2.0", id: 13 }
+            { result: 3, jsonrpc: "2.0", id: 10 },
+            { result: 7, jsonrpc: "2.0", id: 11 }
           ]);
         });
         request4.catch((res4) => {
@@ -268,15 +246,50 @@ describe("TCP Client", () => {
             {
               jsonrpc: "2.0",
               error: { code: -32601, message: "Method not found" },
-              id: 14
+              id: 12
             },
-            { result: 7, jsonrpc: "2.0", id: 15 }
+            { result: 7, jsonrpc: "2.0", id: 13 }
           ]);
           done();
         });
       } catch (e) {
         done(e);
       }
+    });
+  });
+  describe("request errors", () => {
+    it("should handle 'method not found' error", (done) => {
+      const request = client.request().send("nonexistent method", []);
+      request.catch((error) => {
+        expect(error).to.eql({
+          jsonrpc: "2.0",
+          error: { code: -32601, message: "Method not found" },
+          id: 14
+        });
+        done();
+      });
+    });
+    it("should handle 'invalid params' error", (done) => {
+      const request = client.request().send("typeerror", [1]);
+      request.catch((error) => {
+        expect(error).to.eql({
+          jsonrpc: "2.0",
+          error: { code: -32602, message: "Invalid Parameters" },
+          id: 15
+        });
+        done();
+      });
+    });
+    it("should handle 'unknown' error", (done) => {
+      const request = client.request().send("unknownerror", [1]);
+      request.catch((error) => {
+        expect(error).to.eql({
+          jsonrpc: "2.0",
+          error: { code: -32001, message: "Unknown Error" },
+          id: 16
+        });
+        done();
+      });
     });
   });
   describe("notifications", () => {

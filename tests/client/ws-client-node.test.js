@@ -9,16 +9,13 @@ const Jaysonic = require("../../src");
 const ws = new Jaysonic.client.ws({ url: "ws://127.0.0.1:8900" });
 const wsV1 = new Jaysonic.client.ws({ url: "ws://127.0.0.1:8900", version: 1 });
 
-before((done) => {
-  wsV1.connect();
-  done();
-});
-
 describe("WebSocket Node Client", () => {
   describe("connection", () => {
     it("should connect to server", (done) => {
       ws.connect().then(() => {
-        done();
+        wsV1.connect().then(() => {
+          done();
+        });
       });
     });
   });
@@ -41,35 +38,13 @@ describe("WebSocket Node Client", () => {
         done();
       });
     });
-    it("should handle 'method not found' error", (done) => {
-      const request = ws.request().send("nonexistent method", []);
-      request.catch((error) => {
-        expect(error).to.eql({
-          jsonrpc: "2.0",
-          error: { code: -32601, message: "Method not found" },
-          id: 3
-        });
-        done();
-      });
-    });
-    it("should handle 'invalid params' error", (done) => {
-      const request = ws.request().send("typeerror", [1]);
-      request.catch((error) => {
-        expect(error).to.eql({
-          jsonrpc: "2.0",
-          error: { code: -32602, message: "Invalid Parameters" },
-          id: 4
-        });
-        done();
-      });
-    });
     it("should retreive large dataset", (done) => {
       const request = ws.request().send("large.data", []);
       request.then((result) => {
         expect(result).to.eql({
           jsonrpc: "2.0",
           result: data,
-          id: 5
+          id: 3
         });
         done();
       });
@@ -129,8 +104,8 @@ describe("WebSocket Node Client", () => {
       ]);
       request.then((response) => {
         expect(response).to.eql([
-          { result: 3, jsonrpc: "2.0", id: 6 },
-          { result: 7, jsonrpc: "2.0", id: 7 }
+          { result: 3, jsonrpc: "2.0", id: 4 },
+          { result: 7, jsonrpc: "2.0", id: 5 }
         ]);
         done();
       });
@@ -145,9 +120,9 @@ describe("WebSocket Node Client", () => {
           {
             jsonrpc: "2.0",
             error: { code: -32601, message: "Method not found" },
-            id: 8
+            id: 6
           },
-          { result: 7, jsonrpc: "2.0", id: 9 }
+          { result: 7, jsonrpc: "2.0", id: 7 }
         ]);
         done();
       });
@@ -179,31 +154,66 @@ describe("WebSocket Node Client", () => {
         ws.request().message("add", [3, 4])
       ]);
       request.then((res1) => {
-        expect(res1).to.eql({ jsonrpc: "2.0", result: 3, id: 10 });
+        expect(res1).to.eql({ jsonrpc: "2.0", result: 3, id: 8 });
         request2.then((res2) => {
           expect(res2).to.eql({
             jsonrpc: "2.0",
             result: "Hello Isaac",
-            id: 11
+            id: 9
           });
           request3.then((res3) => {
             expect(res3).to.eql([
-              { result: 3, jsonrpc: "2.0", id: 12 },
-              { result: 7, jsonrpc: "2.0", id: 13 }
+              { result: 3, jsonrpc: "2.0", id: 10 },
+              { result: 7, jsonrpc: "2.0", id: 11 }
             ]);
             request4.catch((res4) => {
               expect(res4).to.eql([
                 {
                   jsonrpc: "2.0",
                   error: { code: -32601, message: "Method not found" },
-                  id: 14
+                  id: 12
                 },
-                { result: 7, jsonrpc: "2.0", id: 15 }
+                { result: 7, jsonrpc: "2.0", id: 13 }
               ]);
               done();
             });
           });
         });
+      });
+    });
+  });
+  describe("request errors", () => {
+    it("should handle 'method not found' error", (done) => {
+      const request = ws.request().send("nonexistent method", []);
+      request.catch((error) => {
+        expect(error).to.eql({
+          jsonrpc: "2.0",
+          error: { code: -32601, message: "Method not found" },
+          id: 14
+        });
+        done();
+      });
+    });
+    it("should handle 'invalid params' error", (done) => {
+      const request = ws.request().send("typeerror", [1]);
+      request.catch((error) => {
+        expect(error).to.eql({
+          jsonrpc: "2.0",
+          error: { code: -32602, message: "Invalid Parameters" },
+          id: 15
+        });
+        done();
+      });
+    });
+    it("should handle 'unknown' error", (done) => {
+      const request = ws.request().send("unknownerror", [1]);
+      request.catch((error) => {
+        expect(error).to.eql({
+          jsonrpc: "2.0",
+          error: { code: -32001, message: "Unknown Error" },
+          id: 16
+        });
+        done();
       });
     });
   });

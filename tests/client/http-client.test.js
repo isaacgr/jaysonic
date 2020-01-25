@@ -58,6 +58,19 @@ describe("HTTP Client", () => {
         done();
       });
     });
+    it("should get a response for large dataset", (done) => {
+      const request = clienthttp.request().send("large.data", []);
+      request.then((response) => {
+        expect(response.body).to.be.eql({
+          result: data,
+          jsonrpc: "2.0",
+          id: 3
+        });
+        done();
+      });
+    });
+  });
+  describe("request errors", () => {
     it("should get an 'invalid params' error", (done) => {
       const request = clienthttp.request().send("add", {});
       request.catch((response) => {
@@ -67,7 +80,7 @@ describe("HTTP Client", () => {
             code: -32602,
             message: "Invalid Parameters"
           },
-          id: 3
+          id: 4
         });
         done();
       });
@@ -81,18 +94,18 @@ describe("HTTP Client", () => {
             code: -32601,
             message: "Method not found"
           },
-          id: 4
+          id: 5
         });
         done();
       });
     });
-    it("should get a response for large dataset", (done) => {
-      const request = clienthttp.request().send("large.data", []);
-      request.then((response) => {
-        expect(response.body).to.be.eql({
-          result: data,
+    it("should handle 'unknown' error", (done) => {
+      const request = clienthttp.request().send("unknownerror", [1]);
+      request.catch((response) => {
+        expect(response.body).to.eql({
           jsonrpc: "2.0",
-          id: 5
+          error: { code: -32001, message: "Unknown Error" },
+          id: 6
         });
         done();
       });
@@ -106,8 +119,8 @@ describe("HTTP Client", () => {
       ]);
       request.then((response) => {
         expect(response.body).to.eql([
-          { result: 3, jsonrpc: "2.0", id: 6 },
-          { result: 7, jsonrpc: "2.0", id: 7 }
+          { result: 3, jsonrpc: "2.0", id: 7 },
+          { result: 7, jsonrpc: "2.0", id: 8 }
         ]);
         done();
       });
@@ -122,9 +135,9 @@ describe("HTTP Client", () => {
           {
             jsonrpc: "2.0",
             error: { code: -32601, message: "Method not found" },
-            id: 8
+            id: 9
           },
-          { result: 7, jsonrpc: "2.0", id: 9 }
+          { result: 7, jsonrpc: "2.0", id: 10 }
         ]);
         done();
       });
@@ -177,19 +190,19 @@ describe("HTTP Client", () => {
       ]);
       try {
         request.then((res1) => {
-          expect(res1.body).to.eql({ jsonrpc: "2.0", result: 3, id: 10 });
+          expect(res1.body).to.eql({ jsonrpc: "2.0", result: 3, id: 11 });
         });
         request2.then((res2) => {
           expect(res2.body).to.eql({
             jsonrpc: "2.0",
             result: "Hello Isaac",
-            id: 11
+            id: 12
           });
         });
         request3.then((res3) => {
           expect(res3.body).to.eql([
-            { result: 3, jsonrpc: "2.0", id: 12 },
-            { result: 7, jsonrpc: "2.0", id: 13 }
+            { result: 3, jsonrpc: "2.0", id: 13 },
+            { result: 7, jsonrpc: "2.0", id: 14 }
           ]);
         });
         request4.catch((res4) => {
@@ -197,9 +210,9 @@ describe("HTTP Client", () => {
             {
               jsonrpc: "2.0",
               error: { code: -32601, message: "Method not found" },
-              id: 14
+              id: 15
             },
-            { result: 7, jsonrpc: "2.0", id: 15 }
+            { result: 7, jsonrpc: "2.0", id: 16 }
           ]);
         });
         done();

@@ -83,26 +83,25 @@ class Client extends EventEmitter {
   }
 
   handleResponse(id) {
-    if (this.pendingCalls[id] === undefined) {
-      const error = formatError({
-        jsonrpc: this.options.version,
-        id,
-        code: ERR_CODES.unknownId,
-        message: ERR_MSGS.unknownId,
-        delimiter: this.options.delimiter
-      });
-      throw new Error(error);
+    try {
+      let response = this.responseQueue[id];
+      if (this.writer instanceof http.IncomingMessage) {
+        // want to allow users to access the headers, status code etc.
+        response = {
+          body: this.responseQueue[id],
+          ...this.writer
+        };
+      }
+      this.pendingCalls[id].resolve(response);
+      delete this.responseQueue[id];
+    } catch (e) {
+      if (e instanceof TypeError) {
+        // probably a parse error, which might not have an id
+        process.stdout.write(
+          `Message has no outstanding calls: ${JSON.stringify(e)}\n`
+        );
+      }
     }
-    let response = this.responseQueue[id];
-    if (this.writer instanceof http.IncomingMessage) {
-      // want to allow users to access the headers, status code etc.
-      response = {
-        body: this.responseQueue[id],
-        ...this.writer
-      };
-    }
-    this.pendingCalls[id].resolve(response);
-    delete this.responseQueue[id];
   }
 
   verifyData(chunk) {

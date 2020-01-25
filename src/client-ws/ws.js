@@ -170,25 +170,24 @@ class WSClient extends EventTarget {
           reject(e);
         }
         setTimeout(() => {
-          if (this.pendingCalls[requestId] === undefined) {
+          try {
             const error = formatError({
               jsonrpc: this.options.version,
               delimiter: this.options.delimiter,
-              id: requestId,
-              code: ERR_CODES.unknownId,
-              message: ERR_MSGS.unknownId
+              id: null,
+              code: ERR_CODES.timeout,
+              message: ERR_MSGS.timeout
             });
-            return reject(error);
+            this.pendingCalls[requestId].reject(error);
+            delete this.pendingCalls[requestId];
+          } catch (e) {
+            if (e instanceof TypeError) {
+              // probably a parse error, which might not have an id
+              process.stdout.write(
+                `Message has no outstanding calls: ${JSON.stringify(e)}\n`
+              );
+            }
           }
-          const error = formatError({
-            jsonrpc: this.options.version,
-            delimiter: this.options.delimiter,
-            id: requestId,
-            code: ERR_CODES.timeout,
-            message: ERR_MSGS.timeout
-          });
-          delete this.pendingCalls[requestId];
-          reject(error);
         }, this.options.timeout);
       }),
       notify: (method, params) => {
@@ -242,25 +241,24 @@ class WSClient extends EventTarget {
         reject(e.message);
       }
       setTimeout(() => {
-        if (this.pendingBatches[String(batchIds)] === undefined) {
+        try {
           const error = formatError({
             jsonrpc: this.options.version,
             delimiter: this.options.delimiter,
             id: null,
-            code: ERR_CODES.unknownId,
-            message: ERR_MSGS.unknownId
+            code: ERR_CODES.timeout,
+            message: ERR_MSGS.timeout
           });
-          return reject(error);
+          this.pendingBatches[String(batchIds)].reject(error);
+          delete this.pendingBatches[String(batchIds)];
+        } catch (e) {
+          if (e instanceof TypeError) {
+            // probably a parse error, which might not have an id
+            console.log(
+              `Message has no outstanding calls: ${JSON.stringify(e)}`
+            );
+          }
         }
-        const error = formatError({
-          jsonrpc: this.options.version,
-          delimiter: this.options.delimiter,
-          id: null,
-          code: ERR_CODES.timeout,
-          message: ERR_MSGS.timeout
-        });
-        delete this.pendingBatches[String(batchIds)];
-        reject(error);
       }, this.options.timeout);
       this.addEventListener("batchResponse", ({ detail }) => {
         const batch = detail;
@@ -280,24 +278,29 @@ class WSClient extends EventTarget {
             batch.forEach((message) => {
               if (message.error) {
                 // reject the whole message if there are any errors
-                if (this.pendingBatches[ids] !== undefined) {
+                try {
                   this.pendingBatches[ids].reject(batch);
                   delete this.pendingBatches[ids];
-                } else {
-                  const error = formatError({
-                    jsonrpc: this.options.version,
-                    delimiter: this.options.delimiter,
-                    id: null,
-                    code: ERR_CODES.unknownId,
-                    message: ERR_MSGS.unknownId
-                  });
-                  throw new Error(error);
+                } catch (e) {
+                  if (e instanceof TypeError) {
+                    // probably a parse error, which might not have an id
+                    console.log(
+                      `Message has no outstanding calls: ${JSON.stringify(e)}`
+                    );
+                  }
                 }
               }
             });
-            if (this.pendingBatches[ids] !== undefined) {
+            try {
               this.pendingBatches[ids].resolve(batch);
               delete this.pendingBatches[ids];
+            } catch (e) {
+              if (e instanceof TypeError) {
+                // probably a parse error, which might not have an id
+                process.stdout.write(
+                  `Message has no outstanding calls: ${JSON.stringify(e)}\n`
+                );
+              }
             }
           }
         }
@@ -309,19 +312,18 @@ class WSClient extends EventTarget {
   }
 
   handleResponse(id) {
-    if (this.pendingCalls[id] === undefined) {
-      const error = formatError({
-        jsonrpc: this.options.version,
-        id,
-        code: ERR_CODES.unknownId,
-        message: ERR_MSGS.unknownId,
-        delimiter: this.options.delimiter
-      });
-      throw new Error(error);
+    try {
+      const response = this.responseQueue[id];
+      this.pendingCalls[id].resolve(response);
+      delete this.responseQueue[id];
+    } catch (e) {
+      if (e instanceof TypeError) {
+        // probably a parse error, which might not have an id
+        process.stdout.write(
+          `Message has no outstanding calls: ${JSON.stringify(e)}\n`
+        );
+      }
     }
-    const response = this.responseQueue[id];
-    this.pendingCalls[id].resolve(response);
-    delete this.responseQueue[id];
   }
 
   handleData(data) {

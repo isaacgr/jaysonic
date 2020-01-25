@@ -76,25 +76,24 @@ class HTTPClient extends Client {
         }
 
         setTimeout(() => {
-          if (this.pendingCalls[requestId] === undefined) {
+          try {
             const error = formatError({
               jsonrpc: this.options.version,
               delimiter: this.options.delimiter,
-              id: requestId,
-              code: ERR_CODES.unknownId,
-              message: ERR_MSGS.unknownId
+              id: null,
+              code: ERR_CODES.timeout,
+              message: ERR_MSGS.timeout
             });
-            return reject(error);
+            this.pendingCalls[requestId].reject(error);
+            delete this.pendingCalls[requestId];
+          } catch (e) {
+            if (e instanceof TypeError) {
+              // probably a parse error, which might not have an id
+              process.stdout.write(
+                `Message has no outstanding calls: ${JSON.stringify(e)}\n`
+              );
+            }
           }
-          const error = formatError({
-            jsonrpc: this.options.version,
-            delimiter: this.options.delimiter,
-            id: null,
-            code: ERR_CODES.timeout,
-            message: ERR_MSGS.timeout
-          });
-          delete this.pendingCalls[requestId];
-          reject(error);
         }, this.options.timeout);
       }),
 
@@ -174,25 +173,24 @@ class HTTPClient extends Client {
         reject(e);
       }
       setTimeout(() => {
-        if (this.pendingBatches[String(batchIds)] === undefined) {
+        try {
           const error = formatError({
             jsonrpc: this.options.version,
             delimiter: this.options.delimiter,
             id: null,
-            code: ERR_CODES.unknownId,
-            message: ERR_MSGS.unknownId
+            code: ERR_CODES.timeout,
+            message: ERR_MSGS.timeout
           });
-          return reject(error);
+          this.pendingBatches[String(batchIds)].reject(error);
+          delete this.pendingBatches[String(batchIds)];
+        } catch (e) {
+          if (e instanceof TypeError) {
+            // probably a parse error, which might not have an id
+            process.stdout.write(
+              `Message has no outstanding calls: ${JSON.stringify(e)}\n`
+            );
+          }
         }
-        const error = formatError({
-          jsonrpc: this.options.version,
-          delimiter: this.options.delimiter,
-          id: null,
-          code: ERR_CODES.timeout,
-          message: ERR_MSGS.timeout
-        });
-        delete this.pendingBatches[String(batchIds)];
-        reject(error);
       }, this.options.timeout);
       this.on("batchResponse", (batch) => {
         const batchResponseIds = [];
@@ -218,15 +216,29 @@ class HTTPClient extends Client {
             batch.forEach((message) => {
               if (message.error) {
                 // reject the whole message if there are any errors
-                if (this.pendingBatches[ids] !== undefined) {
+                try {
                   this.pendingBatches[ids].reject(response);
                   delete this.pendingBatches[ids];
+                } catch (e) {
+                  if (e instanceof TypeError) {
+                    // probably a parse error, which might not have an id
+                    process.stdout.write(
+                      `Message has no outstanding calls: ${JSON.stringify(e)}\n`
+                    );
+                  }
                 }
               }
             });
-            if (this.pendingBatches[ids] !== undefined) {
+            try {
               this.pendingBatches[ids].resolve(response);
               delete this.pendingBatches[ids];
+            } catch (e) {
+              if (e instanceof TypeError) {
+                // probably a parse error, which might not have an id
+                process.stdout.write(
+                  `Message has no outstanding calls: ${JSON.stringify(e)}\n`
+                );
+              }
             }
           }
         }

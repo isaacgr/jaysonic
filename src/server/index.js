@@ -252,8 +252,8 @@ class Server extends EventEmitter {
       let error = formatError({
         jsonrpc: message.jsonrpc,
         id: message.id,
-        code: ERR_CODES.internal,
-        message: ERR_CODES.unknown,
+        code: ERR_CODES.unknown,
+        message: ERR_MSGS.unknown,
         delimiter: this.options.delimiter
       });
       try {
