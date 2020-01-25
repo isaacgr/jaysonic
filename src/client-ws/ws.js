@@ -284,9 +284,6 @@ class WSClient extends EventTarget {
                 } catch (e) {
                   if (e instanceof TypeError) {
                     // probably a parse error, which might not have an id
-                    console.log(
-                      `Message has no outstanding calls: ${JSON.stringify(e)}`
-                    );
                   }
                 }
               }
@@ -297,9 +294,6 @@ class WSClient extends EventTarget {
             } catch (e) {
               if (e instanceof TypeError) {
                 // probably a parse error, which might not have an id
-                console.log(
-                  `Message has no outstanding calls: ${JSON.stringify(e)}`
-                );
               }
             }
           }

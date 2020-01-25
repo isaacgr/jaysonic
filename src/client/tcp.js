@@ -182,10 +182,7 @@ class TCPClient extends Client {
                   delete this.pendingBatches[ids];
                 } catch (e) {
                   if (e instanceof TypeError) {
-                    // probably a parse error, which might not have an id
-                    process.stdout.write(
-                      `Message has no outstanding calls: ${JSON.stringify(e)}\n`
-                    );
+                    // probably a parse error, which might not have an id;
                   }
                 }
               }
@@ -196,9 +193,6 @@ class TCPClient extends Client {
             } catch (e) {
               if (e instanceof TypeError) {
                 // probably a parse error, which might not have an id
-                process.stdout.write(
-                  `Message has no outstanding calls: ${JSON.stringify(e)}\n`
-                );
               }
             }
           }

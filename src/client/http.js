@@ -222,9 +222,6 @@ class HTTPClient extends Client {
                 } catch (e) {
                   if (e instanceof TypeError) {
                     // probably a parse error, which might not have an id
-                    process.stdout.write(
-                      `Message has no outstanding calls: ${JSON.stringify(e)}\n`
-                    );
                   }
                 }
               }
@@ -235,9 +232,6 @@ class HTTPClient extends Client {
             } catch (e) {
               if (e instanceof TypeError) {
                 // probably a parse error, which might not have an id
-                process.stdout.write(
-                  `Message has no outstanding calls: ${JSON.stringify(e)}\n`
-                );
               }
             }
           }
