@@ -303,20 +303,35 @@ describe("TCP Client", () => {
         done();
       };
       client.subscribe("notification", callback);
-      server.notify("notification", []);
+      server.notify([["notification", []]]);
     });
     it("should unsubscribe from a notificiation", (done) => {
       const callback = () => {};
       client.subscribe("newNotification", callback);
-      expect(client.eventNames()).to.have.lengthOf(4);
-      client.unsubscribe("newNotification", callback);
       expect(client.eventNames()).to.have.lengthOf(3);
+      client.unsubscribe("newNotification", callback);
+      expect(client.eventNames()).to.have.lengthOf(2);
       done();
     });
     it("should unsubscribe from all 'notification' events", (done) => {
       client.unsubscribeAll("notification");
-      expect(client.eventNames()).to.have.lengthOf(2);
+      expect(client.eventNames()).to.have.lengthOf(1);
       done();
+    });
+    it("should recieve notifications if they're in a batch", (done) => {
+      const callback = (message) => {
+        expect(message).to.be.eql({
+          jsonrpc: "2.0",
+          method: "test",
+          params: []
+        });
+        done();
+      };
+      client.subscribe("test", callback);
+      server.notify([
+        ["notification", []],
+        ["test", []]
+      ]);
     });
   });
   describe("v1.0 requests", () => {

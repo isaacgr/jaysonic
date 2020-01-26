@@ -110,18 +110,12 @@ class Client extends EventEmitter {
       const message = JSON.parse(chunk);
       if (Array.isArray(message)) {
         // possible batch request
-        try {
-          this.emit("batchResponse", message);
-        } catch (e) {
-          const error = formatError({
-            jsonrpc: this.options.version,
-            id: null,
-            code: ERR_CODES.parseError,
-            message: ERR_MSGS.parseError,
-            delimiter: this.options.delimiter
-          });
-          this.emit("batchError", error);
-        }
+        message.forEach((res) => {
+          if (!res.id) {
+            this.emit(res.method, res);
+          }
+        });
+        this.emit("batchResponse", message);
       } else if (!(message === Object(message))) {
         // error out if it cant be parsed
         const error = formatError({

@@ -232,7 +232,7 @@ describe("WebSocket Client", () => {
         });
         done();
       });
-      wss.notify("notification", []);
+      wss.notify([["notification", []]]);
     });
     it("should unsubscribe from a notificiation", (done) => {
       const callback = () => {};
@@ -248,6 +248,21 @@ describe("WebSocket Client", () => {
       const list = ws.getEventListeners("notification");
       expect(list).to.be.an("undefined");
       done();
+    });
+    it("should recieve notifications if they're in a batch", (done) => {
+      const callback = ({ detail }) => {
+        expect(detail).to.be.eql({
+          jsonrpc: "2.0",
+          method: "test",
+          params: []
+        });
+        done();
+      };
+      ws.subscribe("test", callback);
+      wss.notify([
+        ["notification", []],
+        ["test", []]
+      ]);
     });
   });
   describe("v1.0 requests", () => {

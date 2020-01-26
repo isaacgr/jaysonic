@@ -79,20 +79,14 @@ class WSClient extends EventTarget {
       const message = JSON.parse(chunk);
       if (Array.isArray(message)) {
         // possible batch request
-        try {
-          this.dispatchEvent(
-            new CustomEvent("batchResponse", { detail: message })
-          );
-        } catch (e) {
-          const error = formatError({
-            jsonrpc: this.options.version,
-            id: null,
-            code: ERR_CODES.parseError,
-            message: ERR_MSGS.parseError,
-            delimiter: this.options.delimiter
-          });
-          this.dispatchEvent(new CustomEvent("batchError", { detail: error }));
-        }
+        message.forEach((res) => {
+          if (!res.id) {
+            this.dispatchEvent(new CustomEvent(res.method, { detail: res }));
+          }
+        });
+        this.dispatchEvent(
+          new CustomEvent("batchResponse", { detail: message })
+        );
       } else if (!(message === Object(message))) {
         // error out if it cant be parsed
         const error = formatError({
@@ -298,9 +292,6 @@ class WSClient extends EventTarget {
             }
           }
         }
-      });
-      this.addEventListener("batchError", ({ detail }) => {
-        reject(detail);
       });
     });
   }

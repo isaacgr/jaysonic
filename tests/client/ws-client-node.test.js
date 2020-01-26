@@ -227,20 +227,35 @@ describe("WebSocket Node Client", () => {
         });
         done();
       });
-      wss.notify("notification", []);
+      wss.notify([["notification", []]]);
     });
     it("should unsubscribe from a notificiation", (done) => {
       const callback = () => {};
       ws.subscribe("newNotification", callback);
-      expect(ws.eventNames()).to.have.lengthOf(4);
-      ws.unsubscribe("newNotification", callback);
       expect(ws.eventNames()).to.have.lengthOf(3);
+      ws.unsubscribe("newNotification", callback);
+      expect(ws.eventNames()).to.have.lengthOf(2);
       done();
     });
     it("should unsubscribe from all 'notification' events", (done) => {
       ws.unsubscribeAll("notification");
-      expect(ws.eventNames()).to.have.lengthOf(2);
+      expect(ws.eventNames()).to.have.lengthOf(1);
       done();
+    });
+    it("should recieve notifications if they're in a batch", (done) => {
+      const callback = (message) => {
+        expect(message).to.be.eql({
+          jsonrpc: "2.0",
+          method: "browser",
+          params: []
+        });
+        done();
+      };
+      ws.subscribe("browser", callback);
+      wss.notify([
+        ["notification", []],
+        ["browser", []]
+      ]);
     });
   });
   describe("v1.0 requests", () => {

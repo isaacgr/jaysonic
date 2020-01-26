@@ -59,28 +59,47 @@ class TCPServer extends Server {
   }
 
   // only available for TCP and ws server
-  notify(method, params) {
+  notify(notifications) {
+    if (notifications.length === 0 || !typeof notifications === Array) {
+      throw new Error("Invalid arguments");
+    }
+    const responses = notifications.map(([method, params]) => {
+      const response = this.options.version === "2.0"
+        ? {
+          jsonrpc: "2.0",
+          method,
+          params,
+          delimiter: this.options.delimiter
+        }
+        : {
+          method,
+          params,
+          delimiter: this.options.delimiter
+        };
+      return response;
+    });
+    if (responses.length === 0) {
+      throw new Error("Unable to generate a response object");
+    }
     let response;
-    if (this.options.version === "2.0") {
-      response = {
-        jsonrpc: "2.0",
-        method,
-        params,
-        delimiter: this.options.delimiter
-      };
+    if (responses.length === 1) {
+      response = formatResponse(responses[0]);
     } else {
-      response = {
-        method,
-        params,
-        delimiter: this.options.delimiter
-      };
+      response = "[";
+      responses.forEach((res, idx) => {
+        response += formatResponse(res);
+        response += idx === responses.length - 1 ? "" : ",";
+      });
+      response += "]";
     }
     /**
      * Returns list of error objects if there was an error sending to any client
      */
     return this.connectedClients.map((client) => {
       try {
-        return client.write(formatResponse(response));
+        return client.write(
+          JSON.stringify(JSON.parse(response)) + this.options.delimiter
+        );
       } catch (e) {
         // possibly client disconnected
         return e;

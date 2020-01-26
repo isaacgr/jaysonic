@@ -162,9 +162,6 @@ class TCPClient extends Client {
         batch.forEach((message) => {
           if (message.id) {
             batchResponseIds.push(message.id);
-          } else {
-            // assume notification
-            this.emit(message.method, { detail: message });
           }
         });
         if (batchResponseIds.length === 0) {
@@ -197,9 +194,6 @@ class TCPClient extends Client {
             }
           }
         }
-      });
-      this.on("batchError", (error) => {
-        reject(error);
       });
     });
   }
