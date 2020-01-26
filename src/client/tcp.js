@@ -54,7 +54,9 @@ class TCPClient extends Client {
           id: id ? this.message_id : undefined,
           options: this.options
         });
-        this.message_id += 1;
+        if (id) {
+          this.message_id += 1;
+        }
         return request;
       },
 
@@ -80,7 +82,6 @@ class TCPClient extends Client {
             delete this.pendingCalls[requestId];
           } catch (e) {
             if (e instanceof TypeError) {
-              // probably a parse error, which might not have an id
               process.stdout.write(
                 `Message has no outstanding calls: ${JSON.stringify(e)}\n`
               );
@@ -150,7 +151,6 @@ class TCPClient extends Client {
           delete this.pendingBatches[String(batchIds)];
         } catch (e) {
           if (e instanceof TypeError) {
-            // probably a parse error, which might not have an id
             process.stdout.write(
               `Message has no outstanding calls: ${JSON.stringify(e)}\n`
             );
@@ -179,7 +179,7 @@ class TCPClient extends Client {
                   delete this.pendingBatches[ids];
                 } catch (e) {
                   if (e instanceof TypeError) {
-                    // probably a parse error, which might not have an id;
+                    // no outstanding calls
                   }
                 }
               }
@@ -189,7 +189,7 @@ class TCPClient extends Client {
               delete this.pendingBatches[ids];
             } catch (e) {
               if (e instanceof TypeError) {
-                // probably a parse error, which might not have an id
+                // no outstanding calls
               }
             }
           }

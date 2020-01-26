@@ -104,6 +104,10 @@ class Server extends EventEmitter {
     const batchRequests = requests.map((request) => {
       try {
         const message = this.validateMessage(request);
+        if (message.notification) {
+          this.emit(message.notification.method, message.notification);
+          return;
+        }
         return this.getResult(message)
           .then(result => JSON.parse(result))
           .catch((error) => {

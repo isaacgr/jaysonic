@@ -193,10 +193,7 @@ describe("TCP Server", () => {
   });
   describe("notifications", () => {
     it("should handle client notification", (done) => {
-      server.onNotify("notification", (error, message) => {
-        if (error) {
-          return done(error);
-        }
+      server.onNotify("notification", (message) => {
         expect(message).to.be.eql({
           jsonrpc: "2.0",
           method: "notification",
@@ -206,20 +203,17 @@ describe("TCP Server", () => {
       });
       client.request().notify("notification", []);
     });
-    // it("should handle batch notifications", (done) => {
-    //   server.onNotify("notification", (error, message) => {
-    //     if (error) {
-    //       return done(error);
-    //     }
-    //     expect(message).to.be.eql({
-    //       jsonrpc: "2.0",
-    //       method: "notification",
-    //       params: []
-    //     });
-    //     done();
-    //   });
-    //   client.batch([client.request().message("notification", [], false)]);
-    // });
+    it("should handle batch notifications", (done) => {
+      server.onNotify("test", (message) => {
+        expect(message).to.be.eql({
+          jsonrpc: "2.0",
+          method: "test",
+          params: []
+        });
+        done();
+      });
+      client.batch([client.request().message("test", [], false)]);
+    });
   });
   describe("promise methods", () => {
     it("should resolve promise method", (done) => {

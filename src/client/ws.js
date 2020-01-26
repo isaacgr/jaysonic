@@ -74,14 +74,16 @@ class WSClient extends Client {
 
   request() {
     return {
-      message: (method, params) => {
+      message: (method, params, id = true) => {
         const request = formatRequest({
           method,
           params,
-          id: this.message_id,
+          id: id ? this.message_id : undefined,
           options: this.options
         });
-        this.message_id += 1;
+        if (id) {
+          this.message_id += 1;
+        }
         return request;
       },
       send: (method, params) => new Promise((resolve, reject) => {
@@ -105,7 +107,6 @@ class WSClient extends Client {
             delete this.pendingCalls[requestId];
           } catch (e) {
             if (e instanceof TypeError) {
-              // probably a parse error, which might not have an id
               process.stdout.write(
                 `Message has no outstanding calls: ${JSON.stringify(e)}\n`
               );
@@ -122,7 +123,7 @@ class WSClient extends Client {
         return new Promise((resolve, reject) => {
           try {
             this.client.send(request);
-            resolve("notification sent");
+            resolve(request);
             this.client.onerror = (error) => {
               reject(error);
             };
@@ -176,7 +177,6 @@ class WSClient extends Client {
           delete this.pendingBatches[String(batchIds)];
         } catch (e) {
           if (e instanceof TypeError) {
-            // probably a parse error, which might not have an id
             process.stdout.write(
               `Message has no outstanding calls: ${JSON.stringify(e)}\n`
             );
@@ -205,7 +205,7 @@ class WSClient extends Client {
                   delete this.pendingBatches[ids];
                 } catch (e) {
                   if (e instanceof TypeError) {
-                    // probably a parse error, which might not have an id
+                    // no outstanding calls
                   }
                 }
               }
@@ -215,7 +215,7 @@ class WSClient extends Client {
               delete this.pendingBatches[ids];
             } catch (e) {
               if (e instanceof TypeError) {
-                // probably a parse error, which might not have an id
+                // no outstanding calls
               }
             }
           }

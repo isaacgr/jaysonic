@@ -145,14 +145,16 @@ class WSClient extends EventTarget {
 
   request() {
     return {
-      message: (method, params) => {
+      message: (method, params, id = true) => {
         const request = formatRequest({
           method,
           params,
-          id: this.message_id,
+          id: id ? this.message_id : undefined,
           options: this.options
         });
-        this.message_id += 1;
+        if (id) {
+          this.message_id += 1;
+        }
         return request;
       },
       send: (method, params) => new Promise((resolve, reject) => {
@@ -193,7 +195,7 @@ class WSClient extends EventTarget {
         return new Promise((resolve, reject) => {
           try {
             this.client.send(request);
-            resolve("notification sent");
+            resolve(request);
             this.client.onerror = (error) => {
               reject(error);
             };

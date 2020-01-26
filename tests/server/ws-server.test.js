@@ -141,10 +141,7 @@ describe("WebSocket Server", () => {
   });
   describe("notifications", () => {
     it("should handle client notification", (done) => {
-      wss.onNotify("notification", (error, message) => {
-        if (error) {
-          return done(error);
-        }
+      wss.onNotify("notification", (message) => {
         expect(message).to.be.eql({
           jsonrpc: "2.0",
           method: "notification",
@@ -153,6 +150,17 @@ describe("WebSocket Server", () => {
         done();
       });
       clientws.request().notify("notification", []);
+    });
+    it("should handle batch notifications", (done) => {
+      wss.onNotify("test", (message) => {
+        expect(message).to.be.eql({
+          jsonrpc: "2.0",
+          method: "test",
+          params: []
+        });
+        done();
+      });
+      clientws.batch([clientws.request().message("test", [], false)]);
     });
   });
 });
