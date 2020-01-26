@@ -443,6 +443,8 @@ The server can send notifications to the client. This can be done individually o
 
 **Note: As of v2.0.0 notifications from the server are sent as a list of lists, instead of just supplying the method and params. This was done to handle batch notifications.**
 
+`server.notify` will return a list of error objects if there was a problem sending the notification out to any client, or if no clients are connected. The error of one client will not affect the notification being sent out to the rest of the clients.
+
 ```js
 // optionally returns a promise indicating success or failure for sending message
 client.subscribe("notify", callback);
