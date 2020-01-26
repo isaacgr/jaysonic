@@ -102,6 +102,9 @@ class WSServer extends Server {
       throw new Error("Invalid arguments");
     }
     const responses = notifications.map(([method, params]) => {
+      if (!method && !params) {
+        throw new Error("Unable to generate a response object");
+      }
       const response = this.options.version === "2.0"
         ? {
           jsonrpc: "2.0",
@@ -133,6 +136,9 @@ class WSServer extends Server {
     /**
      * Returns list of error objects if there was an error sending to any client
      */
+    if (this.connectedClients.length === 0) {
+      return [new Error("No clients connected")];
+    }
     return this.connectedClients.map((client) => {
       try {
         return client.send(
