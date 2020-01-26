@@ -9,6 +9,7 @@ const {
 const Jaysonic = require("../../src");
 
 const server = new Jaysonic.server.tcp();
+const wss = new Jaysonic.server.ws();
 
 describe("formatRequest", () => {
   describe("methods", () => {
@@ -309,5 +310,96 @@ describe("getResult()", () => {
         );
         done();
       });
+  });
+});
+
+describe("server.notify()", () => {
+  describe("tcp server", () => {
+    it("should throw an error if notifications is not an array", (done) => {
+      try {
+        server.notify({});
+      } catch (e) {
+        expect(e.message).to.be.a("string", "Invalid arguments");
+        done();
+      }
+    });
+    it("should throw an error if notifications array is empty", (done) => {
+      try {
+        server.notify([]);
+      } catch (e) {
+        expect(e.message).to.be.a("string", "Invalid arguments");
+        done();
+      }
+    });
+    it("should throw an error if a response cannot be generated", (done) => {
+      try {
+        server.notify([[]]);
+      } catch (e) {
+        expect(e.message).to.be.a(
+          "string",
+          "Unable to generate a response object"
+        );
+        done();
+      }
+    });
+    it("should return an error if no clients are connected", (done) => {
+      const res = server.notify([["test", []]]);
+      expect(res).to.be.an("array");
+      expect(res[0]).to.be.instanceOf(Error);
+      expect(res[0].message).to.be.a("string", "No clients connected");
+      done();
+    });
+    it("should return a list of error objects if there was an issue sending out to a client", (done) => {
+      server.connectedClients.push(1);
+      const res = server.notify([["test", []]]);
+      expect(res).to.be.an("array");
+      expect(res[0]).to.be.instanceOf(Error);
+      expect(res[0].message).to.be.a("string");
+      done();
+    });
+  });
+  describe("ws server", () => {
+    it("should throw an error if notifications is not an array", (done) => {
+      try {
+        wss.notify({});
+      } catch (e) {
+        expect(e.message).to.be.a("string", "Invalid arguments");
+        done();
+      }
+    });
+    it("should throw an error if notifications array is empty", (done) => {
+      try {
+        wss.notify([]);
+      } catch (e) {
+        expect(e.message).to.be.a("string", "Invalid arguments");
+        done();
+      }
+    });
+    it("should throw an error if a response cannot be generated", (done) => {
+      try {
+        wss.notify([[]]);
+      } catch (e) {
+        expect(e.message).to.be.a(
+          "string",
+          "Unable to generate a response object"
+        );
+        done();
+      }
+    });
+    it("should return an error if no clients are connected", (done) => {
+      const res = server.notify([["test", []]]);
+      expect(res).to.be.an("array");
+      expect(res[0]).to.be.instanceOf(Error);
+      expect(res[0].message).to.be.a("string", "No clients connected");
+      done();
+    });
+    it("should return a list of error objects if there was an issue sending out to a client", (done) => {
+      server.connectedClients.push(1);
+      const res = server.notify([["test", []]]);
+      expect(res).to.be.an("array");
+      expect(res[0]).to.be.instanceOf(Error);
+      expect(res[0].message).to.be.a("string");
+      done();
+    });
   });
 });
