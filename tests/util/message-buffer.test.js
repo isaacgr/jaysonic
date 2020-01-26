@@ -164,10 +164,7 @@ describe("Message Buffer", () => {
         );
       });
       tcpclient.connect().then(() => {
-        tcpclient.subscribe("notify", (error, res) => {
-          if (error) {
-            done(error);
-          }
+        tcpclient.subscribe("notify", (res) => {
           setTimeout(() => {
             expect(res).to.be.eql({
               jsonrpc: "2.0",

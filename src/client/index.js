@@ -146,7 +146,7 @@ class Client extends EventEmitter {
           });
           throw new Error(error);
         }
-        this.emit(message.method, { detail: message });
+        this.emit(message.method, message);
       } else if (message.error) {
         // got an error back so reject the message
         const error = formatError({

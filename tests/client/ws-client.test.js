@@ -224,11 +224,8 @@ describe("WebSocket Client", () => {
   });
   describe("notifications", () => {
     it("should handle receiving a notification", (done) => {
-      ws.subscribe("notification", (error, message) => {
-        if (error) {
-          return done(error);
-        }
-        expect(message).to.be.eql({
+      ws.subscribe("notification", ({ detail }) => {
+        expect(detail).to.be.eql({
           jsonrpc: "2.0",
           method: "notification",
           params: []
@@ -236,6 +233,21 @@ describe("WebSocket Client", () => {
         done();
       });
       wss.notify("notification", []);
+    });
+    it("should unsubscribe from a notificiation", (done) => {
+      const callback = () => {};
+      ws.subscribe("newNotification", callback);
+      expect(Object.keys(ws.getEventListeners())).to.have.length(2);
+      ws.unsubscribe("newNotification", callback);
+      expect(Object.keys(ws.getEventListeners())).to.have.length(1);
+
+      done();
+    });
+    it("should unsubscribe from all 'notification' events", (done) => {
+      ws.unsubscribeAll("notification");
+      const list = ws.getEventListeners("notification");
+      expect(list).to.be.an("undefined");
+      done();
     });
   });
   describe("v1.0 requests", () => {

@@ -294,18 +294,29 @@ describe("TCP Client", () => {
   });
   describe("notifications", () => {
     it("should handle receiving a notification", (done) => {
-      client.subscribe("notification", (error, message) => {
-        if (error) {
-          return done(error);
-        }
+      const callback = (message) => {
         expect(message).to.be.eql({
           jsonrpc: "2.0",
           method: "notification",
           params: []
         });
         done();
-      });
+      };
+      client.subscribe("notification", callback);
       server.notify("notification", []);
+    });
+    it("should unsubscribe from a notificiation", (done) => {
+      const callback = () => {};
+      client.subscribe("newNotification", callback);
+      expect(client.eventNames()).to.have.lengthOf(4);
+      client.unsubscribe("newNotification", callback);
+      expect(client.eventNames()).to.have.lengthOf(3);
+      done();
+    });
+    it("should unsubscribe from all 'notification' events", (done) => {
+      client.unsubscribeAll("notification");
+      expect(client.eventNames()).to.have.lengthOf(2);
+      done();
     });
   });
   describe("v1.0 requests", () => {

@@ -235,13 +235,7 @@ class WSClient extends Client {
    * @params {Function} [cb] callback function to invoke on notify
    */
   subscribe(method, cb) {
-    this.on(method, ({ detail }) => {
-      try {
-        cb(null, detail);
-      } catch (e) {
-        cb(e);
-      }
-    });
+    this.on(method, cb);
   }
 
   /**

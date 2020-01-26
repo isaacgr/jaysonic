@@ -349,13 +349,15 @@ class WSClient extends EventTarget {
    * @params {Function} [cb] callback function to invoke on notify
    */
   subscribe(method, cb) {
-    this.addEventListener(method, ({ detail }) => {
-      try {
-        cb(null, detail);
-      } catch (e) {
-        cb(e);
-      }
+    if (!this.eventListenerList) this.eventListenerList = {};
+    if (!this.eventListenerList[method]) this.eventListenerList[method] = [];
+
+    // add listener to  event tracking list
+    this.eventListenerList[method].push({
+      type: method,
+      listener: cb
     });
+    this.addEventListener(method, cb);
   }
 
   /**
@@ -363,7 +365,52 @@ class WSClient extends EventTarget {
    * @params {Function} [cb] name of function to remove
    */
   unsubscribe(method, cb) {
+    // remove listener
     this.removeEventListener(method, cb);
+
+    if (!this.eventListenerList) this.eventListenerList = {};
+    if (!this.eventListenerList[method]) this.eventListenerList[method] = [];
+
+    // Find the event in the list and remove it
+    for (let i = 0; i < this.eventListenerList[method].length; i += 1) {
+      if (this.eventListenerList[method][i].listener === cb) {
+        this.eventListenerList[method].splice(i, 1);
+        break;
+      }
+    }
+    // if no more events of the removed event method are left,remove the group
+    if (this.eventListenerList[method].length === 0) delete this.eventListenerList[method];
+  }
+
+  unsubscribeAll(method) {
+    if (!this.eventListenerList) this.eventListenerList = {};
+    if (!this.eventListenerList[method]) this.eventListenerList[method] = [];
+    // remove listener
+    for (let j = 0; j < this.eventListenerList[method].length; j += 1) {
+      const cb = this.eventListenerList[method][j].listener;
+      // remove listener
+      this.removeEventListener(method, cb);
+
+      if (!this.eventListenerList) this.eventListenerList = {};
+      if (!this.eventListenerList[method]) this.eventListenerList[method] = [];
+
+      // Find the event in the list and remove it
+      for (let i = 0; i < this.eventListenerList[method].length; i += 1) {
+        if (this.eventListenerList[method][i].listener === cb) {
+          this.eventListenerList[method].splice(i, 1);
+          break;
+        }
+      }
+    }
+    delete this.eventListenerList[method];
+  }
+
+  getEventListeners(type) {
+    if (!this.eventListenerList) this.eventListenerList = {};
+
+    // return requested listeners type or all them
+    if (type === undefined) return this.eventListenerList;
+    return this.eventListenerList[type];
   }
 }
 
