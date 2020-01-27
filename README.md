@@ -427,14 +427,23 @@ Clients can send notifications to the server.
 
 The server can also listen for all notifications not tied to methods and handle accordingly.
 
+**Note as of v2.0.0 server.onNotify no longer returns an error as the fist parameter to the callback**
+
 ```js
 // optionally returns a promise indicating success or failure for sending message
 client.request().notify("notify", []);
 
-server.onNotify("notify", (error, message) => {
+server.onNotify("notify", (message) => {
   console.log(message);
   // {jsonrpc: "2.0", method: "notify", params: []}
 });
+```
+
+A server can also unsubscribe a method from a notification, or unsubscribe all methods from a notification. This requires the callback function to be named, else it wont be able to remove it.
+
+```js
+server.unsubscribeOnNotify("notification", callback);
+server.unsubscribeAllOnNotify("notification");
 ```
 
 ###### Server
@@ -476,7 +485,7 @@ client
     console.log(error);
   });
 
-server.onNotify("notify", (error, message) => {
+server.onNotify("notify", (message) => {
   console.log(message);
   // {jsonrpc: "2.0", method: "notify", params: []}
 });
