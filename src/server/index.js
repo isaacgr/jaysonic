@@ -87,13 +87,24 @@ class Server extends EventEmitter {
   }
 
   onNotify(method, cb) {
-    this.on(method, (message) => {
-      try {
-        cb(undefined, message);
-      } catch (e) {
-        cb(e);
-      }
-    });
+    if (method === "clientConnected" || method === "clientDisconnected") {
+      throw new Error(`reserved event name ${method}`);
+    }
+    this.on(method, cb);
+  }
+
+  removeOnNotify(method, cb) {
+    if (method === "clientConnected" || method === "clientDisconnected") {
+      throw new Error(`reserved event name ${method}`);
+    }
+    this.removeListener(method, cb);
+  }
+
+  removeAllOnNotify(method) {
+    if (method === "clientConnected" || method === "clientDisconnected") {
+      throw new Error(`reserved event name ${method}`);
+    }
+    this.removeAllListeners([method]);
   }
 
   handleData() {

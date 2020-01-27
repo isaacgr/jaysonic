@@ -229,6 +229,9 @@ class WSClient extends Client {
    * @params {Function} [cb] callback function to invoke on notify
    */
   subscribe(method, cb) {
+    if (method === "batchResponse") {
+      throw new Error("\"batchResponse\" is a reserved event name");
+    }
     this.on(method, cb);
   }
 
@@ -237,6 +240,9 @@ class WSClient extends Client {
    * @params {Function} [cb] name of function to remove
    */
   unsubscribe(method, cb) {
+    if (method === "batchResponse") {
+      throw new Error("\"batchResponse\" is a reserved event name");
+    }
     this.removeListener(method, cb);
   }
 
@@ -244,6 +250,9 @@ class WSClient extends Client {
    * @params {String} [method] method to unsubscribe all listeners from
    */
   unsubscribeAll(method) {
+    if (method === "batchResponse") {
+      throw new Error("\"batchResponse\" is a reserved event name");
+    }
     this.removeAllListeners([method]);
   }
 }

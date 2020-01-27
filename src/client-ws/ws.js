@@ -342,6 +342,9 @@ class WSClient extends EventTarget {
    * @params {Function} [cb] callback function to invoke on notify
    */
   subscribe(method, cb) {
+    if (method === "batchResponse") {
+      throw new Error("\"batchResponse\" is a reserved event name");
+    }
     if (!this.eventListenerList) this.eventListenerList = {};
     if (!this.eventListenerList[method]) this.eventListenerList[method] = [];
 
@@ -358,6 +361,9 @@ class WSClient extends EventTarget {
    * @params {Function} [cb] name of function to remove
    */
   unsubscribe(method, cb) {
+    if (method === "batchResponse") {
+      throw new Error("\"batchResponse\" is a reserved event name");
+    }
     // remove listener
     this.removeEventListener(method, cb);
 
@@ -376,6 +382,9 @@ class WSClient extends EventTarget {
   }
 
   unsubscribeAll(method) {
+    if (method === "batchResponse") {
+      throw new Error("\"batchResponse\" is a reserved event name");
+    }
     if (!this.eventListenerList) this.eventListenerList = {};
     if (!this.eventListenerList[method]) this.eventListenerList[method] = [];
     // remove listener

@@ -257,6 +257,33 @@ describe("WebSocket Node Client", () => {
         ["browser", []]
       ]);
     });
+    it("should be unable to subscribe, unsub, or unsub all for \"batchResponse\"", (done) => {
+      try {
+        ws.subscribe("batchResponse", () => {});
+      } catch (e) {
+        expect(e.message).to.be.a(
+          "string",
+          "\"batchResponse\" is a reserved event name"
+        );
+      }
+      try {
+        ws.unsubscribe("batchResponse", () => {});
+      } catch (e) {
+        expect(e.message).to.be.a(
+          "string",
+          "\"batchResponse\" is a reserved event name"
+        );
+      }
+      try {
+        ws.unsubscribeAll("batchResponse", () => {});
+      } catch (e) {
+        expect(e.message).to.be.a(
+          "string",
+          "\"batchResponse\" is a reserved event name"
+        );
+      }
+      done();
+    });
   });
   describe("v1.0 requests", () => {
     it("should receive response for v1.0 request", (done) => {

@@ -333,6 +333,33 @@ describe("TCP Client", () => {
         ["test", []]
       ]);
     });
+    it("should be unable to subscribe, unsub, or unsub all for \"batchResponse\"", (done) => {
+      try {
+        client.subscribe("batchResponse", () => {});
+      } catch (e) {
+        expect(e.message).to.be.a(
+          "string",
+          "\"batchResponse\" is a reserved event name"
+        );
+      }
+      try {
+        client.unsubscribe("batchResponse", () => {});
+      } catch (e) {
+        expect(e.message).to.be.a(
+          "string",
+          "\"batchResponse\" is a reserved event name"
+        );
+      }
+      try {
+        client.unsubscribeAll("batchResponse", () => {});
+      } catch (e) {
+        expect(e.message).to.be.a(
+          "string",
+          "\"batchResponse\" is a reserved event name"
+        );
+      }
+      done();
+    });
   });
   describe("v1.0 requests", () => {
     it("should receive response for v1.0 request", (done) => {
