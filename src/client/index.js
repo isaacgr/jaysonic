@@ -208,7 +208,7 @@ class Client extends EventEmitter {
       try {
         this.verifyData(message);
       } catch (e) {
-        this.handleError(JSON.parse(e.message));
+        this.handleError(e);
       }
     }
   }
@@ -218,21 +218,35 @@ class Client extends EventEmitter {
   }
 
   handleError(error) {
-    let response = error;
+    let err;
+    try {
+      err = JSON.parse(error.message);
+    } catch (e) {
+      err = JSON.parse(
+        formatError({
+          jsonrpc: this.options.version,
+          delimiter: this.options.delimiter,
+          id: null,
+          code: ERR_CODES.unknown,
+          message: JSON.stringify(error, Object.getOwnPropertyNames(error))
+        })
+      );
+    }
+    let response = err;
     if (this.writer instanceof http.IncomingMessage) {
       // want to allow users to access the headers, status code etc.
       response = {
-        body: error,
+        body: err,
         ...this.writer
       };
     }
     try {
-      this.pendingCalls[error.id].reject(response);
+      this.pendingCalls[err.id].reject(response);
     } catch (e) {
       if (e instanceof TypeError) {
         // probably a parse error, which might not have an id
         process.stdout.write(
-          `Message has no outstanding calls: ${JSON.stringify(error)}\n`
+          `Message has no outstanding calls: ${JSON.stringify(response)}\n`
         );
       }
     }
