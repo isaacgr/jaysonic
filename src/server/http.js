@@ -72,7 +72,7 @@ class HTTPServer extends Server {
     this.on("clientDisconnected", (client) => {
       const clientIndex = this.connectedClients.findIndex(c => client === c);
       if (clientIndex === -1) {
-        return "unknown";
+        return cb(`Unknown client ${JSON.stringify(client)}`);
       }
       const [deletedClient] = this.connectedClients.splice(clientIndex, 1);
       return cb({
