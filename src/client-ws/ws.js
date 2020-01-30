@@ -318,20 +318,33 @@ class WSClient extends EventTarget {
       try {
         this.verifyData(message);
       } catch (e) {
-        this.handleError(JSON.parse(e.message));
+        this.handleError(e);
       }
     }
   }
 
   handleError(error) {
-    const response = error;
+    let response;
     try {
-      this.pendingCalls[error.id].reject(response);
+      response = JSON.parse(error.message);
+    } catch (e) {
+      response = JSON.parse(
+        formatError({
+          jsonrpc: this.options.version,
+          delimiter: this.options.delimiter,
+          id: null,
+          code: ERR_CODES.unknown,
+          message: JSON.stringify(error, Object.getOwnPropertyNames(error))
+        })
+      );
+    }
+    try {
+      this.pendingCalls[response.id].reject(response);
     } catch (e) {
       if (e instanceof TypeError) {
         // probably a parse error, which might not have an id
-        console.log(
-          `Message has no outstanding calls: ${JSON.stringify(error)}`
+        process.stdout.write(
+          `Message has no outstanding calls: ${JSON.stringify(response)}\n`
         );
       }
     }
