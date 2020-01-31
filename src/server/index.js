@@ -112,22 +112,27 @@ class Server extends EventEmitter {
   }
 
   handleBatchRequest(requests) {
-    const batchRequests = requests.map((request) => {
-      try {
-        const message = this.validateMessage(request);
-        if (message.notification) {
-          this.emit(message.notification.method, message.notification);
-          return;
+    const batchRequests = requests
+      .map((request) => {
+        try {
+          const message = this.validateMessage(request);
+          if (message.notification) {
+            this.emit(message.notification.method, message.notification);
+            return;
+          }
+          return this.getResult(message)
+            .then(result => JSON.parse(result))
+            .catch((error) => {
+              throw error;
+            });
+        } catch (e) {
+          return Promise.reject(e);
         }
-        return this.getResult(message)
-          .then(result => JSON.parse(result))
-          .catch((error) => {
-            throw error;
-          });
-      } catch (e) {
-        return Promise.reject(e);
-      }
-    });
+      })
+      .filter(el => el != null);
+    if (batchRequests.length === 0) {
+      return Promise.resolve({ empty: true });
+    }
     return Promise.all(
       batchRequests.map(promise => promise.catch(error => JSON.parse(error.message)))
     );
