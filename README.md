@@ -419,7 +419,7 @@ client
   });
 ```
 
-##### Notifications
+#### Notifications
 
 ###### Client
 
@@ -470,7 +470,7 @@ server.notify([
 
 As per the JSON-RPC spec for HTTP, a notification response must include a `204` status code, with an empty response body. The HTTP Client will resolve a response object if it receives this response, and reject it otherwise.
 
-##### HTTP Client Notifications
+#### HTTP Client Notifications
 
 ```js
 // optionally returns a promise indicating success or failure for sending message
