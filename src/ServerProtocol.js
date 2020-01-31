@@ -17,6 +17,9 @@ class TCPServerProtocol {
           .handleValidation(chunk)
           .then((message) => {
             if (message.batch) {
+              if (message.batch.empty) {
+                return;
+              }
               this.client.write(JSON.stringify(message.batch) + this.delimiter);
             } else if (message.notification) {
               this.factory.emit(
@@ -33,7 +36,7 @@ class TCPServerProtocol {
             }
           })
           .catch((error) => {
-            this.client.write(error.message + this.delimiter);
+            this.client.write(error.message);
           });
       }
     });
@@ -63,6 +66,9 @@ class WSServerProtocol {
           .handleValidation(chunk)
           .then((message) => {
             if (message.batch) {
+              if (message.batch.empty) {
+                return;
+              }
               this.client.send(JSON.stringify(message.batch) + this.delimiter);
             } else if (message.notification) {
               this.factory.emit(
@@ -112,6 +118,9 @@ class HttpServerProtocol {
           .handleValidation(chunk)
           .then((message) => {
             if (message.batch) {
+              if (message.batch.empty) {
+                return;
+              }
               this.factory.setResponseHeader({ response: this.response });
               this.response.write(
                 JSON.stringify(message.batch) + this.delimiter,
