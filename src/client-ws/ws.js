@@ -80,7 +80,7 @@ class WSClient extends EventTarget {
       if (Array.isArray(message)) {
         // possible batch request
         message.forEach((res) => {
-          if (!res.id) {
+          if (res && res.method && !res.id) {
             this.dispatchEvent(new CustomEvent(res.method, { detail: res }));
           }
         });

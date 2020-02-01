@@ -111,7 +111,7 @@ class Client extends EventEmitter {
       if (Array.isArray(message)) {
         // possible batch request
         message.forEach((res) => {
-          if (!res.id) {
+          if (res && res.method && !res.id) {
             this.emit(res.method, res);
           }
         });
