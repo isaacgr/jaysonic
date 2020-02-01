@@ -21,6 +21,11 @@ server.method("typeerror", ([a]) => {
     throw new TypeError();
   }
 });
+server.method("unknownerror", ([a]) => {
+  if (typeof a === "number") {
+    throw new Error();
+  }
+});
 server.method("large.data", () => data);
 server.onNotify("noitify", () => "notification");
 
@@ -33,6 +38,11 @@ serverHttp.method("typeerror", ([a]) => {
     throw new TypeError();
   }
 });
+serverHttp.method("unknownerror", ([a]) => {
+  if (typeof a === "number") {
+    throw new Error();
+  }
+});
 
 // Websocket server
 wss.method("add", ([a, b]) => a + b);
@@ -40,6 +50,11 @@ wss.method("greeting", ({ name }) => `Hello ${name}`);
 wss.method("typeerror", ([a]) => {
   if (typeof a === "number") {
     throw new TypeError();
+  }
+});
+wss.method("unknownerror", ([a]) => {
+  if (typeof a === "number") {
+    throw new Error();
   }
 });
 wss.method("large.data", () => data);

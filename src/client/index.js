@@ -1,5 +1,6 @@
 const EventEmitter = require("events");
 const http = require("http");
+const { formatError } = require("../functions");
 const { ERR_CODES, ERR_MSGS } = require("../constants");
 const { MessageBuffer } = require("../buffer");
 
@@ -43,13 +44,6 @@ class Client extends EventEmitter {
     };
     this.options.timeout = this.options.timeout * 1000;
 
-    /**
-     * we can receive whole messages, or parital so we need to buffer
-     *
-     * whole message: {"jsonrpc": 2.0, "params": ["hello"], id: 1}
-     *
-     * partial message: {"jsonrpc": 2.0, "params"
-     */
     this.messageBuffer = new MessageBuffer(this.options.delimiter);
 
     const { host, port } = this.options;
@@ -65,7 +59,7 @@ class Client extends EventEmitter {
     return new Promise((resolve, reject) => {
       this.client.end((error) => {
         if (error) {
-          reject();
+          reject(error);
         }
         resolve();
       });
@@ -89,7 +83,7 @@ class Client extends EventEmitter {
   }
 
   handleResponse(id) {
-    if (!(this.pendingCalls[id] === undefined)) {
+    try {
       let response = this.responseQueue[id];
       if (this.writer instanceof http.IncomingMessage) {
         // want to allow users to access the headers, status code etc.
@@ -100,6 +94,13 @@ class Client extends EventEmitter {
       }
       this.pendingCalls[id].resolve(response);
       delete this.responseQueue[id];
+    } catch (e) {
+      if (e instanceof TypeError) {
+        // probably a parse error, which might not have an id
+        process.stdout.write(
+          `Message has no outstanding calls: ${JSON.stringify(e)}\n`
+        );
+      }
     }
   }
 
@@ -109,69 +110,74 @@ class Client extends EventEmitter {
       const message = JSON.parse(chunk);
       if (Array.isArray(message)) {
         // possible batch request
-        try {
-          this.emit("batchResponse", message);
-        } catch (e) {
-          const error = this.sendError({
-            id: null,
-            code: ERR_CODES.parseError,
-            message: ERR_MSGS.parseError
-          });
-          this.emit("batchError", error);
-        }
+        message.forEach((res) => {
+          if (res && res.method && !res.id) {
+            this.emit(res.method, res);
+          }
+        });
+        this.emit("batchResponse", message);
       } else if (!(message === Object(message))) {
         // error out if it cant be parsed
-        const error = this.sendError({
+        const error = formatError({
+          jsonrpc: this.options.version,
+          delimiter: this.options.delimiter,
           id: null,
           code: ERR_CODES.parseError,
           message: ERR_MSGS.parseError
         });
-        this.handleError(error);
+        throw new Error(error);
       } else if (!message.id) {
+        // no id, so assume notification
         // special case http response since it cant get notifications
         // this is not in spec at all
         if (this.writer instanceof http.IncomingMessage) {
-          const error = this.sendError({
+          const error = formatError({
+            jsonrpc: this.options.version,
+            delimiter: this.options.delimiter,
             id: this.serving_message_id,
             code: ERR_CODES.parseError,
             message: ERR_MSGS.parseError
           });
-          this.handleError(error);
+          throw new Error(error);
         }
-        // no id, so assume notification
-        this.emit("notify", message);
+        this.emit(message.method, message);
       } else if (message.error) {
         // got an error back so reject the message
-        const error = this.sendError({
-          jsonrpc: message.jsonrpc,
+        const error = formatError({
+          jsonrpc: this.options.version,
+          delimiter: this.options.delimiter,
           id: message.id,
           code: message.error.code,
           message: message.error.message
         });
-        this.handleError(error);
+        throw new Error(error);
       } else if (!message.method) {
         // no method, so assume response
         this.serving_message_id = message.id;
         this.responseQueue[this.serving_message_id] = message;
         this.handleResponse(this.serving_message_id);
       } else {
-        throw new Error();
+        const error = formatError({
+          jsonrpc: this.options.version,
+          delimiter: this.options.delimiter,
+          id: null,
+          code: ERR_CODES.unknown,
+          message: ERR_MSGS.unknown
+        });
+        throw new Error(error);
       }
     } catch (e) {
       if (e instanceof SyntaxError) {
-        const error = this.sendError({
+        const error = formatError({
+          jsonrpc: this.options.version,
+          delimiter: this.options.delimiter,
           id: this.serving_message_id,
           code: ERR_CODES.parseError,
           message: `Unable to parse message: '${chunk}'`
         });
-        this.handleError(error);
+        throw new Error(error);
       } else {
-        const error = this.sendError({
-          id: this.serving_message_id,
-          code: ERR_CODES.internal,
-          message: `Unable to parse message: '${chunk}'`
-        });
-        this.handleError(error);
+        throw e;
       }
     }
   }
@@ -199,7 +205,11 @@ class Client extends EventEmitter {
     this.messageBuffer.push(data);
     while (!this.messageBuffer.isFinished()) {
       const message = this.messageBuffer.handleData();
-      this.verifyData(message);
+      try {
+        this.verifyData(message);
+      } catch (e) {
+        this.handleError(e);
+      }
     }
   }
 
@@ -208,44 +218,38 @@ class Client extends EventEmitter {
   }
 
   handleError(error) {
-    let response = error;
+    let err;
+    try {
+      err = JSON.parse(error.message);
+    } catch (e) {
+      err = JSON.parse(
+        formatError({
+          jsonrpc: this.options.version,
+          delimiter: this.options.delimiter,
+          id: null,
+          code: ERR_CODES.unknown,
+          message: JSON.stringify(error, Object.getOwnPropertyNames(error))
+        })
+      );
+    }
+    let response = err;
     if (this.writer instanceof http.IncomingMessage) {
       // want to allow users to access the headers, status code etc.
       response = {
-        body: error,
+        body: err,
         ...this.writer
       };
     }
     try {
-      this.pendingCalls[error.id].reject(response);
+      this.pendingCalls[err.id].reject(response);
     } catch (e) {
       if (e instanceof TypeError) {
         // probably a parse error, which might not have an id
         process.stdout.write(
-          `Message has no outstanding calls: ${JSON.stringify(error)}\n`
+          `Message has no outstanding calls: ${JSON.stringify(response)}\n`
         );
       }
     }
-  }
-
-  sendError({
-    jsonrpc, id, code, message
-  }) {
-    let response;
-    if (this.options.version === "2.0") {
-      response = {
-        jsonrpc: jsonrpc || this.options.version,
-        error: { code, message: message || "Unknown Error" },
-        id
-      };
-    } else {
-      response = {
-        result: null,
-        error: { code, message: message || "Unknown Error" },
-        id
-      };
-    }
-    return response;
   }
 }
 module.exports = Client;

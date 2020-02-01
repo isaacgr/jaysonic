@@ -1,5 +1,5 @@
 const EventEmitter = require("events");
-const { formatResponse } = require("../functions");
+const { formatResponse, formatError, BatchRequest } = require("../functions");
 const { ERR_CODES, ERR_MSGS } = require("../constants");
 
 /**
@@ -47,12 +47,17 @@ class Server extends EventEmitter {
       this.server.listen({ host, port, exclusive });
       this.server.on("listening", () => {
         this.listening = true;
-        this.handleData();
-        this.handleError();
-        resolve({
-          host: this.server.address().address,
-          port: this.server.address().port
-        });
+        try {
+          this.handleData();
+          this.handleError();
+          resolve({
+            host: this.server.address().address,
+            port: this.server.address().port
+          });
+        } catch (e) {
+          this.listening = false;
+          reject(e);
+        }
       });
       this.server.on("error", (error) => {
         this.listening = false;
@@ -69,7 +74,7 @@ class Server extends EventEmitter {
     return new Promise((resolve, reject) => {
       this.server.close((error) => {
         if (error) {
-          reject();
+          reject(error);
         }
         resolve();
       });
@@ -82,205 +87,241 @@ class Server extends EventEmitter {
   }
 
   onNotify(method, cb) {
-    this.on("notify", (message) => {
-      try {
-        if (message.method === method) {
-          return cb(undefined, message);
-        }
-      } catch (e) {
-        return cb(e);
-      }
-    });
+    if (method === "clientConnected" || method === "clientDisconnected") {
+      throw new Error(`reserved event name ${method}`);
+    }
+    this.on(method, cb);
+  }
+
+  removeOnNotify(method, cb) {
+    if (method === "clientConnected" || method === "clientDisconnected") {
+      throw new Error(`reserved event name ${method}`);
+    }
+    this.removeListener(method, cb);
+  }
+
+  removeAllOnNotify(method) {
+    if (method === "clientConnected" || method === "clientDisconnected") {
+      throw new Error(`reserved event name ${method}`);
+    }
+    this.removeAllListeners([method]);
   }
 
   handleData() {
     throw new Error("function must be overwritten in subsclass");
   }
 
-  handleBatchRequest(batch) {
-    return new Promise((resolve, reject) => {
-      const requests = batch;
-      const batchRequests = requests.map(request => this.validateMessage(request)
-        .then(message => this.getResult(message)
-          .then(result => JSON.parse(result))
-          .catch((error) => {
-            throw error;
-          }))
-        .catch((error) => {
-          throw error;
-        }));
-      Promise.all(
-        batchRequests.map(promise => promise.catch(error => error))
-      )
-        .then((result) => {
-          resolve(result);
-        })
-        .catch((error) => {
-          reject(error);
-        });
-    });
+  handleBatchRequest(requests) {
+    const batchRequests = requests
+      .map((request) => {
+        try {
+          const message = this.validateMessage(request);
+          if (message.notification) {
+            this.emit(message.notification.method, message.notification);
+            return;
+          }
+          return this.getResult(message)
+            .then(result => JSON.parse(result))
+            .catch((error) => {
+              throw error;
+            });
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      })
+      .filter(el => el != null);
+    if (batchRequests.length === 0) {
+      return Promise.resolve({ empty: true });
+    }
+    return Promise.all(
+      batchRequests.map(promise => promise.catch(error => JSON.parse(error.message)))
+    );
   }
 
   validateRequest(request) {
-    return new Promise((resolve, reject) => {
-      try {
-        const message = JSON.parse(request);
-        resolve(message);
-      } catch (e) {
-        reject(this.sendError(null, ERR_CODES.parseError, ERR_MSGS.parseError));
-      }
-    });
+    try {
+      const message = JSON.parse(request);
+      return message;
+    } catch (e) {
+      throw new Error(
+        formatError({
+          jsonrpc: this.options.version,
+          id: null,
+          code: ERR_CODES.parseError,
+          message: ERR_MSGS.parseError,
+          delimiter: this.options.delimiter
+        })
+      );
+    }
   }
 
   validateMessage(message) {
-    return new Promise((resolve, reject) => {
-      if (Array.isArray(message)) {
-        // possible batch request
-        if (message.length === 0) {
-          const error = this.sendError(
-            null,
-            ERR_CODES.invalidRequest,
-            ERR_MSGS.invalidRequest
-          );
-          return reject(error);
-        }
-        return this.handleBatchRequest(message)
-          .then((responses) => {
-            resolve({ batch: responses });
+    if (Array.isArray(message)) {
+      // possible batch request
+      if (message.length === 0) {
+        const error = formatError({
+          jsonrpc: this.options.version,
+          id: null,
+          code: ERR_CODES.invalidRequest,
+          message: ERR_MSGS.invalidRequest,
+          delimiter: this.options.delimiter
+        });
+        throw new Error(error);
+      }
+      throw new BatchRequest(undefined, message);
+    }
+
+    if (!(message === Object(message))) {
+      throw new Error(
+        formatError({
+          jsonrpc: this.options.version,
+          id: null,
+          code: ERR_CODES.invalidRequest,
+          message: ERR_MSGS.invalidRequest,
+          delimiter: this.options.delimiter
+        })
+      );
+    }
+
+    if (!(typeof message.method === "string")) {
+      throw new Error(
+        formatError({
+          jsonrpc: message.jsonrpc,
+          id: message.id,
+          code: ERR_CODES.invalidRequest,
+          message: ERR_MSGS.invalidRequest,
+          delimiter: this.options.delimiter
+        })
+      );
+    }
+
+    if (!message.id) {
+      // no id, so assume notification
+      return { notification: message };
+    }
+
+    if (message.jsonrpc) {
+      if (this.options.version !== "2.0") {
+        throw new Error(
+          formatError({
+            id: message.id,
+            code: ERR_CODES.invalidRequest,
+            message: ERR_MSGS.invalidRequest,
+            delimiter: this.options.delimiter
           })
-          .catch((error) => {
-            reject(JSON.stringify(error));
-          });
-      }
-
-      if (!(message === Object(message))) {
-        reject(
-          this.sendError(
-            null,
-            ERR_CODES.invalidRequest,
-            ERR_MSGS.invalidRequest
-          )
         );
       }
+    }
 
-      if (!(typeof message.method === "string")) {
-        reject(
-          this.sendError(
-            message.id,
-            ERR_CODES.invalidRequest,
-            ERR_MSGS.invalidRequest
-          )
-        );
-      }
+    if (!this.methods[message.method]) {
+      throw new Error(
+        formatError({
+          jsonrpc: message.jsonrpc,
+          id: message.id,
+          code: ERR_CODES.methodNotFound,
+          message: ERR_MSGS.methodNotFound,
+          delimiter: this.options.delimiter
+        })
+      );
+    }
 
-      if (!message.id) {
-        // no id, so assume notification
-        resolve({ notification: message });
-      }
-
-      if (message.jsonrpc) {
-        if (this.options.version !== "2.0") {
-          reject(
-            this.sendError(
-              message.id,
-              ERR_CODES.invalidRequest,
-              ERR_MSGS.invalidRequest
-            )
-          );
-        }
-      }
-
-      if (!this.methods[message.method]) {
-        reject(
-          this.sendError(
-            message.id,
-            ERR_CODES.methodNotFound,
-            ERR_MSGS.methodNotFound
-          )
-        );
-      }
-
-      if (
-        !Array.isArray(message.params)
-        && !(message.params === Object(message.params))
-      ) {
-        reject(
-          this.sendError(
-            message.id,
-            ERR_CODES.invalidParams,
-            ERR_MSGS.invalidParams
-          )
-        );
-      }
-      // data looks good
-      resolve(message);
-    });
+    if (
+      !Array.isArray(message.params)
+      && !(message.params === Object(message.params))
+    ) {
+      throw new Error(
+        formatError({
+          jsonrpc: message.jsonrpc,
+          id: message.id,
+          code: ERR_CODES.invalidParams,
+          message: ERR_MSGS.invalidParams,
+          delimiter: this.options.delimiter
+        })
+      );
+    }
+    // data looks good
+    return message;
   }
 
   handleValidation(chunk) {
-    const validRequest = this.validateRequest(chunk)
-      .then(result => result)
-      .catch((error) => {
-        throw error;
-      });
-
-    const validMessage = validRequest
-      .then(result => this.validateMessage(result)
-        .then(message => message)
-        .catch((error) => {
-          throw error;
-        }))
-      .catch((error) => {
-        throw error;
-      });
-
-    return [validRequest, validMessage];
-  }
-
-  getResult(message) {
-    const { params } = message;
     return new Promise((resolve, reject) => {
-      let error = this.sendError(message.id, ERR_CODES.internal);
       try {
-        const result = this.methods[message.method](params);
-        let response = formatResponse({
-          jsonrpc: message.jsonrpc,
-          id: message.id,
-          result: result || {}
-        });
-        if (typeof result.then === "function" || result instanceof Promise) {
-          Promise.all([result])
-            .then((results) => {
-              response = formatResponse({
-                jsonrpc: message.jsonrpc,
-                id: message.id,
-                result: results || {}
-              });
-              resolve(response);
+        const result = this.validateRequest(chunk);
+        const message = this.validateMessage(result);
+        resolve(message);
+      } catch (e) {
+        if (e instanceof BatchRequest) {
+          this.handleBatchRequest(e.request)
+            .then((result) => {
+              resolve({ batch: result });
             })
-            .catch((resError) => {
-              error = this.sendError(
-                message.id,
-                ERR_CODES.internal,
-                `${JSON.stringify(resError.message || resError)}`
-              );
+            .catch((error) => {
               reject(error);
             });
         } else {
-          response = formatResponse({
-            jsonrpc: message.jsonrpc,
-            id: message.id,
-            result: result || {}
-          });
-          resolve(response);
+          reject(e);
+        }
+      }
+    });
+  }
+
+  getResult(message) {
+    // function needs to be async since the method can be a promise
+    return new Promise((resolve, reject) => {
+      const { params } = message;
+      let error = formatError({
+        jsonrpc: message.jsonrpc,
+        id: message.id,
+        code: ERR_CODES.unknown,
+        message: ERR_MSGS.unknown,
+        delimiter: this.options.delimiter
+      });
+      try {
+        const result = this.methods[message.method](params);
+        if (
+          result
+          && (typeof result.then === "function" || result instanceof Promise)
+        ) {
+          Promise.all([result])
+            .then((results) => {
+              resolve(
+                formatResponse({
+                  jsonrpc: message.jsonrpc,
+                  id: message.id,
+                  result: results || 0,
+                  delimiter: this.options.delimiter
+                })
+              );
+            })
+            .catch((resError) => {
+              error = formatError({
+                jsonrpc: message.jsonrpc,
+                id: message.id,
+                code: ERR_CODES.internal,
+                message: `${JSON.stringify(resError.message || resError)}`,
+                delimiter: this.options.delimiter
+              });
+              reject(error);
+            });
+        } else {
+          resolve(
+            formatResponse({
+              jsonrpc: message.jsonrpc,
+              id: message.id,
+              result: result || 0,
+              delimiter: this.options.delimiter
+            })
+          );
         }
       } catch (e) {
         if (e instanceof TypeError) {
-          error = this.sendError(
-            message.id,
-            ERR_CODES.invalidParams,
-            ERR_MSGS.invalidParams
-          );
+          error = formatError({
+            jsonrpc: message.jsonrpc,
+            id: message.id,
+            code: ERR_CODES.invalidParams,
+            message: ERR_MSGS.invalidParams,
+            delimiter: this.options.delimiter
+          });
         }
         reject(error);
       }
@@ -298,26 +339,8 @@ class Server extends EventEmitter {
   handleError() {
     this.on("error", (error) => {
       this.listening = false;
-      return error;
+      throw error;
     });
-  }
-
-  sendError(id, code, message = null) {
-    let response;
-    if (this.options.version === "2.0") {
-      response = {
-        jsonrpc: this.options.version,
-        error: { code, message: message || "Unknown Error" },
-        id
-      };
-    } else {
-      response = {
-        result: null,
-        error: { code, message: message || "Unknown Error" },
-        id
-      };
-    }
-    return response;
   }
 }
 

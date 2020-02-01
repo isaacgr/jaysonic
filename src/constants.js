@@ -4,7 +4,8 @@ const ERR_CODES = {
   methodNotFound: -32601,
   invalidParams: -32602,
   internal: -32603,
-  timeout: -32000
+  timeout: -32000,
+  unknown: -32001
 };
 
 const ERR_MSGS = {
@@ -12,7 +13,8 @@ const ERR_MSGS = {
   invalidRequest: "Invalid Request",
   methodNotFound: "Method not found",
   invalidParams: "Invalid Parameters",
-  timeout: "Request Timeout"
+  timeout: "Request Timeout",
+  unknown: "Unknown Error"
 };
 
 const errorToStatus = {
@@ -21,7 +23,8 @@ const errorToStatus = {
   "-32601": 404,
   "-32602": 500,
   "-32603": 500,
-  "-32000": 408
+  "-32000": 408,
+  "-32001": 500
 };
 
 module.exports = {

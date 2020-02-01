@@ -171,6 +171,15 @@ describe("HTTP Server", () => {
         });
     });
   });
+  describe("notifications", () => {
+    it("should send a '204' response for a notification", (done) => {
+      const request = clienthttp.request().notify("notify", []);
+      request.then((response) => {
+        expect(response.statusCode).to.be.equal(204);
+        done();
+      });
+    });
+  });
   describe("v1.0 responses", () => {
     it("should provide a v1.0 response to a 1.0 request", (done) => {
       httpRequest

@@ -1,6 +1,6 @@
 const net = require("net");
 const Client = require(".");
-const { formatRequest } = require("../functions");
+const { formatRequest, formatError } = require("../functions");
 const { ERR_CODES, ERR_MSGS } = require("../constants");
 
 /**
@@ -54,7 +54,9 @@ class TCPClient extends Client {
           id: id ? this.message_id : undefined,
           options: this.options
         });
-        this.message_id += 1;
+        if (id) {
+          this.message_id += 1;
+        }
         return request;
       },
 
@@ -64,20 +66,26 @@ class TCPClient extends Client {
         try {
           this.client.write(this.request().message(method, params));
         } catch (e) {
-          if (e instanceof TypeError) {
-            // this.client is probably undefined
-            reject(new Error(`Unable to send request. ${e.message}`));
-          }
+          // this.client is probably undefined
+          reject(e);
         }
         setTimeout(() => {
-          if (this.pendingCalls[requestId]) {
-            const error = this.sendError({
-              id: requestId,
+          try {
+            const error = formatError({
+              jsonrpc: this.options.version,
+              delimiter: this.options.delimiter,
+              id: null,
               code: ERR_CODES.timeout,
               message: ERR_MSGS.timeout
             });
+            this.pendingCalls[requestId].reject(error);
             delete this.pendingCalls[requestId];
-            reject(error);
+          } catch (e) {
+            if (e instanceof TypeError) {
+              process.stdout.write(
+                `Message has no outstanding calls: ${JSON.stringify(e)}\n`
+              );
+            }
           }
         }, this.options.timeout);
       }),
@@ -90,13 +98,11 @@ class TCPClient extends Client {
         return new Promise((resolve, reject) => {
           try {
             this.client.write(request, () => {
-              resolve("notification sent");
+              resolve(request);
             });
           } catch (e) {
-            if (e instanceof TypeError) {
-              // this.client is probably undefined
-              reject(new Error(`Unable to send request. ${e.message}`));
-            }
+            // this.client is probably undefined
+            reject(e);
           }
         });
       }
@@ -129,20 +135,26 @@ class TCPClient extends Client {
       try {
         this.client.write(request + this.options.delimiter);
       } catch (e) {
-        if (e instanceof TypeError) {
-          // this.client is probably undefined
-          reject(new Error(`Unable to send request. ${e.message}`));
-        }
+        // this.client is probably undefined
+        reject(e.message);
       }
       setTimeout(() => {
-        if (this.pendingBatches[String(batchIds)]) {
-          const error = this.sendError({
+        try {
+          const error = formatError({
+            jsonrpc: this.options.version,
+            delimiter: this.options.delimiter,
             id: null,
             code: ERR_CODES.timeout,
             message: ERR_MSGS.timeout
           });
+          this.pendingBatches[String(batchIds)].reject(error);
           delete this.pendingBatches[String(batchIds)];
-          reject(error);
+        } catch (e) {
+          if (e instanceof TypeError) {
+            process.stdout.write(
+              `Message has no outstanding calls: ${JSON.stringify(e)}\n`
+            );
+          }
         }
       }, this.options.timeout);
       this.on("batchResponse", (batch) => {
@@ -162,21 +174,26 @@ class TCPClient extends Client {
             batch.forEach((message) => {
               if (message.error) {
                 // reject the whole message if there are any errors
-                if (this.pendingBatches[ids] !== undefined) {
+                try {
                   this.pendingBatches[ids].reject(batch);
                   delete this.pendingBatches[ids];
+                } catch (e) {
+                  if (e instanceof TypeError) {
+                    // no outstanding calls
+                  }
                 }
               }
             });
-            if (this.pendingBatches[ids] !== undefined) {
+            try {
               this.pendingBatches[ids].resolve(batch);
               delete this.pendingBatches[ids];
+            } catch (e) {
+              if (e instanceof TypeError) {
+                // no outstanding calls
+              }
             }
           }
         }
-      });
-      this.on("batchError", (error) => {
-        reject(error);
       });
     });
   }
@@ -186,15 +203,31 @@ class TCPClient extends Client {
    * @params {Function} [cb] callback function to invoke on notify
    */
   subscribe(method, cb) {
-    this.on("notify", (message) => {
-      try {
-        if (message.method === method) {
-          return cb(undefined, message);
-        }
-      } catch (e) {
-        return cb(e);
-      }
-    });
+    if (method === "batchResponse") {
+      throw new Error("\"batchResponse\" is a reserved event name");
+    }
+    this.on(method, cb);
+  }
+
+  /**
+   * @params {String} [method] method to unsubscribe from
+   * @params {Function} [cb] name of function to remove
+   */
+  unsubscribe(method, cb) {
+    if (method === "batchResponse") {
+      throw new Error("\"batchResponse\" is a reserved event name");
+    }
+    this.removeListener(method, cb);
+  }
+
+  /**
+   * @params {String} [method] method to unsubscribe all listeners from
+   */
+  unsubscribeAll(method) {
+    if (method === "batchResponse") {
+      throw new Error("\"batchResponse\" is a reserved event name");
+    }
+    this.removeAllListeners([method]);
   }
 }
 

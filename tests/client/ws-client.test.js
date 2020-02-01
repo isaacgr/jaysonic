@@ -43,35 +43,13 @@ describe("WebSocket Client", () => {
         done();
       });
     });
-    it("should handle 'method not found' error", (done) => {
-      const request = ws.request().send("nonexistent method", []);
-      request.catch((error) => {
-        expect(error).to.eql({
-          jsonrpc: "2.0",
-          error: { code: -32601, message: "Method not found" },
-          id: 3
-        });
-        done();
-      });
-    });
-    it("should handle 'invalid params' error", (done) => {
-      const request = ws.request().send("typeerror", [1]);
-      request.catch((error) => {
-        expect(error).to.eql({
-          jsonrpc: "2.0",
-          error: { code: -32602, message: "Invalid Parameters" },
-          id: 4
-        });
-        done();
-      });
-    });
     it("should retreive large dataset", (done) => {
       const request = ws.request().send("large.data", []);
       request.then((result) => {
         expect(result).to.eql({
           jsonrpc: "2.0",
           result: data,
-          id: 5
+          id: 3
         });
         done();
       });
@@ -131,8 +109,8 @@ describe("WebSocket Client", () => {
       ]);
       request.then((response) => {
         expect(response).to.eql([
-          { result: 3, jsonrpc: "2.0", id: 6 },
-          { result: 7, jsonrpc: "2.0", id: 7 }
+          { result: 3, jsonrpc: "2.0", id: 4 },
+          { result: 7, jsonrpc: "2.0", id: 5 }
         ]);
         done();
       });
@@ -147,9 +125,9 @@ describe("WebSocket Client", () => {
           {
             jsonrpc: "2.0",
             error: { code: -32601, message: "Method not found" },
-            id: 8
+            id: 6
           },
-          { result: 7, jsonrpc: "2.0", id: 9 }
+          { result: 7, jsonrpc: "2.0", id: 7 }
         ]);
         done();
       });
@@ -181,26 +159,26 @@ describe("WebSocket Client", () => {
         ws.request().message("add", [3, 4])
       ]);
       request.then((res1) => {
-        expect(res1).to.eql({ jsonrpc: "2.0", result: 3, id: 10 });
+        expect(res1).to.eql({ jsonrpc: "2.0", result: 3, id: 8 });
         request2.then((res2) => {
           expect(res2).to.eql({
             jsonrpc: "2.0",
             result: "Hello Isaac",
-            id: 11
+            id: 9
           });
           request3.then((res3) => {
             expect(res3).to.eql([
-              { result: 3, jsonrpc: "2.0", id: 12 },
-              { result: 7, jsonrpc: "2.0", id: 13 }
+              { result: 3, jsonrpc: "2.0", id: 10 },
+              { result: 7, jsonrpc: "2.0", id: 11 }
             ]);
             request4.catch((res4) => {
               expect(res4).to.eql([
                 {
                   jsonrpc: "2.0",
                   error: { code: -32601, message: "Method not found" },
-                  id: 14
+                  id: 12
                 },
-                { result: 7, jsonrpc: "2.0", id: 15 }
+                { result: 7, jsonrpc: "2.0", id: 13 }
               ]);
               done();
             });
@@ -209,20 +187,109 @@ describe("WebSocket Client", () => {
       });
     });
   });
+  describe("request errors", () => {
+    it("should handle 'method not found' error", (done) => {
+      const request = ws.request().send("nonexistent method", []);
+      request.catch((error) => {
+        expect(error).to.eql({
+          jsonrpc: "2.0",
+          error: { code: -32601, message: "Method not found" },
+          id: 14
+        });
+        done();
+      });
+    });
+    it("should handle 'invalid params' error", (done) => {
+      const request = ws.request().send("typeerror", [1]);
+      request.catch((error) => {
+        expect(error).to.eql({
+          jsonrpc: "2.0",
+          error: { code: -32602, message: "Invalid Parameters" },
+          id: 15
+        });
+        done();
+      });
+    });
+    it("should handle 'unknown' error", (done) => {
+      const request = ws.request().send("unknownerror", [1]);
+      request.catch((error) => {
+        expect(error).to.eql({
+          jsonrpc: "2.0",
+          error: { code: -32001, message: "Unknown Error" },
+          id: 16
+        });
+        done();
+      });
+    });
+  });
   describe("notifications", () => {
     it("should handle receiving a notification", (done) => {
-      ws.subscribe("notification", (error, message) => {
-        if (error) {
-          return done(error);
-        }
-        expect(message).to.be.eql({
+      ws.subscribe("notification", ({ detail }) => {
+        expect(detail).to.be.eql({
           jsonrpc: "2.0",
           method: "notification",
           params: []
         });
         done();
       });
-      wss.notify("notification", []);
+      wss.notify([["notification", []]]);
+    });
+    it("should unsubscribe from a notificiation", (done) => {
+      const callback = () => {};
+      ws.subscribe("newNotification", callback);
+      expect(Object.keys(ws.getEventListeners())).to.have.length(2);
+      ws.unsubscribe("newNotification", callback);
+      expect(Object.keys(ws.getEventListeners())).to.have.length(1);
+
+      done();
+    });
+    it("should unsubscribe from all 'notification' events", (done) => {
+      ws.unsubscribeAll("notification");
+      const list = ws.getEventListeners("notification");
+      expect(list).to.be.an("undefined");
+      done();
+    });
+    it("should recieve notifications if they're in a batch", (done) => {
+      const callback = ({ detail }) => {
+        expect(detail).to.be.eql({
+          jsonrpc: "2.0",
+          method: "test",
+          params: []
+        });
+        done();
+      };
+      ws.subscribe("test", callback);
+      wss.notify([
+        ["notification", []],
+        ["test", []]
+      ]);
+    });
+    it("should be unable to subscribe, unsub, or unsub all for \"batchResponse\"", (done) => {
+      try {
+        ws.subscribe("batchResponse", () => {});
+      } catch (e) {
+        expect(e.message).to.be.a(
+          "string",
+          "\"batchResponse\" is a reserved event name"
+        );
+      }
+      try {
+        ws.unsubscribe("batchResponse", () => {});
+      } catch (e) {
+        expect(e.message).to.be.a(
+          "string",
+          "\"batchResponse\" is a reserved event name"
+        );
+      }
+      try {
+        ws.unsubscribeAll("batchResponse", () => {});
+      } catch (e) {
+        expect(e.message).to.be.a(
+          "string",
+          "\"batchResponse\" is a reserved event name"
+        );
+      }
+      done();
     });
   });
   describe("v1.0 requests", () => {

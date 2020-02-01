@@ -1,6 +1,6 @@
 const http = require("http");
 const Client = require(".");
-const { formatRequest } = require("../functions");
+const { formatRequest, formatError } = require("../functions");
 const { ERR_CODES, ERR_MSGS } = require("../constants");
 
 /**
@@ -45,14 +45,16 @@ class HTTPClient extends Client {
 
   request() {
     return {
-      message: (method, params) => {
+      message: (method, params, id = true) => {
         const request = formatRequest({
           method,
           params,
-          id: this.message_id,
+          id: id ? this.message_id : undefined,
           options: this.options
         });
-        this.message_id += 1;
+        if (id) {
+          this.message_id += 1;
+        }
         return request;
       },
 
@@ -65,21 +67,33 @@ class HTTPClient extends Client {
           this.options.encoding
         );
         this.initClient();
-        this.client.write(request, this.options.encoding);
-        this.client.end();
-        this.client.on("error", (error) => {
-          reject(error);
-        });
+        try {
+          this.client.write(request, this.options.encoding);
+          this.client.end();
+          this.client.on("error", (error) => {
+            reject(error);
+          });
+        } catch (e) {
+          reject(e);
+        }
+
         setTimeout(() => {
-          if (this.pendingCalls[requestId]) {
-            const error = this.sendError({
-              id: requestId,
+          try {
+            const error = formatError({
+              jsonrpc: this.options.version,
+              delimiter: this.options.delimiter,
+              id: null,
               code: ERR_CODES.timeout,
               message: ERR_MSGS.timeout
             });
+            this.pendingCalls[requestId].reject(error);
             delete this.pendingCalls[requestId];
-            this.client.end();
-            reject(error);
+          } catch (e) {
+            if (e instanceof TypeError) {
+              process.stdout.write(
+                `Message has no outstanding calls: ${JSON.stringify(e)}\n`
+              );
+            }
           }
         }, this.options.timeout);
       }),
@@ -107,11 +121,15 @@ class HTTPClient extends Client {
               reject(new Error("no response receieved for notification"));
             }
           });
-          notification.write(request, this.options.encoding);
-          notification.end();
-          notification.on("error", (error) => {
-            reject(error);
-          });
+          try {
+            notification.write(request, this.options.encoding);
+            notification.end();
+            notification.on("error", (error) => {
+              reject(error);
+            });
+          } catch (e) {
+            reject(e);
+          }
         });
       }
     };
@@ -146,20 +164,32 @@ class HTTPClient extends Client {
         this.options.encoding
       );
       this.initClient();
-      this.client.write(request, this.options.encoding);
-      this.client.end();
-      this.client.on("error", (error) => {
-        reject(error);
-      });
+      try {
+        this.client.write(request, this.options.encoding);
+        this.client.end();
+        this.client.on("error", (error) => {
+          reject(error);
+        });
+      } catch (e) {
+        reject(e);
+      }
       setTimeout(() => {
-        if (this.pendingBatches[String(batchIds)]) {
-          const error = this.sendError({
+        try {
+          const error = formatError({
+            jsonrpc: this.options.version,
+            delimiter: this.options.delimiter,
             id: null,
             code: ERR_CODES.timeout,
             message: ERR_MSGS.timeout
           });
+          this.pendingBatches[String(batchIds)].reject(error);
           delete this.pendingBatches[String(batchIds)];
-          reject(error);
+        } catch (e) {
+          if (e instanceof TypeError) {
+            process.stdout.write(
+              `Message has no outstanding calls: ${JSON.stringify(e)}\n`
+            );
+          }
         }
       }, this.options.timeout);
       this.on("batchResponse", (batch) => {
@@ -183,21 +213,26 @@ class HTTPClient extends Client {
             batch.forEach((message) => {
               if (message.error) {
                 // reject the whole message if there are any errors
-                if (this.pendingBatches[ids] !== undefined) {
+                try {
                   this.pendingBatches[ids].reject(response);
                   delete this.pendingBatches[ids];
+                } catch (e) {
+                  if (e instanceof TypeError) {
+                    // no outstanding calls
+                  }
                 }
               }
             });
-            if (this.pendingBatches[ids] !== undefined) {
+            try {
               this.pendingBatches[ids].resolve(response);
               delete this.pendingBatches[ids];
+            } catch (e) {
+              if (e instanceof TypeError) {
+                // no outstanding calls
+              }
             }
           }
         }
-      });
-      this.on("batchError", (error) => {
-        reject(error);
       });
     });
   }

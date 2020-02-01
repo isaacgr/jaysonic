@@ -1,35 +1,37 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [Jaysonic - A persistent JSON-RPC client and server](#jaysonic---a-persistent-json-rpc-client-and-server)
-    - [List of features](#list-of-features)
-    - [Download & Installation](#download--installation)
-    - [Initialization](#initialization)
-      - [WS Client for browser](#ws-client-for-browser)
-      - [WS Client for Node](#ws-client-for-node)
-    - [Options](#options)
-    - [Code Demos](#code-demos)
-          - [TCP](#tcp)
-          - [HTTP](#http)
-          - [WS](#ws)
-      - [Server side](#server-side)
-        - [Listening](#listening)
-        - [Closing the connection](#closing-the-connection)
-        - [Adding Methods](#adding-methods)
-        - [Listening for client connections](#listening-for-client-connections)
-      - [Client Side](#client-side)
-        - [Connecting](#connecting)
-        - [Listening for server disconnect](#listening-for-server-disconnect)
-        - [Making requests](#making-requests)
-        - [Subscriptions](#subscriptions)
-        - [Batch Requests](#batch-requests)
-        - [HTTP Client Requests](#http-client-requests)
-        - [Notifications](#notifications)
-        - [HTTP Client Notifications](#http-client-notifications)
-    - [Contributing](#contributing)
-    - [Authors or Acknowledgments](#authors-or-acknowledgments)
-    - [License](#license)
+  - [List of features](#list-of-features)
+  - [Download & Installation](#download--installation)
+  - [Initialization](#initialization)
+    - [WS Client for browser](#ws-client-for-browser)
+    - [WS Client for Node](#ws-client-for-node)
+  - [Options](#options)
+  - [Code Demos](#code-demos)
+    - [Initialization](#initialization-1)
+      - [TCP](#tcp)
+      - [HTTP](#http)
+      - [WS](#ws)
+    - [Server side](#server-side)
+      - [Instantiation and Listening](#instantiation-and-listening)
+      - [Closing the connection](#closing-the-connection)
+      - [Adding Methods](#adding-methods)
+      - [Listening for client connections](#listening-for-client-connections)
+    - [Client Side](#client-side)
+      - [Connecting](#connecting)
+      - [Listening for server disconnect](#listening-for-server-disconnect)
+      - [Making requests](#making-requests)
+      - [Subscriptions](#subscriptions)
+      - [Batch Requests](#batch-requests)
+      - [HTTP Client Requests](#http-client-requests)
+      - [Notifications](#notifications)
+        - [Client](#client)
+        - [Server](#server)
+      - [HTTP Client Notifications](#http-client-notifications)
+  - [Contributing](#contributing)
+  - [Authors or Acknowledgments](#authors-or-acknowledgments)
+  - [License](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -147,6 +149,8 @@ The default port for the WS Server is `8100`. Based on the `ws` library.
 
 The default options will be used when instantiating the client or the server. Overrides can be provided by passing an object with the modifications.
 
+#### Initialization
+
 ###### TCP
 
 ```js
@@ -180,6 +184,9 @@ const client = new Jaysonic.client.http({
 
 ###### WS
 
+`wsclient` class can only be used in the browser.
+`client.ws` cannot be used in the browser.
+
 ```js
 const Jaysonic = require("jaysonic");
 const socket = require("jaysonic/lib/client-ws");
@@ -202,7 +209,7 @@ const wss = new Jaysonic.server.ws({
 
 #### Server side
 
-##### Listening
+##### Instantiation and Listening
 
 ```js
 const Jaysonic = require("jaysonic");
@@ -329,14 +336,32 @@ const add = () => {
 
 Clients can subscribe to notifications from the server.
 
-**Note: Subscriptions are not supported by the HTTP server/client**
+**Note: Subscriptions are not supported by the HTTP server/client**\
+**Notifications no longer return an error as the first parameter in the callback as of v2.0.0**
 
 ```js
-client.subscribe("notification", (error, message) => {
+client.subscribe("notification", (message) => {
   console.log(message);
   // {jsonrpc: "2.0", method: "notification", params: []}
 });
-server.notify("notification", []);
+server.notify([["notification", []]]);
+```
+
+**The websocket browswer client returns an object with a 'detail' key which contains the notification as of v2.0.0**
+
+```js
+wsclient.subscribe("notification", ({ detail }) => {
+  console.log(detail);
+  // {jsonrpc: "2.0", method: "notification", params: []}
+});
+wsserver.notify([["notification", []]]);
+```
+
+A client can also unsubscribe a method from a notification, or unsubscribe all methods from a notification. This requires the callback function to be named, else it wont be able to remove it.
+
+```js
+client.unsubscribe("notification", callback);
+client.unsubscribeAll("notification");
 ```
 
 ##### Batch Requests
@@ -394,25 +419,58 @@ client
   });
 ```
 
-##### Notifications
+#### Notifications
+
+###### Client
 
 Clients can send notifications to the server.
 
 The server can also listen for all notifications not tied to methods and handle accordingly.
 
+**Note as of v2.0.0 server.onNotify no longer returns an error as the fist parameter to the callback**
+
 ```js
 // optionally returns a promise indicating success or failure for sending message
 client.request().notify("notify", []);
 
-server.onNotify("notify", (error, message) => {
+server.onNotify("notify", (message) => {
   console.log(message);
   // {jsonrpc: "2.0", method: "notify", params: []}
 });
 ```
 
+A server can also unsubscribe a method from a notification, or unsubscribe all methods from a notification. This requires the callback function to be named, else it wont be able to remove it.
+
+```js
+server.unsubscribeOnNotify("notification", callback);
+server.unsubscribeAllOnNotify("notification");
+```
+
+###### Server
+
+The server can send notifications to the client. This can be done individually or in a batch.
+
+**Note: As of v2.0.0 notifications from the server are sent as a list of lists, instead of just supplying the method and params. This was done to handle batch notifications.**
+
+`server.notify` will return a list of error objects if there was a problem sending the notification out to any client, or if no clients are connected. The error of one client will not affect the notification being sent out to the rest of the clients.
+
+```js
+// optionally returns a promise indicating success or failure for sending message
+client.subscribe("notify", callback);
+
+// send a single notification
+server.notify([["notify", []]]);
+
+// send a batch of notifications
+server.notify([
+  ["notify", []],
+  ["test", [1, 2, 3]]
+]);
+```
+
 As per the JSON-RPC spec for HTTP, a notification response must include a `204` status code, with an empty response body. The HTTP Client will resolve a response object if it receives this response, and reject it otherwise.
 
-##### HTTP Client Notifications
+#### HTTP Client Notifications
 
 ```js
 // optionally returns a promise indicating success or failure for sending message
@@ -427,7 +485,7 @@ client
     console.log(error);
   });
 
-server.onNotify("notify", (error, message) => {
+server.onNotify("notify", (message) => {
   console.log(message);
   // {jsonrpc: "2.0", method: "notify", params: []}
 });

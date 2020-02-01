@@ -17,6 +17,8 @@ class WSServer extends Server {
 
     this.connectedClients = [];
     const defaults = {
+      host: "127.0.0.1",
+      path: null,
       port: 8100,
       version: "2.0",
       delimiter: "\n",
@@ -50,7 +52,11 @@ class WSServer extends Server {
         this.server = new WebSocket.Server(this.options);
         this.handleData();
         this.handleError();
-        resolve();
+        resolve({
+          host: this.options.host,
+          port: this.options.port,
+          path: this.options.path
+        });
       } catch (e) {
         reject(e);
       }
@@ -62,10 +68,10 @@ class WSServer extends Server {
       this.emit("clientConnected", client);
       this.connectedClients.push(client);
       const wsServerProtocol = new WSServerProtocol(
+        this,
         client,
         this.options.delimiter
       );
-      wsServerProtocol.factory = this;
       wsServerProtocol.clientConnected();
     });
   }
@@ -81,7 +87,7 @@ class WSServer extends Server {
     this.on("clientDisconnected", (client) => {
       const clientIndex = this.connectedClients.findIndex(c => client === c);
       if (clientIndex === -1) {
-        return "unknown";
+        return cb(`Unknown client ${JSON.stringify(client)}`);
       }
       const [deletedClient] = this.connectedClients.splice(clientIndex, 1);
       return cb({
@@ -91,17 +97,58 @@ class WSServer extends Server {
     });
   }
 
-  // only available for TCP server
-  notify(method, params) {
-    const response = formatResponse({ jsonrpc: "2.0", method, params });
-    try {
-      this.connectedClients.forEach((client) => {
-        client.send(response + this.options.delimiter);
-      });
-    } catch (e) {
-      // was unable to send data to client, possibly disconnected
-      this.emit("error", e);
+  notify(notifications) {
+    if (notifications.length === 0 || !Array.isArray(notifications)) {
+      throw new Error("Invalid arguments");
     }
+    const responses = notifications.map(([method, params]) => {
+      if (!method && !params) {
+        throw new Error("Unable to generate a response object");
+      }
+      const response = this.options.version === "2.0"
+        ? {
+          jsonrpc: "2.0",
+          method,
+          params,
+          delimiter: this.options.delimiter
+        }
+        : {
+          method,
+          params,
+          delimiter: this.options.delimiter
+        };
+      return response;
+    });
+    if (responses.length === 0) {
+      throw new Error("Unable to generate a response object");
+    }
+    let response;
+    if (responses.length === 1) {
+      response = formatResponse(responses[0]);
+    } else {
+      response = "[";
+      responses.forEach((res, idx) => {
+        response += formatResponse(res);
+        response += idx === responses.length - 1 ? "" : ",";
+      });
+      response += "]";
+    }
+    /**
+     * Returns list of error objects if there was an error sending to any client
+     */
+    if (this.connectedClients.length === 0) {
+      return [new Error("No clients connected")];
+    }
+    return this.connectedClients.map((client) => {
+      try {
+        return client.send(
+          JSON.stringify(JSON.parse(response)) + this.options.delimiter
+        );
+      } catch (e) {
+        // possibly client disconnected
+        return e;
+      }
+    });
   }
 }
 

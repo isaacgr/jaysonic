@@ -1,9 +1,9 @@
 const { MessageBuffer } = require("./buffer");
 
 class TCPServerProtocol {
-  constructor(client, delimiter) {
+  constructor(factory, client, delimiter) {
     this.client = client;
-    this.factory = null;
+    this.factory = factory;
     this.delimiter = delimiter;
     this.messageBuffer = new MessageBuffer(delimiter);
   }
@@ -13,21 +13,31 @@ class TCPServerProtocol {
       this.messageBuffer.push(data);
       while (!this.messageBuffer.isFinished()) {
         const chunk = this.messageBuffer.handleData();
-        Promise.all(this.factory.handleValidation(chunk))
-          .then((validationResult) => {
-            const message = validationResult[1];
+        this.factory
+          .handleValidation(chunk)
+          .then((message) => {
             if (message.batch) {
+              if (message.batch.empty) {
+                return;
+              }
               this.client.write(JSON.stringify(message.batch) + this.delimiter);
             } else if (message.notification) {
-              this.factory.emit("notify", message.notification);
+              this.factory.emit(
+                message.notification.method,
+                message.notification
+              );
             } else {
               this.factory
                 .getResult(message)
-                .then(result => this.client.write(result + this.delimiter))
-                .catch(error => this.client.write(JSON.stringify(error) + this.delimiter));
+                .then(result => this.client.write(result))
+                .catch((error) => {
+                  this.client.write(error);
+                });
             }
           })
-          .catch(error => this.client.write(JSON.stringify(error) + this.delimiter));
+          .catch((error) => {
+            this.client.write(error.message);
+          });
       }
     });
     this.client.on("close", () => {
@@ -40,9 +50,9 @@ class TCPServerProtocol {
 }
 
 class WSServerProtocol {
-  constructor(client, delimiter) {
+  constructor(factory, client, delimiter) {
     this.client = client;
-    this.factory = null;
+    this.factory = factory;
     this.delimiter = delimiter;
     this.messageBuffer = new MessageBuffer(delimiter);
   }
@@ -52,21 +62,31 @@ class WSServerProtocol {
       this.messageBuffer.push(data);
       while (!this.messageBuffer.isFinished()) {
         const chunk = this.messageBuffer.handleData();
-        Promise.all(this.factory.handleValidation(chunk))
-          .then((validationResult) => {
-            const message = validationResult[1];
+        this.factory
+          .handleValidation(chunk)
+          .then((message) => {
             if (message.batch) {
+              if (message.batch.empty) {
+                return;
+              }
               this.client.send(JSON.stringify(message.batch) + this.delimiter);
             } else if (message.notification) {
-              this.factory.emit("notify", message.notification);
+              this.factory.emit(
+                message.notification.method,
+                message.notification
+              );
             } else {
               this.factory
                 .getResult(message)
-                .then(result => this.client.send(result + this.delimiter))
-                .catch(error => this.client.send(JSON.stringify(error) + this.delimiter));
+                .then(result => this.client.send(result))
+                .catch((error) => {
+                  this.client.send(error);
+                });
             }
           })
-          .catch(error => this.client.send(JSON.stringify(error) + this.delimiter));
+          .catch((error) => {
+            this.client.send(error.message);
+          });
       }
     });
     this.client.on("close", () => {
@@ -79,11 +99,11 @@ class WSServerProtocol {
 }
 
 class HttpServerProtocol {
-  constructor(request, response, delimiter) {
+  constructor(factory, request, response, delimiter) {
     this.client = request;
     this.response = response;
     this.delimiter = delimiter;
-    this.factory = null;
+    this.factory = factory;
     this.messageBuffer = new MessageBuffer(delimiter);
   }
 
@@ -94,10 +114,13 @@ class HttpServerProtocol {
     this.client.on("end", () => {
       while (!this.messageBuffer.isFinished()) {
         const chunk = this.messageBuffer.handleData();
-        Promise.all(this.factory.handleValidation(chunk))
-          .then((validationResult) => {
-            const message = validationResult[1];
+        this.factory
+          .handleValidation(chunk)
+          .then((message) => {
             if (message.batch) {
+              if (message.batch.empty) {
+                return;
+              }
               this.factory.setResponseHeader({ response: this.response });
               this.response.write(
                 JSON.stringify(message.batch) + this.delimiter,
@@ -116,34 +139,29 @@ class HttpServerProtocol {
                 .getResult(message)
                 .then((result) => {
                   this.factory.setResponseHeader({ response: this.response });
-                  this.response.write(result + this.delimiter, () => {
+                  this.response.write(result, () => {
                     this.response.end();
                   });
                 })
                 .catch((error) => {
-                  this.factory.setResponseHeader({
-                    response: this.response,
-                    errorCode: error.error.code
-                  });
-                  this.response.write(
-                    JSON.stringify(error) + this.delimiter,
-                    () => {
-                      this.response.end();
-                    }
-                  );
+                  this.sendError(error);
                 });
             }
           })
           .catch((error) => {
-            this.factory.setResponseHeader({
-              response: this.response,
-              errorCode: error.code
-            });
-            this.response.write(JSON.stringify(error) + this.delimiter, () => {
-              this.response.end();
-            });
+            this.sendError(error.message);
           });
       }
+    });
+  }
+
+  sendError(error) {
+    this.factory.setResponseHeader({
+      response: this.response,
+      errorCode: JSON.parse(error).error.code || 500
+    });
+    this.response.write(error, () => {
+      this.response.end();
     });
   }
 }

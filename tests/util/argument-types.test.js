@@ -12,7 +12,7 @@ before((done) => {
   });
 });
 
-describe("Utility functions", () => {
+describe("request().send()", () => {
   describe("methods", () => {
     it("should throw error if method is number", (done) => {
       const request = client.request().send(1, []);

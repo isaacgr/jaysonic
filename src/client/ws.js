@@ -1,6 +1,6 @@
 const WebSocket = require("ws");
 const Client = require(".");
-const { formatRequest } = require("../functions");
+const { formatRequest, formatError } = require("../functions");
 const { ERR_CODES, ERR_MSGS } = require("../constants");
 const { MessageBuffer } = require("../buffer");
 
@@ -31,13 +31,7 @@ class WSClient extends Client {
       ...(options || {})
     };
     this.options.timeout = this.options.timeout * 1000;
-    /**
-     * we can receive whole messages, or parital so we need to buffer
-     *
-     * whole message: {"jsonrpc": 2.0, "params": ["hello"], id: 1}
-     *
-     * partial message: {"jsonrpc": 2.0, "params"
-     */
+
     this.messageBuffer = new MessageBuffer(this.options.delimiter);
     const { retries } = this.options;
     this.remainingRetries = retries;
@@ -72,31 +66,51 @@ class WSClient extends Client {
     };
   }
 
+  listen() {
+    this.client.onmessage = (message) => {
+      this.handleData(message.data);
+    };
+  }
+
   request() {
     return {
-      message: (method, params) => {
+      message: (method, params, id = true) => {
         const request = formatRequest({
           method,
           params,
-          id: this.message_id,
+          id: id ? this.message_id : undefined,
           options: this.options
         });
-        this.message_id += 1;
+        if (id) {
+          this.message_id += 1;
+        }
         return request;
       },
       send: (method, params) => new Promise((resolve, reject) => {
         const requestId = this.message_id;
         this.pendingCalls[requestId] = { resolve, reject };
-        this.client.send(this.request().message(method, params));
+        try {
+          this.client.send(this.request().message(method, params));
+        } catch (e) {
+          reject(e);
+        }
         setTimeout(() => {
-          if (this.pendingCalls[requestId]) {
-            const error = this.sendError({
-              id: requestId,
+          try {
+            const error = formatError({
+              jsonrpc: this.options.version,
+              delimiter: this.options.delimiter,
+              id: null,
               code: ERR_CODES.timeout,
               message: ERR_MSGS.timeout
             });
+            this.pendingCalls[requestId].reject(error);
             delete this.pendingCalls[requestId];
-            reject(error);
+          } catch (e) {
+            if (e instanceof TypeError) {
+              process.stdout.write(
+                `Message has no outstanding calls: ${JSON.stringify(e)}\n`
+              );
+            }
           }
         }, this.options.timeout);
       }),
@@ -107,68 +121,18 @@ class WSClient extends Client {
           options: this.options
         });
         return new Promise((resolve, reject) => {
-          this.client.send(request);
-          resolve("notification sent");
-          this.client.onerror = (error) => {
-            reject(error);
-          };
+          try {
+            this.client.send(request);
+            resolve(request);
+            this.client.onerror = (error) => {
+              reject(error);
+            };
+          } catch (e) {
+            reject(e);
+          }
         });
       }
     };
-  }
-
-  verifyData(chunk) {
-    try {
-      // will throw an error if not valid json
-      const message = JSON.parse(chunk);
-      if (Array.isArray(message)) {
-        // possible batch request
-        this.handleBatchResponse(message);
-      } else if (!(message === Object(message))) {
-        // error out if it cant be parsed
-        const error = this.sendError({
-          id: null,
-          code: ERR_CODES.parseError,
-          message: ERR_MSGS.parseError
-        });
-        this.handleError(error);
-      } else if (!message.id) {
-        // no id, so assume notification
-        this.handleNotification(message);
-      } else if (message.error) {
-        // got an error back so reject the message
-        const error = this.sendError({
-          jsonrpc: message.jsonrpc,
-          id: message.id,
-          code: message.error.code,
-          message: message.error.message
-        });
-        this.handleError(error);
-      } else if (!message.method) {
-        // no method, so assume response
-        this.serving_message_id = message.id;
-        this.responseQueue[this.serving_message_id] = message;
-        this.handleResponse(message);
-      } else {
-        throw new Error();
-      }
-    } catch (e) {
-      if (e instanceof SyntaxError) {
-        const error = this.sendError({
-          id: this.serving_message_id,
-          code: ERR_CODES.parseError,
-          message: `Unable to parse message: '${chunk}'`
-        });
-        this.handleError(error);
-      } else {
-        const error = this.sendError({
-          id: this.serving_message_id,
-          code: ERR_CODES.internal,
-          message: `Unable to parse message: '${chunk}'`
-        });
-        this.handleError(error);
-      }
-    }
   }
 
   batch(requests) {
@@ -197,55 +161,67 @@ class WSClient extends Client {
       try {
         this.client.send(request + this.options.delimiter);
       } catch (e) {
-        if (e instanceof TypeError) {
-          // this.client is probably undefined
-          reject(new Error(`Unable to send request. ${e.message}`));
-        }
+        // this.client is probably undefined
+        reject(e.message);
       }
       setTimeout(() => {
-        if (this.pendingBatches[String(batchIds)]) {
-          const error = this.sendError({
+        try {
+          const error = formatError({
+            jsonrpc: this.options.version,
+            delimiter: this.options.delimiter,
             id: null,
             code: ERR_CODES.timeout,
             message: ERR_MSGS.timeout
           });
+          this.pendingBatches[String(batchIds)].reject(error);
           delete this.pendingBatches[String(batchIds)];
-          reject(error);
+        } catch (e) {
+          if (e instanceof TypeError) {
+            process.stdout.write(
+              `Message has no outstanding calls: ${JSON.stringify(e)}\n`
+            );
+          }
         }
       }, this.options.timeout);
-    });
-  }
-
-  handleBatchResponse(batch) {
-    const batchResponseIds = [];
-    batch.forEach((message) => {
-      if (message.id) {
-        batchResponseIds.push(message.id);
-      }
-    });
-    for (const ids of Object.keys(this.pendingBatches)) {
-      const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
-      const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
-      if (difference.length === 0) {
+      this.on("batchResponse", (batch) => {
+        const batchResponseIds = [];
         batch.forEach((message) => {
-          if (message.error) {
-            // reject the whole message if there are any errors
-            if (this.pendingBatches[ids] !== undefined) {
-              this.pendingBatches[ids].reject(batch);
-              delete this.pendingBatches[ids];
-            }
+          if (message.id) {
+            batchResponseIds.push(message.id);
           }
         });
-        if (this.pendingBatches[ids] !== undefined) {
-          this.pendingBatches[ids].resolve(batch);
-          delete this.pendingBatches[ids];
+        if (batchResponseIds.length === 0) {
+          resolve([]);
         }
-      }
-    }
-  }
-
-  handleNotification(message) {
-    this.emit("notify", { detail: message });
+        for (const ids of Object.keys(this.pendingBatches)) {
+          const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
+          const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
+          if (difference.length === 0) {
+            batch.forEach((message) => {
+              if (message.error) {
+                // reject the whole message if there are any errors
+                try {
+                  this.pendingBatches[ids].reject(batch);
+                  delete this.pendingBatches[ids];
+                } catch (e) {
+                  if (e instanceof TypeError) {
+                    // no outstanding calls
+                  }
+                }
+              }
+            });
+            try {
+              this.pendingBatches[ids].resolve(batch);
+              delete this.pendingBatches[ids];
+            } catch (e) {
+              if (e instanceof TypeError) {
+                // no outstanding calls
+              }
+            }
+          }
+        }
+      });
+    });
   }
 
   /**
@@ -253,71 +229,31 @@ class WSClient extends Client {
    * @params {Function} [cb] callback function to invoke on notify
    */
   subscribe(method, cb) {
-    this.on("notify", ({ detail }) => {
-      try {
-        if (detail.method === method) {
-          return cb(null, detail);
-        }
-      } catch (e) {
-        return cb(e);
-      }
-    });
-  }
-
-  listen() {
-    this.client.onmessage = (message) => {
-      this.handleData(message.data);
-    };
-  }
-
-  handleData(data) {
-    this.messageBuffer.push(data);
-    while (!this.messageBuffer.isFinished()) {
-      const message = this.messageBuffer.handleData();
-      this.verifyData(message);
+    if (method === "batchResponse") {
+      throw new Error("\"batchResponse\" is a reserved event name");
     }
+    this.on(method, cb);
   }
 
-  handleResponse(message) {
-    if (!(this.pendingCalls[message.id] === undefined)) {
-      const response = this.responseQueue[message.id];
-      this.pendingCalls[message.id].resolve(response);
-      delete this.responseQueue[message.id];
+  /**
+   * @params {String} [method] method to unsubscribe from
+   * @params {Function} [cb] name of function to remove
+   */
+  unsubscribe(method, cb) {
+    if (method === "batchResponse") {
+      throw new Error("\"batchResponse\" is a reserved event name");
     }
+    this.removeListener(method, cb);
   }
 
-  handleError(error) {
-    const response = error;
-    try {
-      this.pendingCalls[error.id].reject(response);
-    } catch (e) {
-      if (e instanceof TypeError) {
-        // probably a parse error, which might not have an id
-        process.stdout.write(
-          `Message has no outstanding calls: ${JSON.stringify(error)}\n`
-        );
-      }
+  /**
+   * @params {String} [method] method to unsubscribe all listeners from
+   */
+  unsubscribeAll(method) {
+    if (method === "batchResponse") {
+      throw new Error("\"batchResponse\" is a reserved event name");
     }
-  }
-
-  sendError({
-    jsonrpc, id, code, message
-  }) {
-    let response;
-    if (this.options.version === "2.0") {
-      response = {
-        jsonrpc: jsonrpc || this.options.version,
-        error: { code, message: message || "Unknown Error" },
-        id
-      };
-    } else {
-      response = {
-        result: null,
-        error: { code, message: message || "Unknown Error" },
-        id
-      };
-    }
-    return response;
+    this.removeAllListeners([method]);
   }
 }
 
