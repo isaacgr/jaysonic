@@ -11,6 +11,22 @@ wss.method("typeerror", ([a]) => {
     throw new TypeError();
   }
 });
+wss.method(
+  "promiseresolve",
+  () => new Promise((resolve) => {
+    setTimeout(() => {
+      resolve("worked");
+    }, 10);
+  })
+);
+wss.method(
+  "promisereject",
+  () => new Promise((resolve, reject) => {
+    setTimeout(() => {
+      reject(new Error("broke"));
+    }, 10);
+  })
+);
 
 before((done) => {
   wss.listen().then((conn) => {
@@ -161,6 +177,34 @@ describe("WebSocket Server", () => {
         done();
       });
       clientws.batch([clientws.request().message("test", [], false)]);
+    });
+  });
+  describe("promise methods", () => {
+    it("should resolve promise method", (done) => {
+      clientws
+        .request()
+        .send("promiseresolve", [])
+        .then((result) => {
+          expect(result).to.be.eql({
+            result: ["worked"],
+            jsonrpc: "2.0",
+            id: 5
+          });
+          done();
+        });
+    });
+    it("should reject promise method", (done) => {
+      clientws
+        .request()
+        .send("promisereject", [])
+        .catch((result) => {
+          expect(result).to.be.eql({
+            jsonrpc: "2.0",
+            error: { code: -32603, message: "\"broke\"" },
+            id: 6
+          });
+          done();
+        });
     });
   });
 });
