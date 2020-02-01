@@ -31,7 +31,7 @@ class TCPServerProtocol {
                 .getResult(message)
                 .then(result => this.client.write(result))
                 .catch((error) => {
-                  this.client.write(error + this.delimiter);
+                  this.client.write(error);
                 });
             }
           })
