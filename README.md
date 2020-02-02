@@ -1,37 +1,38 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
+
 - [Jaysonic - A persistent JSON-RPC client and server](#jaysonic---a-persistent-json-rpc-client-and-server)
-  - [List of features](#list-of-features)
-  - [Download & Installation](#download--installation)
-  - [Initialization](#initialization)
-    - [WS Client for browser](#ws-client-for-browser)
-    - [WS Client for Node](#ws-client-for-node)
-  - [Options](#options)
-  - [Code Demos](#code-demos)
-    - [Initialization](#initialization-1)
-      - [TCP](#tcp)
-      - [HTTP](#http)
-      - [WS](#ws)
-    - [Server side](#server-side)
-      - [Instantiation and Listening](#instantiation-and-listening)
-      - [Closing the connection](#closing-the-connection)
-      - [Adding Methods](#adding-methods)
-      - [Listening for client connections](#listening-for-client-connections)
-    - [Client Side](#client-side)
-      - [Connecting](#connecting)
-      - [Listening for server disconnect](#listening-for-server-disconnect)
-      - [Making requests](#making-requests)
-      - [Subscriptions](#subscriptions)
-      - [Batch Requests](#batch-requests)
-      - [HTTP Client Requests](#http-client-requests)
+    - [List of features](#list-of-features)
+    - [Download & Installation](#download--installation)
+    - [Initialization](#initialization)
+      - [WS Client for browser](#ws-client-for-browser)
+      - [WS Client for Node](#ws-client-for-node)
+    - [Options](#options)
+    - [Code Demos](#code-demos)
+      - [Initialization](#initialization-1)
+          - [TCP](#tcp)
+          - [HTTP](#http)
+          - [WS](#ws)
+      - [Server side](#server-side)
+        - [Instantiation and Listening](#instantiation-and-listening)
+        - [Closing the connection](#closing-the-connection)
+        - [Adding Methods](#adding-methods)
+        - [Listening for client connections](#listening-for-client-connections)
+      - [Client Side](#client-side)
+        - [Connecting](#connecting)
+        - [Listening for server disconnect](#listening-for-server-disconnect)
+        - [Making requests](#making-requests)
+        - [Subscriptions](#subscriptions)
+        - [Batch Requests](#batch-requests)
+        - [HTTP Client Requests](#http-client-requests)
       - [Notifications](#notifications)
         - [Client](#client)
         - [Server](#server)
       - [HTTP Client Notifications](#http-client-notifications)
-  - [Contributing](#contributing)
-  - [Authors or Acknowledgments](#authors-or-acknowledgments)
-  - [License](#license)
+    - [Contributing](#contributing)
+    - [Authors or Acknowledgments](#authors-or-acknowledgments)
+    - [License](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -421,7 +422,7 @@ client
 
 #### Notifications
 
-###### Client
+##### Client
 
 Clients can send notifications to the server.
 
@@ -446,7 +447,7 @@ server.unsubscribeOnNotify("notification", callback);
 server.unsubscribeAllOnNotify("notification");
 ```
 
-###### Server
+##### Server
 
 The server can send notifications to the client. This can be done individually or in a batch.
 
