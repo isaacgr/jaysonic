@@ -99,18 +99,15 @@ describe("formatRequest", () => {
         done();
       }
     });
-    it("should throw error if params not defined", (done) => {
+    it("should generate request with no params if not defined", (done) => {
       const params = {
         method: "test",
         id: 1,
         options: { delimiter: "\n" }
       };
-      try {
-        formatRequest(params);
-      } catch (e) {
-        expect(e).to.be.instanceOf(Error);
-        done();
-      }
+      const message = formatRequest(params);
+      expect(message).to.be.eql("{\"method\":\"test\",\"jsonrpc\":\"2.0\",\"id\":1}\n");
+      done();
     });
   });
 });

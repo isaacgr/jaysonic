@@ -14,10 +14,6 @@ const formatRequest = ({
     request.jsonrpc = "2.0";
   }
 
-  if (!params) {
-    throw new Error("params must be defined");
-  }
-
   if (params) {
     if (
       (!(params === Object(params)) && !Array.isArray(params))
