@@ -226,7 +226,8 @@ class Server extends EventEmitter {
     }
 
     if (
-      !Array.isArray(message.params)
+      message.params
+      && !Array.isArray(message.params)
       && !(message.params === Object(message.params))
     ) {
       throw new Error(
@@ -277,7 +278,9 @@ class Server extends EventEmitter {
         delimiter: this.options.delimiter
       });
       try {
-        const result = this.methods[message.method](params);
+        const result = params
+          ? this.methods[message.method](params)
+          : this.methods[message.method]();
         if (
           result
           && (typeof result.then === "function" || result instanceof Promise)
