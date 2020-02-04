@@ -1,38 +1,38 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [Jaysonic - A persistent JSON-RPC client and server](#jaysonic---a-persistent-json-rpc-client-and-server)
-    - [List of features](#list-of-features)
-    - [Download & Installation](#download--installation)
-    - [Initialization](#initialization)
-      - [WS Client for browser](#ws-client-for-browser)
-      - [WS Client for Node](#ws-client-for-node)
-    - [Options](#options)
-    - [Code Demos](#code-demos)
-      - [Initialization](#initialization-1)
-          - [TCP](#tcp)
-          - [HTTP](#http)
-          - [WS](#ws)
-      - [Server side](#server-side)
-        - [Instantiation and Listening](#instantiation-and-listening)
-        - [Closing the connection](#closing-the-connection)
-        - [Adding Methods](#adding-methods)
-        - [Listening for client connections](#listening-for-client-connections)
-      - [Client Side](#client-side)
-        - [Connecting](#connecting)
-        - [Listening for server disconnect](#listening-for-server-disconnect)
-        - [Making requests](#making-requests)
-        - [Subscriptions](#subscriptions)
-        - [Batch Requests](#batch-requests)
-        - [HTTP Client Requests](#http-client-requests)
-      - [Notifications](#notifications)
-        - [Client](#client)
-        - [Server](#server)
-      - [HTTP Client Notifications](#http-client-notifications)
-    - [Contributing](#contributing)
-    - [Authors or Acknowledgments](#authors-or-acknowledgments)
-    - [License](#license)
+  - [List of features](#list-of-features)
+  - [Download & Installation](#download--installation)
+  - [Initialization](#initialization)
+    - [WS Client for browser](#ws-client-for-browser)
+    - [WS Client for Node](#ws-client-for-node)
+  - [Options](#options)
+  - [Code Demos](#code-demos)
+    - [Initialization](#initialization-1)
+      - [TCP](#tcp)
+      - [HTTP](#http)
+      - [WS](#ws)
+    - [Server side](#server-side)
+      - [Instantiation and Listening](#instantiation-and-listening)
+      - [Closing the connection](#closing-the-connection)
+      - [Adding Methods](#adding-methods)
+      - [Listening for client connections](#listening-for-client-connections)
+    - [Client Side](#client-side)
+      - [Connecting](#connecting)
+      - [Listening for server disconnect](#listening-for-server-disconnect)
+      - [Making requests](#making-requests)
+      - [Subscriptions](#subscriptions)
+      - [Batch Requests](#batch-requests)
+      - [HTTP Client Requests](#http-client-requests)
+    - [Notifications](#notifications)
+      - [Client](#client)
+      - [Server](#server)
+      - [Batches](#batches)
+    - [HTTP Client Notifications](#http-client-notifications)
+  - [Contributing](#contributing)
+  - [Authors or Acknowledgments](#authors-or-acknowledgments)
+  - [License](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -348,7 +348,7 @@ client.subscribe("notification", (message) => {
 server.notify([["notification", []]]);
 ```
 
-**The websocket browswer client returns an object with a 'detail' key which contains the notification as of v2.0.0**
+**The websocket browser client returns an object with a 'detail' key which contains the notification as of v2.0.0**
 
 ```js
 wsclient.subscribe("notification", ({ detail }) => {
@@ -467,6 +467,19 @@ server.notify([
   ["notify", []],
   ["test", [1, 2, 3]]
 ]);
+```
+
+As of v2.0.0, notifications sent and recieved in batches are now supported
+
+##### Batches
+
+```js
+// send from the client by setting the 3rd parameter in the request().message() method to false
+client.batch([client.request().message("test", [], false)]);
+
+// send from server by providing a list of arrays containing
+// a method and optional params value
+server.notify([["notification", ["a", 1]], ["browser"]]);
 ```
 
 As per the JSON-RPC spec for HTTP, a notification response must include a `204` status code, with an empty response body. The HTTP Client will resolve a response object if it receives this response, and reject it otherwise.
