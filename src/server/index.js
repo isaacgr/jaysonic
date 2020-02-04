@@ -21,7 +21,7 @@ class Server extends EventEmitter {
     }
 
     const defaults = {
-      host: "localhost",
+      host: "127.0.0.1",
       port: 8100,
       exclusive: false,
       version: "2.0",
