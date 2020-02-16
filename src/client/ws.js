@@ -96,13 +96,15 @@ class WSClient extends Client {
         }
         setTimeout(() => {
           try {
-            const error = formatError({
-              jsonrpc: this.options.version,
-              delimiter: this.options.delimiter,
-              id: null,
-              code: ERR_CODES.timeout,
-              message: ERR_MSGS.timeout
-            });
+            const error = JSON.parse(
+              formatError({
+                jsonrpc: this.options.version,
+                delimiter: this.options.delimiter,
+                id: null,
+                code: ERR_CODES.timeout,
+                message: ERR_MSGS.timeout
+              })
+            );
             this.pendingCalls[requestId].reject(error);
             delete this.pendingCalls[requestId];
           } catch (e) {
@@ -166,13 +168,15 @@ class WSClient extends Client {
       }
       setTimeout(() => {
         try {
-          const error = formatError({
-            jsonrpc: this.options.version,
-            delimiter: this.options.delimiter,
-            id: null,
-            code: ERR_CODES.timeout,
-            message: ERR_MSGS.timeout
-          });
+          const error = JSON.parse(
+            formatError({
+              jsonrpc: this.options.version,
+              delimiter: this.options.delimiter,
+              id: null,
+              code: ERR_CODES.timeout,
+              message: ERR_MSGS.timeout
+            })
+          );
           this.pendingBatches[String(batchIds)].reject(error);
           delete this.pendingBatches[String(batchIds)];
         } catch (e) {
