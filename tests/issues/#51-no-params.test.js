@@ -1,13 +1,13 @@
 const { expect } = require("chai");
 const Jaysonic = require("../../src");
 
-const tcpserver = new Jaysonic.server.tcp({ port: 9999 });
+const tcpserver = new Jaysonic.server.tcp({ port: 6666 });
 const httpserver = new Jaysonic.server.http({ port: 9998 });
-const wss = new Jaysonic.server.ws();
+const wss = new Jaysonic.server.ws({ port: 6667 });
 
-const tcpclient = new Jaysonic.client.tcp({ port: 9999 });
+const tcpclient = new Jaysonic.client.tcp({ port: 6666 });
 const httpclient = new Jaysonic.client.http({ port: 9998 });
-const wsclient = new Jaysonic.client.ws();
+const wsclient = new Jaysonic.client.ws({ url: "ws://127.0.0.1:6667" });
 
 const noParams = () => "success";
 
