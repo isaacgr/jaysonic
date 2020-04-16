@@ -308,14 +308,14 @@ describe("TCP Client", () => {
     it("should unsubscribe from a notificiation", (done) => {
       const callback = () => {};
       client.subscribe("newNotification", callback);
-      expect(client.eventNames()).to.have.lengthOf(3);
-      client.unsubscribe("newNotification", callback);
       expect(client.eventNames()).to.have.lengthOf(2);
+      client.unsubscribe("newNotification", callback);
+      expect(client.eventNames()).to.have.lengthOf(1);
       done();
     });
     it("should unsubscribe from all 'notification' events", (done) => {
       client.unsubscribeAll("notification");
-      expect(client.eventNames()).to.have.lengthOf(1);
+      expect(client.eventNames()).to.have.lengthOf(0);
       done();
     });
     it("should recieve notifications if they're in a batch", (done) => {
