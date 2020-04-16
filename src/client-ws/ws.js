@@ -260,36 +260,32 @@ class WSClient extends EventTarget {
           }
         }
       }, this.options.timeout);
-      this.addEventListener("batchResponse", ({ detail }) => {
-        const batch = detail;
-        const batchResponseIds = [];
+      this.addEventListener("batchResponse", this.gotBatchResponse);
+    });
+  }
+
+  gotBatchResponse({ detail }) {
+    // remove listener
+    this.removeEventListener("batchResponse", this.gotBatchResponse);
+    const batch = detail;
+    const batchResponseIds = [];
+    batch.forEach((message) => {
+      if (message.id) {
+        batchResponseIds.push(message.id);
+      }
+    });
+    if (batchResponseIds.length === 0) {
+      // dont do anything here since its basically an invalid response
+    }
+    for (const ids of Object.keys(this.pendingBatches)) {
+      const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
+      const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
+      if (difference.length === 0) {
         batch.forEach((message) => {
-          if (message.id) {
-            batchResponseIds.push(message.id);
-          }
-        });
-        if (batchResponseIds.length === 0) {
-          resolve([]);
-        }
-        for (const ids of Object.keys(this.pendingBatches)) {
-          const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
-          const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
-          if (difference.length === 0) {
-            batch.forEach((message) => {
-              if (message.error) {
-                // reject the whole message if there are any errors
-                try {
-                  this.pendingBatches[ids].reject(batch);
-                  delete this.pendingBatches[ids];
-                } catch (e) {
-                  if (e instanceof TypeError) {
-                    // probably a parse error, which might not have an id
-                  }
-                }
-              }
-            });
+          if (message.error) {
+            // reject the whole message if there are any errors
             try {
-              this.pendingBatches[ids].resolve(batch);
+              this.pendingBatches[ids].reject(batch);
               delete this.pendingBatches[ids];
             } catch (e) {
               if (e instanceof TypeError) {
@@ -297,9 +293,17 @@ class WSClient extends EventTarget {
               }
             }
           }
+        });
+        try {
+          this.pendingBatches[ids].resolve(batch);
+          delete this.pendingBatches[ids];
+        } catch (e) {
+          if (e instanceof TypeError) {
+            // probably a parse error, which might not have an id
+          }
         }
-      });
-    });
+      }
+    }
   }
 
   handleResponse(id) {
