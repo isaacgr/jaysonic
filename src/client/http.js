@@ -196,39 +196,34 @@ class HTTPClient extends Client {
           }
         }
       }, this.options.timeout);
-      this.on("batchResponse", (batch) => {
-        const batchResponseIds = [];
+      this.on("batchResponse", this.gotBatchResponse);
+    });
+  }
+
+  gotBatchResponse(batch) {
+    this.removeListener("batchResponse", this.gotBatchResponse);
+    const batchResponseIds = [];
+    batch.forEach((message) => {
+      if (message.id) {
+        batchResponseIds.push(message.id);
+      }
+    });
+    if (batchResponseIds.length === 0) {
+      // do nothing since this is basically an invalid response
+    }
+    for (const ids of Object.keys(this.pendingBatches)) {
+      const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
+      const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
+      if (difference.length === 0) {
+        const response = {
+          body: batch,
+          ...this.writer
+        };
         batch.forEach((message) => {
-          if (message.id) {
-            batchResponseIds.push(message.id);
-          }
-        });
-        if (batchResponseIds.length === 0) {
-          resolve([]);
-        }
-        for (const ids of Object.keys(this.pendingBatches)) {
-          const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
-          const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
-          if (difference.length === 0) {
-            const response = {
-              body: batch,
-              ...this.writer
-            };
-            batch.forEach((message) => {
-              if (message.error) {
-                // reject the whole message if there are any errors
-                try {
-                  this.pendingBatches[ids].reject(response);
-                  delete this.pendingBatches[ids];
-                } catch (e) {
-                  if (e instanceof TypeError) {
-                    // no outstanding calls
-                  }
-                }
-              }
-            });
+          if (message.error) {
+            // reject the whole message if there are any errors
             try {
-              this.pendingBatches[ids].resolve(response);
+              this.pendingBatches[ids].reject(response);
               delete this.pendingBatches[ids];
             } catch (e) {
               if (e instanceof TypeError) {
@@ -236,9 +231,17 @@ class HTTPClient extends Client {
               }
             }
           }
+        });
+        try {
+          this.pendingBatches[ids].resolve(response);
+          delete this.pendingBatches[ids];
+        } catch (e) {
+          if (e instanceof TypeError) {
+            // no outstanding calls
+          }
         }
-      });
-    });
+      }
+    }
   }
 }
 
