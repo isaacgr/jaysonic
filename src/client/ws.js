@@ -24,6 +24,7 @@ class WSClient extends Client {
     this.pendingCalls = {};
     this.pendingBatches = {};
     this.attached = false;
+    this.listeners = {};
 
     this.responseQueue = {};
     this.options = {
@@ -167,6 +168,8 @@ class WSClient extends Client {
         reject(e.message);
       }
       setTimeout(() => {
+        // remove listener
+        this.removeListener("batchResponse", this.listeners[String(batchIds)]);
         try {
           const error = JSON.parse(
             formatError({
@@ -187,13 +190,12 @@ class WSClient extends Client {
           }
         }
       }, this.options.timeout);
-      this.on("batchResponse", this.gotBatchResponse);
+      this.listeners[String(batchIds)] = this.gotBatchResponse;
+      this.on("batchResponse", this.listeners[String(batchIds)]);
     });
   }
 
   gotBatchResponse(batch) {
-    // remove listener
-    this.removeListener("batchResponse", this.gotBatchResponse);
     const batchResponseIds = [];
     batch.forEach((message) => {
       if (message.id) {
@@ -203,10 +205,13 @@ class WSClient extends Client {
     if (batchResponseIds.length === 0) {
       // dont do anything here since its basically an invalid response
     }
+
     for (const ids of Object.keys(this.pendingBatches)) {
       const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
       const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
       if (difference.length === 0) {
+        // remove listener
+        this.removeListener("batchResponse", this.listeners[ids]);
         batch.forEach((message) => {
           if (message.error) {
             // reject the whole message if there are any errors

@@ -34,6 +34,7 @@ class HTTPClient extends Client {
       ...defaults,
       ...(this.options || {})
     };
+    this.listeners = {};
   }
 
   initClient() {
@@ -176,6 +177,8 @@ class HTTPClient extends Client {
         reject(e);
       }
       setTimeout(() => {
+        // remove listener
+        this.removeListener("batchResponse", this.listeners[String(batchIds)]);
         try {
           const error = JSON.parse(
             formatError({
@@ -196,12 +199,12 @@ class HTTPClient extends Client {
           }
         }
       }, this.options.timeout);
-      this.on("batchResponse", this.gotBatchResponse);
+      this.listeners[String(batchIds)] = this.gotBatchResponse;
+      this.on("batchResponse", this.listeners[String(batchIds)]);
     });
   }
 
   gotBatchResponse(batch) {
-    this.removeListener("batchResponse", this.gotBatchResponse);
     const batchResponseIds = [];
     batch.forEach((message) => {
       if (message.id) {
@@ -211,10 +214,13 @@ class HTTPClient extends Client {
     if (batchResponseIds.length === 0) {
       // do nothing since this is basically an invalid response
     }
+
     for (const ids of Object.keys(this.pendingBatches)) {
       const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
       const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
       if (difference.length === 0) {
+        // remove listener
+        this.removeListener("batchResponse", this.listeners[ids]);
         const response = {
           body: batch,
           ...this.writer

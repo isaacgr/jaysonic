@@ -12,6 +12,11 @@ const { ERR_CODES, ERR_MSGS } = require("../constants");
  * @return TCPClient
  */
 class TCPClient extends Client {
+  constructor(options) {
+    super(options);
+    this.listeners = {};
+  }
+
   connect() {
     return new Promise((resolve, reject) => {
       if (this.attached) {
@@ -141,6 +146,8 @@ class TCPClient extends Client {
         reject(e.message);
       }
       setTimeout(() => {
+        // remove listener
+        this.removeListener("batchResponse", this.listeners[String(batchIds)]);
         try {
           const error = JSON.parse(
             formatError({
@@ -161,13 +168,12 @@ class TCPClient extends Client {
           }
         }
       }, this.options.timeout);
-      this.on("batchResponse", this.gotBatchResponse);
+      this.listeners[String(batchIds)] = this.gotBatchResponse;
+      this.on("batchResponse", this.listeners[String(batchIds)]);
     });
   }
 
   gotBatchResponse(batch) {
-    // remove listener
-    this.removeListener("batchResponse", this.gotBatchResponse);
     const batchResponseIds = [];
     batch.forEach((message) => {
       if (message.id) {
@@ -181,6 +187,8 @@ class TCPClient extends Client {
       const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
       const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
       if (difference.length === 0) {
+        // remove listener
+        this.removeListener("batchResponse", this.listeners[ids]);
         batch.forEach((message) => {
           if (message.error) {
             // reject the whole message if there are any errors
