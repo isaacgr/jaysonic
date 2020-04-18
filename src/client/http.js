@@ -71,6 +71,9 @@ class HTTPClient extends Client {
         try {
           this.client.write(request, this.options.encoding);
           this.client.end();
+          this.client.on("close", () => {
+            this.emit("serverDisconnected");
+          });
           this.client.on("error", (error) => {
             reject(error);
           });
@@ -172,6 +175,9 @@ class HTTPClient extends Client {
         this.client.end();
         this.client.on("error", (error) => {
           reject(error);
+        });
+        this.client.on("close", () => {
+          this.emit("serverDisconnected");
         });
       } catch (e) {
         reject(e);
