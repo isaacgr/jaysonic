@@ -6,24 +6,30 @@ const tcpserver = new Jaysonic.server.tcp({ port: 9997 });
 const httpserver = new Jaysonic.server.http({ port: 9996 });
 const wss = new Jaysonic.server.ws({ port: 6665 });
 
-const tcpclient = new Jaysonic.client.tcp({ port: 9997, timeout: 0 });
-const httpclient = new Jaysonic.client.http({ port: 9996, timeout: 0 });
+const tcpclient = new Jaysonic.client.tcp({
+  port: 9997,
+  timeout: 0,
+  delimiter: "\r\n"
+});
+const httpclient = new Jaysonic.client.http({
+  port: 9996,
+  timeout: 0,
+  delimiter: "\r\n"
+});
 const wsclient = new Jaysonic.client.ws({
   url: "ws://127.0.0.1:6665",
-  timeout: 0
+  timeout: 0,
+  delimiter: "\r\n"
 });
 const wsweb = new JaysonicWebClient.wsclient({
   url: "ws://127.0.0.1:6665",
-  timeout: 0
+  timeout: 0,
+  delimiter: "\r\n"
 });
 
-const timeout = () => new Promise((resolve) => {
-  setTimeout(() => resolve("timeout"), 10);
-});
-
-tcpserver.method("timeout", timeout);
-httpserver.method("timeout", timeout);
-wss.method("timeout", timeout);
+tcpserver.method("timeout", 0);
+httpserver.method("timeout", 0);
+wss.method("timeout", 0);
 
 describe("#54 Request timeout", () => {
   describe("tcp", () => {

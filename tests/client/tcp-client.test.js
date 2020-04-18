@@ -54,7 +54,7 @@ describe("TCP Client", () => {
         expect(error.code).to.equal("ECONNREFUSED");
         done();
       });
-    });
+    }).timeout(5000);
     it("should be unable to connect multiple times", (done) => {
       const conn = client.connect();
       conn.catch((error) => {
@@ -66,13 +66,14 @@ describe("TCP Client", () => {
       const badClient = new Jaysonic.client.tcp({
         host: "127.0.0.1",
         port: 8101,
-        retries: 0
+        retries: 0,
+        timeout: 0.5
       });
       badClient
         .request()
         .send("add", [1, 2])
         .catch((error) => {
-          expect(error).to.be.instanceOf(Error);
+          expect(error).to.be.instanceOf(TypeError);
           done();
         });
     });

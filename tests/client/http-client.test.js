@@ -23,14 +23,15 @@ describe("HTTP Client", () => {
     it("should receive error trying to write while disconnected", (done) => {
       const badClient = new Jaysonic.client.http({
         host: "127.0.0.1",
-        port: 8101,
-        retries: 0
+        port: 8102,
+        retries: 0,
+        timeout: 0.05
       });
       badClient
         .request()
         .send("add", [1, 2])
         .catch((error) => {
-          expect(error).to.be.instanceOf(Error);
+          expect(error).to.be.instanceOf(Object);
           done();
         });
     });
