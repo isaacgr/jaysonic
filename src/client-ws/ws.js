@@ -265,8 +265,6 @@ class WSClient extends EventTarget {
   }
 
   gotBatchResponse({ detail }) {
-    // remove listener
-    this.removeEventListener("batchResponse", this.gotBatchResponse);
     const batch = detail;
     const batchResponseIds = [];
     batch.forEach((message) => {
