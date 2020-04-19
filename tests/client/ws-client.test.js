@@ -158,33 +158,37 @@ describe("WebSocket Client", () => {
         ws.request().message("nonexistent", [1, 2]),
         ws.request().message("add", [3, 4])
       ]);
-      request.then((res1) => {
-        expect(res1).to.eql({ jsonrpc: "2.0", result: 3, id: 8 });
+      try {
+        request.then((res1) => {
+          expect(res1).to.eql({ jsonrpc: "2.0", result: 3, id: 8 });
+        });
         request2.then((res2) => {
           expect(res2).to.eql({
             jsonrpc: "2.0",
             result: "Hello Isaac",
             id: 9
           });
-          request3.then((res3) => {
-            expect(res3).to.eql([
-              { result: 3, jsonrpc: "2.0", id: 10 },
-              { result: 7, jsonrpc: "2.0", id: 11 }
-            ]);
-            request4.catch((res4) => {
-              expect(res4).to.eql([
-                {
-                  jsonrpc: "2.0",
-                  error: { code: -32601, message: "Method not found" },
-                  id: 12
-                },
-                { result: 7, jsonrpc: "2.0", id: 13 }
-              ]);
-              done();
-            });
-          });
         });
-      });
+        request3.then((res3) => {
+          expect(res3).to.eql([
+            { result: 3, jsonrpc: "2.0", id: 10 },
+            { result: 7, jsonrpc: "2.0", id: 11 }
+          ]);
+        });
+        request4.catch((res4) => {
+          expect(res4).to.eql([
+            {
+              jsonrpc: "2.0",
+              error: { code: -32601, message: "Method not found" },
+              id: 12
+            },
+            { result: 7, jsonrpc: "2.0", id: 13 }
+          ]);
+        });
+        done();
+      } catch (e) {
+        done(e);
+      }
     });
   });
   describe("request errors", () => {

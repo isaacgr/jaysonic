@@ -98,7 +98,7 @@ class Client extends EventEmitter {
       if (e instanceof TypeError) {
         // probably a parse error, which might not have an id
         process.stdout.write(
-          `Message has no outstanding calls: ${JSON.stringify(e)}\n`
+          `Message has no outstanding calls: ${JSON.stringify(e.message)}\n`
         );
       }
     }
@@ -194,11 +194,15 @@ class Client extends EventEmitter {
         this.handleData(data);
       }
     });
-    this.client.on("close", () => {
-      this.attached = false;
-      this.client.removeAllListeners();
-      this.emit("serverDisconnected");
-    });
+    // http client handles this when a request is sent out
+    // prevents max listeners warning
+    if (!(this.writer instanceof http.IncomingMessage)) {
+      this.client.on("close", () => {
+        this.attached = false;
+        this.client.removeAllListeners();
+        this.emit("serverDisconnected");
+      });
+    }
   }
 
   handleData(data) {

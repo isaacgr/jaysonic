@@ -232,14 +232,14 @@ describe("WebSocket Node Client", () => {
     it("should unsubscribe from a notificiation", (done) => {
       const callback = () => {};
       ws.subscribe("newNotification", callback);
-      expect(ws.eventNames()).to.have.lengthOf(3);
-      ws.unsubscribe("newNotification", callback);
       expect(ws.eventNames()).to.have.lengthOf(2);
+      ws.unsubscribe("newNotification", callback);
+      expect(ws.eventNames()).to.have.lengthOf(1);
       done();
     });
     it("should unsubscribe from all 'notification' events", (done) => {
       ws.unsubscribeAll("notification");
-      expect(ws.eventNames()).to.have.lengthOf(1);
+      expect(ws.eventNames()).to.have.lengthOf(0);
       done();
     });
     it("should recieve notifications if they're in a batch", (done) => {

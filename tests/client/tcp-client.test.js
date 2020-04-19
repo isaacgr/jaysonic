@@ -54,7 +54,7 @@ describe("TCP Client", () => {
         expect(error.code).to.equal("ECONNREFUSED");
         done();
       });
-    });
+    }).timeout(5000);
     it("should be unable to connect multiple times", (done) => {
       const conn = client.connect();
       conn.catch((error) => {
@@ -66,13 +66,14 @@ describe("TCP Client", () => {
       const badClient = new Jaysonic.client.tcp({
         host: "127.0.0.1",
         port: 8101,
-        retries: 0
+        retries: 0,
+        timeout: 0.5
       });
       badClient
         .request()
         .send("add", [1, 2])
         .catch((error) => {
-          expect(error).to.be.instanceOf(Error);
+          expect(error).to.be.instanceOf(TypeError);
           done();
         });
     });
@@ -308,14 +309,14 @@ describe("TCP Client", () => {
     it("should unsubscribe from a notificiation", (done) => {
       const callback = () => {};
       client.subscribe("newNotification", callback);
-      expect(client.eventNames()).to.have.lengthOf(3);
-      client.unsubscribe("newNotification", callback);
       expect(client.eventNames()).to.have.lengthOf(2);
+      client.unsubscribe("newNotification", callback);
+      expect(client.eventNames()).to.have.lengthOf(1);
       done();
     });
     it("should unsubscribe from all 'notification' events", (done) => {
       client.unsubscribeAll("notification");
-      expect(client.eventNames()).to.have.lengthOf(1);
+      expect(client.eventNames()).to.have.lengthOf(0);
       done();
     });
     it("should recieve notifications if they're in a batch", (done) => {

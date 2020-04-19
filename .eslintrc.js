@@ -18,6 +18,7 @@ module.exports = {
     "new-cap": "off",
     "class-methods-use-this": "off",
     "comma-dangle": "off",
+    "no-await-in-loop": "off",
     quotes: ["error", "double"],
     "consistent-return": "off",
     "no-restricted-syntax": [
