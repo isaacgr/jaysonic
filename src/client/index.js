@@ -36,6 +36,8 @@ class Client extends EventEmitter {
     this.pendingCalls = {};
     this.pendingBatches = {};
     this.attached = false;
+    this.timeouts = {};
+    this.listeners = {};
 
     this.responseQueue = {};
     this.options = {
@@ -94,6 +96,7 @@ class Client extends EventEmitter {
       }
       this.pendingCalls[id].resolve(response);
       delete this.responseQueue[id];
+      this.cleanUp(id);
     } catch (e) {
       if (e instanceof TypeError) {
         // probably a parse error, which might not have an id
@@ -221,6 +224,19 @@ class Client extends EventEmitter {
     this.on("serverDisconnected", () => cb());
   }
 
+  cleanUp(ids) {
+    // remove the batchResponse listener and clear pending
+    // timeouts for these request ids
+    try {
+      this.removeListener("batchResponse", this.listeners[ids]);
+    } catch (e) {
+      // no batch response listener associated with the ids
+    }
+    clearTimeout(this.timeouts[ids]);
+    delete this.listeners[ids];
+    delete this.timeouts[ids];
+  }
+
   handleError(error) {
     let err;
     try {
@@ -246,6 +262,7 @@ class Client extends EventEmitter {
     }
     try {
       this.pendingCalls[err.id].reject(response);
+      this.cleanUp(err.id);
     } catch (e) {
       if (e instanceof TypeError) {
         // probably a parse error, which might not have an id

@@ -23,6 +23,7 @@ class WSClient extends EventTarget {
     this.pendingCalls = {};
     this.pendingBatches = {};
     this.attached = false;
+    this.timeouts = {};
 
     this.responseQueue = {};
     this.options = {
@@ -165,7 +166,7 @@ class WSClient extends EventTarget {
         } catch (e) {
           reject(e);
         }
-        setTimeout(() => {
+        this.timeouts[requestId] = setTimeout(() => {
           try {
             const error = JSON.parse(
               formatError({
@@ -238,7 +239,7 @@ class WSClient extends EventTarget {
         // this.client is probably undefined
         reject(e.message);
       }
-      setTimeout(() => {
+      this.timeouts[String(batchIds)] = setTimeout(() => {
         try {
           const error = JSON.parse(
             formatError({
@@ -279,6 +280,7 @@ class WSClient extends EventTarget {
       const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
       const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
       if (difference.length === 0) {
+        clearTimeout(ids);
         batch.forEach((message) => {
           if (message.error) {
             // reject the whole message if there are any errors
@@ -309,6 +311,7 @@ class WSClient extends EventTarget {
       const response = this.responseQueue[id];
       this.pendingCalls[id].resolve(response);
       delete this.responseQueue[id];
+      clearTimeout(id);
     } catch (e) {
       if (e instanceof TypeError) {
         // probably a parse error, which might not have an id
@@ -346,6 +349,7 @@ class WSClient extends EventTarget {
     }
     try {
       this.pendingCalls[response.id].reject(response);
+      clearTimeout(response.id);
     } catch (e) {
       if (e instanceof TypeError) {
         // probably a parse error, which might not have an id

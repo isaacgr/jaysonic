@@ -81,7 +81,8 @@ class HTTPClient extends Client {
           reject(e);
         }
 
-        setTimeout(() => {
+        this.timeouts[requestId] = setTimeout(() => {
+          this.cleanUp(requestId);
           try {
             const error = JSON.parse(
               formatError({
@@ -182,9 +183,9 @@ class HTTPClient extends Client {
       } catch (e) {
         reject(e);
       }
-      setTimeout(() => {
+      this.timeouts[String(batchIds)] = setTimeout(() => {
         // remove listener
-        this.removeListener("batchResponse", this.listeners[String(batchIds)]);
+        this.cleanUp(String(batchIds));
         try {
           const error = JSON.parse(
             formatError({
@@ -225,8 +226,7 @@ class HTTPClient extends Client {
       const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
       const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
       if (difference.length === 0) {
-        // remove listener
-        this.removeListener("batchResponse", this.listeners[ids]);
+        this.cleanUp(ids);
         const response = {
           body: batch,
           ...this.writer

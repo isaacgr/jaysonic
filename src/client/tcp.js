@@ -12,11 +12,6 @@ const { ERR_CODES, ERR_MSGS } = require("../constants");
  * @return TCPClient
  */
 class TCPClient extends Client {
-  constructor(options) {
-    super(options);
-    this.listeners = {};
-  }
-
   connect() {
     return new Promise((resolve, reject) => {
       if (this.attached) {
@@ -74,7 +69,8 @@ class TCPClient extends Client {
           // this.client is probably undefined
           reject(e);
         }
-        setTimeout(() => {
+        this.timeouts[requestId] = setTimeout(() => {
+          this.cleanUp(requestId);
           try {
             const error = JSON.parse(
               formatError({
@@ -145,9 +141,8 @@ class TCPClient extends Client {
         // this.client is probably undefined
         reject(e.message);
       }
-      setTimeout(() => {
-        // remove listener
-        this.removeListener("batchResponse", this.listeners[String(batchIds)]);
+      this.timeouts[String(batchIds)] = setTimeout(() => {
+        this.cleanUp(String(batchIds));
         try {
           const error = JSON.parse(
             formatError({
@@ -187,8 +182,7 @@ class TCPClient extends Client {
       const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
       const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
       if (difference.length === 0) {
-        // remove listener
-        this.removeListener("batchResponse", this.listeners[ids]);
+        this.cleanUp(ids);
         batch.forEach((message) => {
           if (message.error) {
             // reject the whole message if there are any errors
