@@ -23,6 +23,7 @@ class WSClient extends EventTarget {
     this.pendingCalls = {};
     this.pendingBatches = {};
     this.attached = false;
+    this.timeouts = {};
 
     this.responseQueue = {};
     this.options = {
@@ -157,37 +158,39 @@ class WSClient extends EventTarget {
         }
         return request;
       },
-      send: (method, params) => new Promise((resolve, reject) => {
-        const requestId = this.message_id;
-        this.pendingCalls[requestId] = { resolve, reject };
-        try {
-          this.client.send(this.request().message(method, params));
-        } catch (e) {
-          reject(e);
-        }
-        setTimeout(() => {
+      send: (method, params) =>
+        new Promise((resolve, reject) => {
+          const requestId = this.message_id;
+          this.pendingCalls[requestId] = { resolve, reject };
           try {
-            const error = JSON.parse(
-              formatError({
-                jsonrpc: this.options.version,
-                delimiter: this.options.delimiter,
-                id: null,
-                code: ERR_CODES.timeout,
-                message: ERR_MSGS.timeout
-              })
-            );
-            this.pendingCalls[requestId].reject(error);
-            delete this.pendingCalls[requestId];
+            this.client.send(this.request().message(method, params));
           } catch (e) {
-            if (e instanceof TypeError) {
-              // probably a parse error, which might not have an id
-              console.log(
-                `Message has no outstanding calls: ${JSON.stringify(e)}`
-              );
-            }
+            reject(e);
           }
-        }, this.options.timeout);
-      }),
+          this.timeouts[requestId] = setTimeout(() => {
+            this.cleanUp(requestId);
+            try {
+              const error = JSON.parse(
+                formatError({
+                  jsonrpc: this.options.version,
+                  delimiter: this.options.delimiter,
+                  id: null,
+                  code: ERR_CODES.timeout,
+                  message: ERR_MSGS.timeout
+                })
+              );
+              this.pendingCalls[requestId].reject(error);
+              delete this.pendingCalls[requestId];
+            } catch (e) {
+              if (e instanceof TypeError) {
+                // probably a parse error, which might not have an id
+                console.log(
+                  `Message has no outstanding calls: ${JSON.stringify(e)}`
+                );
+              }
+            }
+          }, this.options.timeout);
+        }),
       notify: (method, params) => {
         const request = formatRequest({
           method,
@@ -238,7 +241,8 @@ class WSClient extends EventTarget {
         // this.client is probably undefined
         reject(e.message);
       }
-      setTimeout(() => {
+      this.timeouts[String(batchIds)] = setTimeout(() => {
+        this.cleanUp(String(batchIds));
         try {
           const error = JSON.parse(
             formatError({
@@ -277,8 +281,11 @@ class WSClient extends EventTarget {
     }
     for (const ids of Object.keys(this.pendingBatches)) {
       const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
-      const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
+      const difference = arrays.reduce((a, b) =>
+        a.filter((c) => !b.includes(c))
+      );
       if (difference.length === 0) {
+        this.cleanUp(ids);
         batch.forEach((message) => {
           if (message.error) {
             // reject the whole message if there are any errors
@@ -309,6 +316,7 @@ class WSClient extends EventTarget {
       const response = this.responseQueue[id];
       this.pendingCalls[id].resolve(response);
       delete this.responseQueue[id];
+      this.cleanUp(id);
     } catch (e) {
       if (e instanceof TypeError) {
         // probably a parse error, which might not have an id
@@ -346,6 +354,7 @@ class WSClient extends EventTarget {
     }
     try {
       this.pendingCalls[response.id].reject(response);
+      this.cleanUp(response.id);
     } catch (e) {
       if (e instanceof TypeError) {
         // probably a parse error, which might not have an id
@@ -356,13 +365,19 @@ class WSClient extends EventTarget {
     }
   }
 
+  cleanUp(ids) {
+    // clear pending timeouts for these request ids
+    clearTimeout(this.timeouts[ids]);
+    delete this.timeouts[ids];
+  }
+
   /**
    * @params {String} [method] method to subscribe to
    * @params {Function} [cb] callback function to invoke on notify
    */
   subscribe(method, cb) {
     if (method === "batchResponse") {
-      throw new Error("\"batchResponse\" is a reserved event name");
+      throw new Error('"batchResponse" is a reserved event name');
     }
     if (!this.eventListenerList) this.eventListenerList = {};
     if (!this.eventListenerList[method]) this.eventListenerList[method] = [];
@@ -381,7 +396,7 @@ class WSClient extends EventTarget {
    */
   unsubscribe(method, cb) {
     if (method === "batchResponse") {
-      throw new Error("\"batchResponse\" is a reserved event name");
+      throw new Error('"batchResponse" is a reserved event name');
     }
     // remove listener
     this.removeEventListener(method, cb);
@@ -397,12 +412,13 @@ class WSClient extends EventTarget {
       }
     }
     // if no more events of the removed event method are left,remove the group
-    if (this.eventListenerList[method].length === 0) delete this.eventListenerList[method];
+    if (this.eventListenerList[method].length === 0)
+      delete this.eventListenerList[method];
   }
 
   unsubscribeAll(method) {
     if (method === "batchResponse") {
-      throw new Error("\"batchResponse\" is a reserved event name");
+      throw new Error('"batchResponse" is a reserved event name');
     }
     if (!this.eventListenerList) this.eventListenerList = {};
     if (!this.eventListenerList[method]) this.eventListenerList[method] = [];

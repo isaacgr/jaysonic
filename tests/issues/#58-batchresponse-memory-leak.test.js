@@ -19,6 +19,7 @@ describe("#58 batchResponse causing memory leak", () => {
       }
       unhook();
       expect(capturedText).to.equal("");
+      expect(Object.keys(client.listeners).length).to.be.equal(0);
     });
   });
   describe("ws", () => {
@@ -37,6 +38,7 @@ describe("#58 batchResponse causing memory leak", () => {
       }
       unhook();
       expect(capturedText).to.equal("");
+      expect(Object.keys(client.listeners).length).to.be.equal(0);
     });
   });
   describe("http", () => {
@@ -57,6 +59,7 @@ describe("#58 batchResponse causing memory leak", () => {
       }
       unhook();
       expect(capturedText).to.equal("");
+      expect(Object.keys(client.listeners).length).to.be.equal(0);
     });
   });
 });
