@@ -37,22 +37,19 @@ class WSClient extends Client {
     this.remainingRetries = retries;
   }
 
-  connect() {
-    return new Promise((resolve, reject) => {
-      const { url, perMessageDeflate } = this.options;
-      this.client = new WebSocket(url, perMessageDeflate);
-      this.close();
+  initialize() {
+    const { url, perMessageDeflate } = this.options;
+    this.client = new WebSocket(url, perMessageDeflate);
+    this.client.onopen = (event) => {
       this.listen();
-      this.client.onopen = (event) => {
-        resolve(event);
-      };
-      this.client.onerror = (error) => {
-        reject(error);
-      };
-    });
-  }
-
-  close() {
+      this.connectionHandler.resolve(event);
+    };
+    this.client.onerror = (error) => {
+      // let the onclose event handle it otherwise
+      if (error.error.code !== "ECONNREFUSED") {
+        this.connectionHandler.reject(error);
+      }
+    };
     this.client.onclose = () => {
       if (this.remainingRetries) {
         this.remainingRetries -= 1;
@@ -60,10 +57,28 @@ class WSClient extends Client {
           `Connection failed. ${this.remainingRetries} attempts left.\n`
         );
         setTimeout(() => {
-          this.connect().catch(() => {});
+          this.initialize();
         }, this.options.timeout);
+      } else {
+        this.connectionHandler.reject({
+          error: {
+            code: "ECONNREFUSED",
+            message: `connection refused ${this.options.url}`
+          }
+        });
       }
     };
+  }
+
+  connect() {
+    return new Promise((resolve, reject) => {
+      this.connectionHandler = { resolve, reject };
+      this.initialize();
+    });
+  }
+
+  end() {
+    this.client.terminate();
   }
 
   listen() {
