@@ -1,6 +1,6 @@
 {
   "name": "jaysonic",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "A feature rich and persistent jsonrpc client and server library",
   "repository": {
     "type": "git",
