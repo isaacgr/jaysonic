@@ -158,39 +158,38 @@ class WSClient extends EventTarget {
         }
         return request;
       },
-      send: (method, params) =>
-        new Promise((resolve, reject) => {
-          const requestId = this.message_id;
-          this.pendingCalls[requestId] = { resolve, reject };
+      send: (method, params) => new Promise((resolve, reject) => {
+        const requestId = this.message_id;
+        this.pendingCalls[requestId] = { resolve, reject };
+        try {
+          this.client.send(this.request().message(method, params));
+        } catch (e) {
+          reject(e);
+        }
+        this.timeouts[requestId] = setTimeout(() => {
+          this.cleanUp(requestId);
           try {
-            this.client.send(this.request().message(method, params));
+            const error = JSON.parse(
+              formatError({
+                jsonrpc: this.options.version,
+                delimiter: this.options.delimiter,
+                id: null,
+                code: ERR_CODES.timeout,
+                message: ERR_MSGS.timeout
+              })
+            );
+            this.pendingCalls[requestId].reject(error);
+            delete this.pendingCalls[requestId];
           } catch (e) {
-            reject(e);
-          }
-          this.timeouts[requestId] = setTimeout(() => {
-            this.cleanUp(requestId);
-            try {
-              const error = JSON.parse(
-                formatError({
-                  jsonrpc: this.options.version,
-                  delimiter: this.options.delimiter,
-                  id: null,
-                  code: ERR_CODES.timeout,
-                  message: ERR_MSGS.timeout
-                })
+            if (e instanceof TypeError) {
+              // probably a parse error, which might not have an id
+              console.log(
+                `Message has no outstanding calls: ${JSON.stringify(e)}`
               );
-              this.pendingCalls[requestId].reject(error);
-              delete this.pendingCalls[requestId];
-            } catch (e) {
-              if (e instanceof TypeError) {
-                // probably a parse error, which might not have an id
-                console.log(
-                  `Message has no outstanding calls: ${JSON.stringify(e)}`
-                );
-              }
             }
-          }, this.options.timeout);
-        }),
+          }
+        }, this.options.timeout);
+      }),
       notify: (method, params) => {
         const request = formatRequest({
           method,
@@ -281,9 +280,7 @@ class WSClient extends EventTarget {
     }
     for (const ids of Object.keys(this.pendingBatches)) {
       const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
-      const difference = arrays.reduce((a, b) =>
-        a.filter((c) => !b.includes(c))
-      );
+      const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
       if (difference.length === 0) {
         this.cleanUp(ids);
         batch.forEach((message) => {
@@ -377,7 +374,7 @@ class WSClient extends EventTarget {
    */
   subscribe(method, cb) {
     if (method === "batchResponse") {
-      throw new Error('"batchResponse" is a reserved event name');
+      throw new Error("\"batchResponse\" is a reserved event name");
     }
     if (!this.eventListenerList) this.eventListenerList = {};
     if (!this.eventListenerList[method]) this.eventListenerList[method] = [];
@@ -396,7 +393,7 @@ class WSClient extends EventTarget {
    */
   unsubscribe(method, cb) {
     if (method === "batchResponse") {
-      throw new Error('"batchResponse" is a reserved event name');
+      throw new Error("\"batchResponse\" is a reserved event name");
     }
     // remove listener
     this.removeEventListener(method, cb);
@@ -412,13 +409,12 @@ class WSClient extends EventTarget {
       }
     }
     // if no more events of the removed event method are left,remove the group
-    if (this.eventListenerList[method].length === 0)
-      delete this.eventListenerList[method];
+    if (this.eventListenerList[method].length === 0) delete this.eventListenerList[method];
   }
 
   unsubscribeAll(method) {
     if (method === "batchResponse") {
-      throw new Error('"batchResponse" is a reserved event name');
+      throw new Error("\"batchResponse\" is a reserved event name");
     }
     if (!this.eventListenerList) this.eventListenerList = {};
     if (!this.eventListenerList[method]) this.eventListenerList[method] = [];
