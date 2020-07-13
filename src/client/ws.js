@@ -54,7 +54,7 @@ class WSClient extends Client {
       if (this.remainingRetries) {
         this.remainingRetries -= 1;
         process.stdout.write(
-          `Connection failed. ${this.remainingRetries} attempts left.\n`
+          `Connection failed. ${this.remainingRetries} attempts left.`
         );
         setTimeout(() => {
           this.initialize();
