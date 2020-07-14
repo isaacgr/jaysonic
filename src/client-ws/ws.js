@@ -77,8 +77,8 @@ class WSClient extends EventTarget {
     });
   }
 
-  end() {
-    this.client.close();
+  end(code = 1005, reason) {
+    this.client.close(code, reason);
   }
 
   listen() {
