@@ -51,7 +51,9 @@ class WSClient extends Client {
       }
     };
     this.client.onclose = () => {
-      if (this.remainingRetries) {
+      if (this.client.__clientClosed) {
+        process.stdout.write("Connection closed.");
+      } else if (this.remainingRetries) {
         this.remainingRetries -= 1;
         process.stdout.write(
           `Connection failed. ${this.remainingRetries} attempts left.`
@@ -77,8 +79,9 @@ class WSClient extends Client {
     });
   }
 
-  end() {
-    this.client.terminate();
+  end(code, reason) {
+    this.client.__clientClosed = true;
+    this.client.close(code, reason);
   }
 
   listen() {

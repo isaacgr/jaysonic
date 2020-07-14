@@ -51,7 +51,9 @@ class WSClient extends EventTarget {
       }
     };
     this.client.onclose = () => {
-      if (this.remainingRetries) {
+      if (this.client.__clientClosed) {
+        console.log("Connection closed.");
+      } else if (this.remainingRetries) {
         this.remainingRetries -= 1;
         console.log(
           `Connection failed. ${this.remainingRetries} attempts left.`
@@ -77,7 +79,8 @@ class WSClient extends EventTarget {
     });
   }
 
-  end(code = 1005, reason) {
+  end(code, reason) {
+    this.client.__clientClosed = true;
     this.client.close(code, reason);
   }
 
