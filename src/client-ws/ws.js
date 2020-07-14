@@ -58,7 +58,7 @@ class WSClient extends EventTarget {
         );
         setTimeout(() => {
           this.initialize();
-        }, this.options.timeout);
+        }, 5000);
       } else {
         this.connectionHandler.reject({
           error: {
