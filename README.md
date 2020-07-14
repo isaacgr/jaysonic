@@ -311,7 +311,7 @@ client.serverDisconnected(() => {
 client.end();
 ```
 
-The browser websocket client accepts an optional status code and reason for closing per https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/close
+The websocket clients accept an optional status code and reason for closing per https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/close
 
 ```js
 client.end(1009, "Message too big");
