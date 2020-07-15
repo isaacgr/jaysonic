@@ -307,8 +307,12 @@ client.serverDisconnected(() => {
 
 ##### Ending the connection
 
+The TCP client accepts an optional callback function to .end()
+
 ```js
 client.end();
+// or
+client.end(() => console.log("connection ended"));
 ```
 
 The websocket clients accept an optional status code and reason for closing per https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/close
