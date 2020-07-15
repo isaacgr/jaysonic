@@ -58,7 +58,7 @@ class Client extends EventEmitter {
   }
 
   end() {
-    this.client.end();
+    throw new Error("function must be overwritten in subclass");
   }
 
   request() {

@@ -45,6 +45,10 @@ class TCPClient extends Client {
     });
   }
 
+  end(cb) {
+    this.client.end(cb);
+  }
+
   request() {
     return {
       message: (method, params, id = true) => {
