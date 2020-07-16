@@ -23,7 +23,7 @@ class WSClient extends Client {
     this.serving_message_id = 1;
     this.pendingCalls = {};
     this.pendingBatches = {};
-    this.attached = false;
+    this.connected = false;
 
     this.responseQueue = {};
     this.options = {
@@ -41,16 +41,19 @@ class WSClient extends Client {
     const { url, perMessageDeflate } = this.options;
     this.client = new WebSocket(url, perMessageDeflate);
     this.client.onopen = (event) => {
+      this.connected = true;
       this.listen();
       this.connectionHandler.resolve(event);
     };
     this.client.onerror = (error) => {
+      this.connected = false;
       // let the onclose event handle it otherwise
       if (error.error.code !== "ECONNREFUSED") {
         this.connectionHandler.reject(error);
       }
     };
     this.client.onclose = () => {
+      this.connected = false;
       if (this.client.__clientClosed) {
         process.stdout.write("Connection closed.");
       } else if (this.remainingRetries) {

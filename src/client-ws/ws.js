@@ -22,7 +22,7 @@ class WSClient extends EventTarget {
     this.serving_message_id = 1;
     this.pendingCalls = {};
     this.pendingBatches = {};
-    this.attached = false;
+    this.connected = false;
     this.timeouts = {};
 
     this.responseQueue = {};
@@ -41,16 +41,19 @@ class WSClient extends EventTarget {
     const { url, protocols } = this.options;
     this.client = new window.WebSocket(url, protocols);
     this.client.onopen = (event) => {
+      this.connected = true;
       this.listen();
       this.connectionHandler.resolve(event);
     };
     this.client.onerror = (error) => {
+      this.connected = false;
       // let the onclose event handle it otherwise
       if (error.error.code !== "ECONNREFUSED") {
         this.connectionHandler.reject(error);
       }
     };
     this.client.onclose = () => {
+      this.connected = false;
       if (this.client.__clientClosed) {
         console.log("Connection closed.");
       } else if (this.remainingRetries) {
