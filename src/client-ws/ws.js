@@ -22,7 +22,7 @@ class WSClient extends EventTarget {
     this.serving_message_id = 1;
     this.pendingCalls = {};
     this.pendingBatches = {};
-    this.attached = false;
+    this.connected = false;
     this.timeouts = {};
 
     this.responseQueue = {};
@@ -37,35 +37,54 @@ class WSClient extends EventTarget {
     this.remainingRetries = retries;
   }
 
-  connect() {
-    return new Promise((resolve, reject) => {
-      const { url, protocols } = this.options;
-      this.client = new window.WebSocket(url, protocols);
-      this.close();
+  initialize() {
+    const { url, protocols } = this.options;
+    this.client = new window.WebSocket(url, protocols);
+    this.client.onopen = (event) => {
+      this.connected = true;
       this.listen();
-      this.client.onopen = (event) => {
-        resolve(event);
-      };
-      this.client.onerror = (error) => {
-        reject(error);
-      };
-    });
-  }
-
-  close() {
+      this.connectionHandler.resolve(event);
+    };
+    this.client.onerror = (error) => {
+      this.connected = false;
+      // let the onclose event handle it otherwise
+      if (error.error.code !== "ECONNREFUSED") {
+        this.connectionHandler.reject(error);
+      }
+    };
     this.client.onclose = () => {
-      if (this.remainingRetries) {
+      this.connected = false;
+      if (this.client.__clientClosed) {
+        console.log("Connection closed.");
+      } else if (this.remainingRetries) {
         this.remainingRetries -= 1;
         console.log(
           `Connection failed. ${this.remainingRetries} attempts left.`
         );
         setTimeout(() => {
-          this.connect().catch(() => {});
-        }, this.options.timeout);
+          this.initialize();
+        }, 5000);
       } else {
-        console.log("Connection to server failed.");
+        this.connectionHandler.reject({
+          error: {
+            code: "ECONNREFUSED",
+            message: `connection refused ${this.options.url}`
+          }
+        });
       }
     };
+  }
+
+  connect() {
+    return new Promise((resolve, reject) => {
+      this.connectionHandler = { resolve, reject };
+      this.initialize();
+    });
+  }
+
+  end(code, reason) {
+    this.client.__clientClosed = true;
+    this.client.close(code, reason);
   }
 
   listen() {

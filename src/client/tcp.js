@@ -14,7 +14,7 @@ const { ERR_CODES, ERR_MSGS } = require("../constants");
 class TCPClient extends Client {
   connect() {
     return new Promise((resolve, reject) => {
-      if (this.attached) {
+      if (this.connected) {
         // not having this caused MaxEventListeners error
         return reject(Error("client already connected"));
       }
@@ -22,7 +22,7 @@ class TCPClient extends Client {
       this.client.connect(this.server);
       this.client.setEncoding("utf8");
       this.client.on("connect", () => {
-        this.attached = true;
+        this.connected = true;
         this.writer = this.client;
         // start listeners, response handlers and error handlers
         this.listen();
@@ -31,6 +31,7 @@ class TCPClient extends Client {
       let { retries } = this.options;
       this.client.on("error", (error) => {
         if (error.code === "ECONNREFUSED" && retries) {
+          this.connected = false;
           retries -= 1;
           process.stdout.write(
             `Unable to connect. Retrying. ${retries} attempts left.\n`
@@ -39,10 +40,15 @@ class TCPClient extends Client {
             this.client.connect(this.server);
           }, 5000);
         } else {
+          this.connected = false;
           reject(error);
         }
       });
     });
+  }
+
+  end(cb) {
+    this.client.end(cb);
   }
 
   request() {

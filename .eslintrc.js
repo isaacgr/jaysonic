@@ -19,6 +19,7 @@ module.exports = {
     "class-methods-use-this": "off",
     "comma-dangle": "off",
     "no-await-in-loop": "off",
+    "no-underscore-dangle": "off",
     quotes: ["error", "double"],
     "consistent-return": "off",
     "no-restricted-syntax": [

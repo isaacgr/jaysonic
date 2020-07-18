@@ -35,7 +35,7 @@ class Client extends EventEmitter {
     this.serving_message_id = 1;
     this.pendingCalls = {};
     this.pendingBatches = {};
-    this.attached = false;
+    this.connected = false;
     this.timeouts = {};
     this.listeners = {};
 
@@ -58,14 +58,7 @@ class Client extends EventEmitter {
   }
 
   end() {
-    return new Promise((resolve, reject) => {
-      this.client.end((error) => {
-        if (error) {
-          reject(error);
-        }
-        resolve();
-      });
-    });
+    throw new Error("function must be overwritten in subclass");
   }
 
   request() {
@@ -201,7 +194,7 @@ class Client extends EventEmitter {
     // prevents max listeners warning
     if (!(this.writer instanceof http.IncomingMessage)) {
       this.client.on("close", () => {
-        this.attached = false;
+        this.connected = false;
         this.client.removeAllListeners();
         this.emit("serverDisconnected");
       });

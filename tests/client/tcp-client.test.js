@@ -29,9 +29,8 @@ before((done) => {
 });
 
 after(() => {
-  client.end().then(() => {
-    server.close();
-  });
+  client.end();
+  server.close();
 });
 
 describe("TCP Client", () => {
