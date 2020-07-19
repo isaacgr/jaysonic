@@ -55,11 +55,11 @@ class WSClient extends Client {
     this.client.onclose = () => {
       this.connected = false;
       if (this.client.__clientClosed) {
-        process.stdout.write("Connection closed.");
+        console.log("Connection closed.");
       } else if (this.remainingRetries) {
         this.remainingRetries -= 1;
-        process.stdout.write(
-          `Connection failed. ${this.remainingRetries} attempts left.\n`
+        console.error(
+          `Connection failed. ${this.remainingRetries} attempts left.`
         );
         setTimeout(() => {
           this.initialize();
@@ -131,8 +131,8 @@ class WSClient extends Client {
             delete this.pendingCalls[requestId];
           } catch (e) {
             if (e instanceof TypeError) {
-              process.stdout.write(
-                `Message has no outstanding calls: ${JSON.stringify(e)}\n`
+              console.error(
+                `Message has no outstanding calls: ${JSON.stringify(e)}`
               );
             }
           }
@@ -205,8 +205,8 @@ class WSClient extends Client {
           delete this.pendingBatches[String(batchIds)];
         } catch (e) {
           if (e instanceof TypeError) {
-            process.stdout.write(
-              `Message has no outstanding calls: ${JSON.stringify(e)}\n`
+            console.error(
+              `Message has no outstanding calls: ${JSON.stringify(e)}`
             );
           }
         }

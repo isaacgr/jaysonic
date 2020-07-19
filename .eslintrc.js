@@ -22,6 +22,7 @@ module.exports = {
     "no-underscore-dangle": "off",
     quotes: ["error", "double"],
     "consistent-return": "off",
+    "no-console": "off",
     "no-restricted-syntax": [
       "off",
       {

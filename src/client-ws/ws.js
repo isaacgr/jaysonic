@@ -58,7 +58,7 @@ class WSClient extends EventTarget {
         console.log("Connection closed.");
       } else if (this.remainingRetries) {
         this.remainingRetries -= 1;
-        console.log(
+        console.error(
           `Connection failed. ${this.remainingRetries} attempts left.`
         );
         setTimeout(() => {
@@ -202,7 +202,7 @@ class WSClient extends EventTarget {
           } catch (e) {
             if (e instanceof TypeError) {
               // probably a parse error, which might not have an id
-              console.log(
+              console.error(
                 `Message has no outstanding calls: ${JSON.stringify(e)}`
               );
             }
@@ -276,7 +276,7 @@ class WSClient extends EventTarget {
         } catch (e) {
           if (e instanceof TypeError) {
             // probably a parse error, which might not have an id
-            console.log(
+            console.error(
               `Message has no outstanding calls: ${JSON.stringify(e)}`
             );
           }
@@ -336,7 +336,7 @@ class WSClient extends EventTarget {
     } catch (e) {
       if (e instanceof TypeError) {
         // probably a parse error, which might not have an id
-        console.log(`Message has no outstanding calls: ${JSON.stringify(e)}`);
+        console.error(`Message has no outstanding calls: ${JSON.stringify(e)}`);
       }
     }
   }
@@ -374,8 +374,8 @@ class WSClient extends EventTarget {
     } catch (e) {
       if (e instanceof TypeError) {
         // probably a parse error, which might not have an id
-        process.stdout.write(
-          `Message has no outstanding calls: ${JSON.stringify(response)}\n`
+        console.error(
+          `Message has no outstanding calls: ${JSON.stringify(response)}`
         );
       }
     }

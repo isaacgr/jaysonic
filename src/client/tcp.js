@@ -33,8 +33,8 @@ class TCPClient extends Client {
         if (error.code === "ECONNREFUSED" && retries) {
           this.connected = false;
           retries -= 1;
-          process.stdout.write(
-            `Unable to connect. Retrying. ${retries} attempts left.\n`
+          console.error(
+            `Unable to connect. Retrying. ${retries} attempts left.`
           );
           setTimeout(() => {
             this.client.connect(this.server);
@@ -91,8 +91,8 @@ class TCPClient extends Client {
             delete this.pendingCalls[requestId];
           } catch (e) {
             if (e instanceof TypeError) {
-              process.stdout.write(
-                `Message has no outstanding calls: ${JSON.stringify(e)}\n`
+              console.error(
+                `Message has no outstanding calls: ${JSON.stringify(e)}`
               );
             }
           }
@@ -163,8 +163,8 @@ class TCPClient extends Client {
           delete this.pendingBatches[String(batchIds)];
         } catch (e) {
           if (e instanceof TypeError) {
-            process.stdout.write(
-              `Message has no outstanding calls: ${JSON.stringify(e)}\n`
+            console.error(
+              `Message has no outstanding calls: ${JSON.stringify(e)}`
             );
           }
         }

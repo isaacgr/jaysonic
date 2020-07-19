@@ -93,8 +93,8 @@ class Client extends EventEmitter {
     } catch (e) {
       if (e instanceof TypeError) {
         // probably a parse error, which might not have an id
-        process.stdout.write(
-          `Message has no outstanding calls: ${JSON.stringify(e.message)}\n`
+        console.error(
+          `Message has no outstanding calls: ${JSON.stringify(e.message)}`
         );
       }
     }
@@ -259,8 +259,8 @@ class Client extends EventEmitter {
     } catch (e) {
       if (e instanceof TypeError) {
         // probably a parse error, which might not have an id
-        process.stdout.write(
-          `Message has no outstanding calls: ${JSON.stringify(response)}\n`
+        console.error(
+          `Message has no outstanding calls: ${JSON.stringify(response)}`
         );
       }
     }

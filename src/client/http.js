@@ -97,8 +97,8 @@ class HTTPClient extends Client {
             delete this.pendingCalls[requestId];
           } catch (e) {
             if (e instanceof TypeError) {
-              process.stdout.write(
-                `Message has no outstanding calls: ${JSON.stringify(e)}\n`
+              console.error(
+                `Message has no outstanding calls: ${JSON.stringify(e)}`
               );
             }
           }
@@ -200,8 +200,8 @@ class HTTPClient extends Client {
           delete this.pendingBatches[String(batchIds)];
         } catch (e) {
           if (e instanceof TypeError) {
-            process.stdout.write(
-              `Message has no outstanding calls: ${JSON.stringify(e)}\n`
+            console.error(
+              `Message has no outstanding calls: ${JSON.stringify(e)}`
             );
           }
         }
