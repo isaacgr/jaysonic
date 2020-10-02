@@ -15,6 +15,7 @@ class WSClient extends EventTarget {
       version: "2.0",
       delimiter: "\n",
       timeout: 30,
+      connectionTimeout: 5000,
       retries: 2
     };
 
@@ -24,8 +25,8 @@ class WSClient extends EventTarget {
     this.pendingBatches = {};
     this.connected = false;
     this.timeouts = {};
-
     this.responseQueue = {};
+
     this.options = {
       ...defaults,
       ...(options || {})
@@ -63,7 +64,7 @@ class WSClient extends EventTarget {
         );
         setTimeout(() => {
           this.initialize();
-        }, 5000);
+        }, this.options.connectionTimeout);
       } else {
         this.connectionHandler.reject({
           error: {

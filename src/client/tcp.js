@@ -38,7 +38,7 @@ class TCPClient extends Client {
           );
           setTimeout(() => {
             this.client.connect(this.server);
-          }, 5000);
+          }, this.options.connectionTimeout);
         } else {
           this.connected = false;
           reject(error);
