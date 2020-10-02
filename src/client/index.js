@@ -38,13 +38,14 @@ class Client extends EventEmitter {
     this.connected = false;
     this.timeouts = {};
     this.listeners = {};
-
     this.responseQueue = {};
+
     this.options = {
       ...defaults,
       ...(options || {})
     };
     this.options.timeout = this.options.timeout * 1000;
+    this.remainingRetries = this.options.retries;
 
     this.messageBuffer = new MessageBuffer(this.options.delimiter);
 
