@@ -2,7 +2,6 @@ const WebSocket = require("ws");
 const Client = require(".");
 const { formatRequest, formatError } = require("../functions");
 const { ERR_CODES, ERR_MSGS } = require("../constants");
-const { MessageBuffer } = require("../buffer");
 
 class WSClient extends Client {
   constructor(options) {
@@ -24,17 +23,13 @@ class WSClient extends Client {
     this.pendingCalls = {};
     this.pendingBatches = {};
     this.connected = false;
-
     this.responseQueue = {};
+
     this.options = {
       ...defaults,
       ...(options || {})
     };
     this.options.timeout = this.options.timeout * 1000;
-
-    this.messageBuffer = new MessageBuffer(this.options.delimiter);
-    const { retries } = this.options;
-    this.remainingRetries = retries;
   }
 
   initialize() {
