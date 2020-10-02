@@ -27,6 +27,7 @@ class Client extends EventEmitter {
       version: "2.0",
       delimiter: "\n",
       timeout: 30,
+      connectionTimeout: 5000,
       retries: 2
     };
 
