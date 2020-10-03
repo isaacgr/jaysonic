@@ -111,7 +111,7 @@ if (!program.subscribe) {
     .then(() => {
       client.subscribe(program.method, (result) => {
         if (program.write) {
-          fs.appendFileSync(program.write, JSON.stringify(result));
+          fs.appendFileSync(program.write, JSON.stringify(result) + "\n");
         } else {
           console.log(result);
         }
