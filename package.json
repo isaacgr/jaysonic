@@ -48,7 +48,7 @@
   ],
   "main": "index.js",
   "bin": {
-    "jaysonic-client": "./bin/client.js"
+    "jaysonic-client": "./bin/client"
   },
   "scripts": {
     "test": "mocha --opts tests/mocha.opts tests/**/*test.js --exit",
