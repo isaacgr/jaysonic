@@ -21,6 +21,7 @@ program
   )
   .option("--host <string>", "Host IP of the server", "127.0.0.1", String)
   .option("--port <number>", "Port to connect to", Number)
+  .option("--subscribe", "Subscribe to notifications for the given method")
   .option("--path <string>", "Path for ws or http client", "/", String)
   .option("--delimiter <string>", "Delimiter to use for the request", "\n")
   .option("--timeout <number>", "Response timeout in seconds", 30, Number)
@@ -72,29 +73,52 @@ const getClient = () => {
 
 const client = getClient();
 
-client
-  .connect()
-  .then(() => {
-    client
-      .request()
-      .send(program.method, program.params)
-      .then((result) => {
+if (!program.subscribe) {
+  client
+    .connect()
+    .then(() => {
+      client
+        .request()
+        .send(program.method, program.params)
+        .then((result) => {
+          if (program.write) {
+            fs.writeFileSync(program.write, JSON.stringify(result));
+          } else {
+            console.log(result);
+          }
+          process.exit(0);
+        })
+        .catch((error) => {
+          if (program.write) {
+            fs.writeFileSync(program.write, JSON.stringify(error));
+          } else {
+            console.error(error);
+          }
+          process.exit(error.error.code);
+        });
+    })
+    .catch((error) => {
+      console.error(error);
+      process.exit(error.error.code);
+    });
+} else {
+  if (program.clientType === "http") {
+    console.error("HTTP client does not support subscriptions");
+    process.exit(-1);
+  }
+  client
+    .connect()
+    .then(() => {
+      client.subscribe(program.method, (result) => {
         if (program.write) {
-          fs.writeFileSync(program.write, JSON.stringify(result));
+          fs.appendFileSync(program.write, JSON.stringify(result));
         } else {
           console.log(result);
         }
-        process.exit(0);
-      })
-      .catch((error) => {
-        if (program.write) {
-          fs.writeFileSync(program.write, JSON.stringify(error));
-        } else {
-          console.error(error);
-        }
-        process.exit(error.error.code);
       });
-  })
-  .catch((error) => {
-    console.error(error);
-  });
+    })
+    .catch((error) => {
+      console.error(error);
+      process.exit(error.error.code);
+    });
+}
