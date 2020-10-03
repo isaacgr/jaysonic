@@ -1,11 +1,17 @@
 {
   "name": "jaysonic",
   "version": "2.1.0",
-  "description": "A feature rich and persistent jsonrpc client and server library",
+  "description": "A feature rich and persistent JSON-RPC 1.0/2.0 client and server library",
   "repository": {
     "type": "git",
     "url": "https://github.com/isaacgr/jaysonic"
   },
+  "author": "Isaac Rowell",
+  "maintainers": [
+    "Isaac Rowell <admin@irowell.io>"
+  ],
+  "license": "MIT",
+  "bugs": "https://github.com/isaacgr/jaysonic/issues",
   "keywords": [
     "jsonrpc",
     "json-rpc",
@@ -45,8 +51,6 @@
     "build": "./node_modules/.bin/babel src --out-dir lib",
     "prepare": "npm run test && npm run lint-fix && npm run build"
   },
-  "author": "Isaac Rowell",
-  "license": "MIT",
   "devDependencies": {
     "@babel/cli": "^7.4.4",
     "@babel/core": "^7.4.4",
