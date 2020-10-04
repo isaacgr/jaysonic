@@ -1,4 +1,4 @@
-const { MessageBuffer } = require("../buffer");
+const { MessageBuffer } = require("../../buffer");
 
 class JsonRpcServerProtocol {
   // base protocol class for servers
@@ -37,7 +37,7 @@ class JsonRpcServerProtocol {
             } else {
               this.factory
                 .getResult(message)
-                .then(result => this.writeToClient(result))
+                .then((result) => this.writeToClient(result))
                 .catch((error) => {
                   this.writeToClient(error);
                 });

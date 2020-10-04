@@ -1,7 +1,7 @@
 const net = require("net");
 const Server = require(".");
 const { formatResponse } = require("../functions");
-const { TCPServerProtocol } = require("../protocol/tcp");
+const { TCPServerProtocol } = require("./protocol/tcp");
 
 /**
  * Constructor for Jsonic TCP client
@@ -46,7 +46,7 @@ class TCPServer extends Server {
 
   clientDisconnected(cb) {
     this.on("clientDisconnected", (client) => {
-      const clientIndex = this.connectedClients.findIndex(c => client === c);
+      const clientIndex = this.connectedClients.findIndex((c) => client === c);
       if (clientIndex === -1) {
         return cb(`Unknown client ${JSON.stringify(client)}`);
       }
@@ -67,18 +67,19 @@ class TCPServer extends Server {
       if (!method && !params) {
         throw new Error("Unable to generate a response object");
       }
-      const response = this.options.version === "2.0"
-        ? {
-          jsonrpc: "2.0",
-          method,
-          params,
-          delimiter: this.options.delimiter
-        }
-        : {
-          method,
-          params,
-          delimiter: this.options.delimiter
-        };
+      const response =
+        this.options.version === "2.0"
+          ? {
+              jsonrpc: "2.0",
+              method,
+              params,
+              delimiter: this.options.delimiter
+            }
+          : {
+              method,
+              params,
+              delimiter: this.options.delimiter
+            };
       return response;
     });
     if (responses.length === 0) {

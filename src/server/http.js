@@ -1,7 +1,7 @@
 const http = require("http");
 const Server = require(".");
 const { errorToStatus } = require("../constants");
-const { HttpServerProtocol } = require("../protocol/http");
+const { HttpServerProtocol } = require("./protocol/http");
 
 /**
  * Constructor for Jsonic HTTP server
@@ -70,7 +70,7 @@ class HTTPServer extends Server {
 
   clientDisconnected(cb) {
     this.on("clientDisconnected", (client) => {
-      const clientIndex = this.connectedClients.findIndex(c => client === c);
+      const clientIndex = this.connectedClients.findIndex((c) => client === c);
       if (clientIndex === -1) {
         return cb(`Unknown client ${JSON.stringify(client)}`);
       }

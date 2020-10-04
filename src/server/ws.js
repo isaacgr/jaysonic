@@ -1,7 +1,7 @@
 const WebSocket = require("ws");
 const Server = require(".");
 const { formatResponse } = require("../functions");
-const { WSServerProtocol } = require("../protocol/ws");
+const { WSServerProtocol } = require("./protocol/ws");
 
 /**
  * Constructor for Jsonic WS client
@@ -77,15 +77,17 @@ class WSServer extends Server {
   }
 
   clientConnected(cb) {
-    this.on("clientConnected", client => cb({
-      host: client.remoteAddress,
-      port: client.remotePort
-    }));
+    this.on("clientConnected", (client) =>
+      cb({
+        host: client.remoteAddress,
+        port: client.remotePort
+      })
+    );
   }
 
   clientDisconnected(cb) {
     this.on("clientDisconnected", (client) => {
-      const clientIndex = this.connectedClients.findIndex(c => client === c);
+      const clientIndex = this.connectedClients.findIndex((c) => client === c);
       if (clientIndex === -1) {
         return cb(`Unknown client ${JSON.stringify(client)}`);
       }
@@ -105,18 +107,19 @@ class WSServer extends Server {
       if (!method && !params) {
         throw new Error("Unable to generate a response object");
       }
-      const response = this.options.version === "2.0"
-        ? {
-          jsonrpc: "2.0",
-          method,
-          params,
-          delimiter: this.options.delimiter
-        }
-        : {
-          method,
-          params,
-          delimiter: this.options.delimiter
-        };
+      const response =
+        this.options.version === "2.0"
+          ? {
+              jsonrpc: "2.0",
+              method,
+              params,
+              delimiter: this.options.delimiter
+            }
+          : {
+              method,
+              params,
+              delimiter: this.options.delimiter
+            };
       return response;
     });
     if (responses.length === 0) {
