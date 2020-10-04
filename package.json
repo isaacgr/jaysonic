@@ -40,6 +40,8 @@
   "main": "./lib/index.js",
   "scripts": {
     "test": "mocha --opts tests/mocha.opts tests/**/*test.js --exit",
+    "coveralls": "cat ./coverage/lcov.info | node node_modules/.bin/coveralls",
+    "coverage": "nyc mocha",
     "lint": "./node_modules/eslint/bin/eslint.js .",
     "lint-fix": "./node_modules/eslint/bin/eslint.js --fix .",
     "build": "./node_modules/.bin/babel src --out-dir lib",
@@ -71,6 +73,7 @@
     "mocha": "^6.1.4"
   },
   "dependencies": {
+    "nyc": "^15.1.0",
     "ws": "^7.1.0"
   }
 }
