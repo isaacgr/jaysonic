@@ -48,7 +48,7 @@ class WSClient extends EventTarget {
     this.client.onerror = (error) => {
       this.connected = false;
       // let the onclose event handle it otherwise
-      if (error.error.code !== "ECONNREFUSED") {
+      if (error.error && error.error.code !== "ECONNREFUSED") {
         this.connectionHandler.reject(error);
       }
     };

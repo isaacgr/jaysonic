@@ -46,7 +46,7 @@
     "cli",
     "async"
   ],
-  "main": "index.js",
+  "main": "./lib/index.js",
   "bin": {
     "jaysonic-client": "./bin/client"
   },

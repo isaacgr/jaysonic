@@ -5,7 +5,8 @@ const { ERR_CODES, ERR_MSGS } = require("../constants");
 
 class WSClient extends Client {
   constructor(options) {
-    super();
+    super(options);
+
     if (!(this instanceof WSClient)) {
       return new WSClient(options);
     }
@@ -18,18 +19,10 @@ class WSClient extends Client {
       retries: 2
     };
 
-    this.message_id = 1;
-    this.serving_message_id = 1;
-    this.pendingCalls = {};
-    this.pendingBatches = {};
-    this.connected = false;
-    this.responseQueue = {};
-
     this.options = {
       ...defaults,
       ...(options || {})
     };
-    this.options.timeout = this.options.timeout * 1000;
   }
 
   initialize() {
