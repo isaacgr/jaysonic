@@ -14,13 +14,12 @@ const formatRequest = ({
     request.jsonrpc = "2.0";
   }
 
-  if (params) {
-    if (
-      (!(params === Object(params)) && !Array.isArray(params))
-      || typeof params === "function"
-    ) {
-      throw new TypeError(`${params} must be an object or array`);
-    }
+  if (
+    (params && !(params === Object(params)) && !Array.isArray(params))
+    || typeof params === "function"
+  ) {
+    throw new TypeError(`${params} must be an object or array`);
+  } else if (params) {
     request.params = params;
   }
 
@@ -29,8 +28,7 @@ const formatRequest = ({
     request.id = id;
   }
 
-  const messageString = JSON.stringify(request) + options.delimiter;
-  return messageString;
+  return JSON.stringify(request) + options.delimiter;
 };
 
 const formatResponse = ({
@@ -49,13 +47,12 @@ const formatResponse = ({
     throw new TypeError(`${method} must be a string`);
   }
 
-  if (params) {
-    if (
-      (!(params === Object(params)) && !Array.isArray(params))
-      || typeof params === "function"
-    ) {
-      throw new TypeError(`${params} must be an object or array`);
-    }
+  if (
+    (params && !(params === Object(params)) && !Array.isArray(params))
+    || typeof params === "function"
+  ) {
+    throw new TypeError(`${params} must be an object or array`);
+  } else if (params) {
     response.params = params;
   }
 
