@@ -1,7 +1,7 @@
 const http = require("http");
 const Server = require(".");
 const { errorToStatus } = require("../constants");
-const { HttpServerProtocol } = require("../ServerProtocol");
+const { HttpServerProtocol } = require("../protocol/http");
 
 /**
  * Constructor for Jsonic HTTP server

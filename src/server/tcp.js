@@ -1,7 +1,7 @@
 const net = require("net");
 const Server = require(".");
 const { formatResponse } = require("../functions");
-const { TCPServerProtocol } = require("../ServerProtocol");
+const { TCPServerProtocol } = require("../protocol/tcp");
 
 /**
  * Constructor for Jsonic TCP client

@@ -1,7 +1,7 @@
 const WebSocket = require("ws");
 const Server = require(".");
 const { formatResponse } = require("../functions");
-const { WSServerProtocol } = require("../ServerProtocol");
+const { WSServerProtocol } = require("../protocol/ws");
 
 /**
  * Constructor for Jsonic WS client
