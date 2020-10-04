@@ -32,41 +32,43 @@ httpserver.method("timeout", () => 0);
 wss.method("timeout", () => 0);
 
 describe("#54 Request timeout", () => {
+  before(() => {
+    const t = tcpserver.listen();
+    const w = wss.listen();
+    const h = httpserver.listen();
+    return Promise.all([t, w, h]);
+  });
   describe("tcp", () => {
     it("should return object for request timeout", (done) => {
-      tcpserver.listen().then(() => {
-        tcpclient.connect().then(() => {
-          tcpclient
-            .request()
-            .send("timeout")
-            .catch((error) => {
-              expect(error).to.be.eql({
-                jsonrpc: "2.0",
-                error: { code: -32000, message: "Request Timeout" },
-                id: null
-              });
-              done();
+      tcpclient.connect().then(() => {
+        tcpclient
+          .request()
+          .send("timeout")
+          .catch((error) => {
+            expect(error).to.be.eql({
+              jsonrpc: "2.0",
+              error: { code: -32000, message: "Request Timeout" },
+              id: null
             });
-        });
+            done();
+          });
       });
     });
   });
   describe("ws", () => {
     it("should return object for request timeout", (done) => {
-      wss.listen().then(() => {
-        wsclient.connect().then(() => {
-          wsclient
-            .request()
-            .send("timeout")
-            .catch((error) => {
-              expect(error).to.be.eql({
-                jsonrpc: "2.0",
-                error: { code: -32000, message: "Request Timeout" },
-                id: null
-              });
-              done();
+      wsclient.connect().then(() => {
+        wsclient
+          .request()
+          .send("timeout")
+          .catch((error) => {
+            expect(error).to.be.eql({
+              jsonrpc: "2.0",
+              error: { code: -32000, message: "Request Timeout" },
+              id: null
             });
-        });
+            done();
+          });
       });
     });
   });
@@ -89,19 +91,17 @@ describe("#54 Request timeout", () => {
   });
   describe("http", () => {
     it("should return object for request timeout", (done) => {
-      httpserver.listen().then(() => {
-        httpclient
-          .request()
-          .send("timeout")
-          .catch((error) => {
-            expect(error).to.be.eql({
-              jsonrpc: "2.0",
-              error: { code: -32000, message: "Request Timeout" },
-              id: null
-            });
-            done();
+      httpclient
+        .request()
+        .send("timeout")
+        .catch((error) => {
+          expect(error).to.be.eql({
+            jsonrpc: "2.0",
+            error: { code: -32000, message: "Request Timeout" },
+            id: null
           });
-      });
+          done();
+        });
     });
   });
 });

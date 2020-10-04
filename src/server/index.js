@@ -213,7 +213,7 @@ class Server extends EventEmitter {
       }
     }
 
-    if (!this.methods[message.method]) {
+    if (!(message.method in this.methods)) {
       throw new Error(
         formatError({
           jsonrpc: message.jsonrpc,

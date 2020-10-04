@@ -28,13 +28,12 @@ class TCPClient extends Client {
         this.listen();
         resolve(this.server);
       });
-      let { retries } = this.options;
       this.client.on("error", (error) => {
-        if (error.code === "ECONNREFUSED" && retries) {
+        if (error.code === "ECONNREFUSED" && this.remainingRetries) {
           this.connected = false;
-          retries -= 1;
+          this.remainingRetries -= 1;
           console.error(
-            `Unable to connect. Retrying. ${retries} attempts left.`
+            `Unable to connect. Retrying. ${this.remainingRetries} attempts left.`
           );
           setTimeout(() => {
             this.client.connect(this.server);
