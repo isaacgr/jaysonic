@@ -41,7 +41,7 @@
 # Jaysonic - A persistent JSON-RPC client and server
 
 [![Build Status](https://travis-ci.com/isaacgr/jaysonic.svg?branch=master)](https://travis-ci.com/isaacgr/jaysonic)
-
+[![Coverage Status](https://coveralls.io/repos/github/isaacgr/jaysonic/badge.svg?branch=master)](https://coveralls.io/github/isaacgr/jaysonic?branch=master)
 ---
 
 A TCP, HTTP and WebSocket server and client that implement the JSON-RPC 2.0 Specification.
