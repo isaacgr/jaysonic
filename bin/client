@@ -23,7 +23,11 @@ program
   .option("--port <number>", "Port to connect to", Number)
   .option("--subscribe", "Subscribe to notifications for the given method")
   .option("--path <string>", "Path for ws or http client", "/", String)
-  .option("--delimiter <string>", "Delimiter to use for the request", "\n")
+  .option(
+    "--delimiter <string>",
+    "Delimiter to use for the request. Use $'\\n' for example as cli syntax for escape characters.",
+    "\n"
+  )
   .option("--timeout <number>", "Response timeout in seconds", 30, Number)
   .option(
     "--connection-timeout <number>",
@@ -42,13 +46,23 @@ program
   .parse(process.argv);
 
 const getClient = () => {
+  const programOptions = {
+    host: program.host,
+    port: program.port,
+    path: program.path,
+    delimiter: program.delimiter,
+    timeout: program.timeout,
+    connectionTimeout: program.connectionTimeout,
+    retries: program.retries,
+    version: program.jsonrpcVersion
+  };
   let client;
   if (program.clientType === "ws") {
     const options = {
       url: `ws://${program.host}:${program.port}${program.path}`
     };
     client = new Jaysonic.client.ws({
-      ...program.options,
+      ...programOptions,
       ...options
     });
   } else if (program.clientType === "http") {
@@ -58,13 +72,13 @@ const getClient = () => {
       path: program.path
     };
     client = new Jaysonic.client.http({
-      ...program.options,
+      ...programOptions,
       ...options
     });
   } else if (program.clientType === "tcp") {
     const options = { host: program.host, port: program.port };
     client = new Jaysonic.client.tcp({
-      ...program.options,
+      ...programOptions,
       ...options
     });
   }
