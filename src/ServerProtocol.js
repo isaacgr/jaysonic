@@ -7,6 +7,14 @@ class TCPServerProtocol {
     this.delimiter = delimiter;
     this.messageBuffer = new MessageBuffer(delimiter);
   }
+  
+  class TCPServerProtocol {
+  constructor(factory, client, delimiter) {
+    this.client = client;
+    this.factory = factory;
+    this.delimiter = delimiter;
+    this.messageBuffer = new MessageBuffer(delimiter);
+  }
 
   clientConnected() {
     this.client.on("data", (data) => {
