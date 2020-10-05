@@ -275,7 +275,7 @@ module.exports = Client;
  * @type ClientTcp
  * @static
  */
-Client.tcp = require("./tcp");
+Client.tcp = require("./tcp2");
 
 /**
  * HTTP client constructor
