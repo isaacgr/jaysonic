@@ -15,7 +15,6 @@ class JsonRpcClientProtocol {
     this.message_id = 1;
     this.serving_message_id = 1;
     this.pendingCalls = {};
-    this.pendingBatches = {};
     this.responseQueue = {};
     this.server = this.factory.server;
     this.messageBuffer = new MessageBuffer(this.delimiter);
@@ -241,7 +240,7 @@ class JsonRpcClientProtocol {
           batchIds.push(json.id);
         }
       }
-      this.pendingBatches[String(batchIds)] = { resolve, reject };
+      this.pendingCalls[String(batchIds)] = { resolve, reject };
       const request = JSON.stringify(batchRequests);
       try {
         this.connector.write(request + this.delimiter);
@@ -250,26 +249,7 @@ class JsonRpcClientProtocol {
         reject(e.message);
       }
       this.factory.timeouts[String(batchIds)] = setTimeout(() => {
-        this.factory.cleanUp(String(batchIds));
-        try {
-          const error = JSON.parse(
-            formatError({
-              jsonrpc: this.version,
-              delimiter: this.delimiter,
-              id: null,
-              code: ERR_CODES.timeout,
-              message: ERR_MSGS.timeout
-            })
-          );
-          this.pendingBatches[String(batchIds)].reject(error);
-          delete this.pendingBatches[String(batchIds)];
-        } catch (e) {
-          if (e instanceof TypeError) {
-            console.error(
-              `Message has no outstanding calls: ${JSON.stringify(e)}`
-            );
-          }
-        }
+        this._timeoutPendingCalls(String(batchIds));
       }, this.factory.requestTimeout);
     });
   }
@@ -286,7 +266,7 @@ class JsonRpcClientProtocol {
       return;
     }
     // find the resolve and reject objects that match the batch request ids
-    for (const ids of Object.keys(this.pendingBatches)) {
+    for (const ids of Object.keys(this.pendingCalls)) {
       const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
       const difference = arrays.reduce((a, b) =>
         a.filter((c) => !b.includes(c))
@@ -298,23 +278,44 @@ class JsonRpcClientProtocol {
     }
   }
 
+  _timeoutPendingCalls(id) {
+    this.factory.cleanUp(id);
+    try {
+      const error = JSON.parse(
+        formatError({
+          jsonrpc: this.version,
+          delimiter: this.delimiter,
+          id: typeof id === "string" ? null : id,
+          code: ERR_CODES.timeout,
+          message: ERR_MSGS.timeout
+        })
+      );
+      this.pendingCalls[id].reject(error);
+      delete this.pendingCalls[id];
+    } catch (e) {
+      if (e instanceof TypeError) {
+        console.error(`Message has no outstanding calls: ${JSON.stringify(e)}`);
+      }
+    }
+  }
+
   _resolveOrRejectBatch(batch, batchIds) {
     try {
       const invalidBatches = [];
       batch.forEach((message) => {
         if (message.error) {
           // reject the whole message if there are any errors
-          this.pendingBatches[batchIds].reject(batch);
+          this.pendingCalls[batchIds].reject(batch);
           invalidBatches.push(batchIds);
         }
       });
       if (invalidBatches.length !== 0) {
         invalidBatches.forEach((id) => {
-          delete this.pendingBatches[id];
+          delete this.pendingCalls[id];
         });
       } else {
-        this.pendingBatches[batchIds].resolve(batch);
-        delete this.pendingBatches[batchIds];
+        this.pendingCalls[batchIds].resolve(batch);
+        delete this.pendingCalls[batchIds];
       }
     } catch (e) {
       if (e instanceof TypeError) {
