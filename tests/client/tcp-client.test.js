@@ -68,13 +68,12 @@ describe("TCP Client", () => {
         retries: 0,
         timeout: 0.5
       });
-      badClient
-        .request()
-        .send("add", [1, 2])
-        .catch((error) => {
-          expect(error).to.be.instanceOf(TypeError);
-          done();
-        });
+      try {
+        badClient.request().send("add", [1, 2]);
+      } catch (e) {
+        expect(e).to.be.instanceOf(TypeError);
+        done();
+      }
     });
   });
   describe("requests", () => {
