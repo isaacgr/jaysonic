@@ -10,11 +10,11 @@ const EventEmitter = require("events");
  * @param {Number} [options.timeout=30] timeout for request
  * @return {Client}
  */
-class Client extends EventEmitter {
+class JsonRpcClientFactory extends EventEmitter {
   constructor(options) {
     super();
-    if (!(this instanceof Client)) {
-      return new Client(options);
+    if (!(this instanceof JsonRpcClientFactory)) {
+      return new JsonRpcClientFactory(options);
     }
 
     const defaults = {
@@ -29,13 +29,12 @@ class Client extends EventEmitter {
 
     this.pcolInstance = undefined;
     this.timeouts = {};
-    this.listeners = {};
 
     this.options = {
       ...defaults,
       ...(options || {})
     };
-    this.options.timeout = this.options.timeout * 1000;
+    this.requestTimeout = this.options.timeout * 1000;
     this.remainingRetries = this.options.retries;
 
     this.server = { host: this.options.host, port: this.options.port };
@@ -47,18 +46,6 @@ class Client extends EventEmitter {
 
   end() {
     throw new Error("function must be overwritten in subclass");
-  }
-
-  request() {
-    throw new Error("function must be overwritten in subclass");
-  }
-
-  batch() {
-    throw new Error("function must be overwritten in subclass");
-  }
-
-  notify() {
-    throw new Error("function must be overwritten in subsclass");
   }
 
   subscribe() {
@@ -73,42 +60,44 @@ class Client extends EventEmitter {
     throw new Error("function must be overwritten in subsclass");
   }
 
+  request() {
+    return this.pcolInstance.request();
+  }
+
+  batch(requests) {
+    return this.pcolInstance.batch(requests);
+  }
+
   serverDisconnected(cb) {
     this.on("serverDisconnected", cb);
   }
 
   cleanUp(ids) {
-    // remove the batchResponse listener and clear pending
-    // timeouts for these request ids
-    try {
-      this.removeListener("batchResponse", this.listeners[ids]);
-    } catch (e) {
-      // likely no batch response listener associated with the ids
-    }
+    // clear pending timeouts for these request ids
     clearTimeout(this.timeouts[ids]);
     delete this.listeners[ids];
     delete this.timeouts[ids];
   }
 }
-module.exports = Client;
+module.exports = JsonRpcClientFactory;
 
 /**
  * TCP client constructor
  * @type ClientTcp
  * @static
  */
-Client.tcp = require("./tcp");
+JsonRpcClientFactory.tcp = require("./tcp");
 
 /**
  * HTTP client constructor
  * @type ClientHTTP
  * @static
  */
-Client.http = require("./http");
+JsonRpcClientFactory.http = require("./http");
 
 /**
  * WebSoket client constructor
  * @type ClientWS
  * @static
  */
-Client.ws = require("./ws");
+JsonRpcClientFactory.ws = require("./ws");

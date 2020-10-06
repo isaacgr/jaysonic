@@ -17,17 +17,18 @@ class JsonRpcClientProtocol {
     this.pendingCalls = {};
     this.pendingBatches = {};
     this.responseQueue = {};
+    this.server = this.factory.server;
     this.messageBuffer = new MessageBuffer(this.delimiter);
   }
 
   connect() {
     return new Promise((resolve, reject) => {
       this.connector = new net.Socket();
-      this.connector.connect(this.factory.server);
+      this.connector.connect(this.server);
       this.connector.setEncoding("utf8");
       this.connector.on("connect", () => {
         this.listen();
-        resolve(this.factory.server);
+        resolve(this.server);
       });
       this.connector.on("error", (error) => {
         if (error.code === "ECONNREFUSED" && this.factory.remainingRetries) {
@@ -36,7 +37,7 @@ class JsonRpcClientProtocol {
             `Unable to connect. Retrying. ${this.factory.remainingRetries} attempts left.`
           );
           setTimeout(() => {
-            this.connect(this.factory.server);
+            this.connect(this.server);
           }, this.factory.options.connectionTimeout);
         } else {
           this.factory.pcolInstance = undefined;
@@ -86,8 +87,8 @@ class JsonRpcClientProtocol {
       } else if (message.error) {
         // got an error back so reject the message
         const { id } = message;
-        const { code } = message;
-        const errorMessage = message.error;
+        const { code } = message.error;
+        const errorMessage = message.error.message;
         this._raiseError(errorMessage, code, id);
       } else if (!message.method) {
         // no method, so assume response
@@ -103,7 +104,7 @@ class JsonRpcClientProtocol {
       if (e instanceof SyntaxError) {
         const id = this.serving_message_id;
         const code = ERR_CODES.parseError;
-        const errorMessage = `Unable to parse errorMessage: '${chunk}'`;
+        const errorMessage = `Unable to parse message: '${chunk}'`;
         this._raiseError(errorMessage, code, id);
       } else {
         throw e;
@@ -118,7 +119,7 @@ class JsonRpcClientProtocol {
         this.factory.emit(res.method, res);
       }
     });
-    this.factory.emit("batchResponse", message);
+    this.gotBatchResponse(message);
   }
 
   _raiseError(message, code, id) {
@@ -197,7 +198,7 @@ class JsonRpcClientProtocol {
               );
             }
           }
-        }, this.factory.options.timeout);
+        }, this.factory.requestTimeout);
       }),
       notify: (method, params) => {
         const request = formatRequest({
@@ -219,6 +220,113 @@ class JsonRpcClientProtocol {
     };
   }
 
+  /**
+   * should receive a list of request objects
+   * [client.request.message(), client.request.message()]
+   * send a single request with that, server should handle it
+   *
+   * We want to store the IDs for the requests in the batch in an array
+   * Use this to reference the batch response
+   * The spec has no explaination on how to do that, so this is the solution
+   */
+  batch(requests) {
+    return new Promise((resolve, reject) => {
+      const batchIds = [];
+      const batchRequests = [];
+      for (const request of requests) {
+        const json = JSON.parse(request);
+        batchRequests.push(json);
+        if (json.id) {
+          batchIds.push(json.id);
+        }
+      }
+      this.pendingBatches[String(batchIds)] = { resolve, reject };
+      const request = JSON.stringify(batchRequests);
+      try {
+        this.connector.write(request + this.delimiter);
+      } catch (e) {
+        // this.connector is probably undefined
+        reject(e.message);
+      }
+      this.factory.timeouts[String(batchIds)] = setTimeout(() => {
+        this.factory.cleanUp(String(batchIds));
+        try {
+          const error = JSON.parse(
+            formatError({
+              jsonrpc: this.version,
+              delimiter: this.delimiter,
+              id: null,
+              code: ERR_CODES.timeout,
+              message: ERR_MSGS.timeout
+            })
+          );
+          this.pendingBatches[String(batchIds)].reject(error);
+          delete this.pendingBatches[String(batchIds)];
+        } catch (e) {
+          if (e instanceof TypeError) {
+            console.error(
+              `Message has no outstanding calls: ${JSON.stringify(e)}`
+            );
+          }
+        }
+      }, this.factory.requestTimeout);
+    });
+  }
+
+  gotBatchResponse(batch) {
+    const batchResponseIds = [];
+    batch.forEach((message) => {
+      if (message.id) {
+        batchResponseIds.push(message.id);
+      }
+    });
+    if (batchResponseIds.length === 0) {
+      // dont do anything here since its basically an invalid response
+    }
+    for (const ids of Object.keys(this.pendingBatches)) {
+      const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
+      const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
+      if (difference.length === 0) {
+        this.factory.cleanUp(ids);
+        batch.forEach((message) => {
+          if (message.error) {
+            // reject the whole message if there are any errors
+            try {
+              this.pendingBatches[ids].reject(batch);
+              delete this.pendingBatches[ids];
+            } catch (e) {
+              if (e instanceof TypeError) {
+                // no outstanding calls
+              }
+            }
+          }
+        });
+        try {
+          this.pendingBatches[ids].resolve(batch);
+          delete this.pendingBatches[ids];
+        } catch (e) {
+          if (e instanceof TypeError) {
+            // no outstanding calls
+          }
+        }
+      }
+    }
+  }
+
+  rejectPendingCalls(error) {
+    try {
+      this.pendingCalls[error.id].reject(error);
+      this.factory.cleanUp(error.id);
+    } catch (e) {
+      if (e instanceof TypeError) {
+        // probably a parse error, which might not have an id
+        console.error(
+          `Message has no outstanding calls: ${JSON.stringify(error)}`
+        );
+      }
+    }
+  }
+
   handleError(error) {
     let err;
     try {
@@ -226,15 +334,15 @@ class JsonRpcClientProtocol {
     } catch (e) {
       err = JSON.parse(
         formatError({
-          jsonrpc: this.options.version,
-          delimiter: this.options.delimiter,
+          jsonrpc: this.version,
+          delimiter: this.delimiter,
           id: null,
           code: ERR_CODES.unknown,
           message: JSON.stringify(error, Object.getOwnPropertyNames(error))
         })
       );
     }
-    this.factory.rejectPendingCalls(err);
+    this.rejectPendingCalls(err);
   }
 }
 
