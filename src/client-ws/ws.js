@@ -1,5 +1,5 @@
 /* eslint no-console: 0 */
-const WsBrowserClientProtocol = require("./protocol");
+const WsBrowserClientProtocol = require("../client/protocol/ws-browser");
 
 class WSClient extends EventTarget {
   constructor(options) {
@@ -97,7 +97,8 @@ class WSClient extends EventTarget {
       }
     }
     // if no more events of the removed event method are left,remove the group
-    if (this.eventListenerList[method].length === 0) delete this.eventListenerList[method];
+    if (this.eventListenerList[method].length === 0)
+      delete this.eventListenerList[method];
   }
 
   unsubscribeAll(method) {
