@@ -75,7 +75,6 @@ class JsonRpcClientFactory extends EventEmitter {
   cleanUp(ids) {
     // clear pending timeouts for these request ids
     clearTimeout(this.timeouts[ids]);
-    delete this.listeners[ids];
     delete this.timeouts[ids];
   }
 }
