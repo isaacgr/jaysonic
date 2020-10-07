@@ -77,9 +77,7 @@ class JsonRpcClientProtocol {
         this.handleBatch(message);
       } else if (!(message === Object(message))) {
         // error out if it cant be parsed
-        const code = ERR_CODES.parseError;
-        const errorMessage = ERR_MSGS.parseError;
-        this._raiseError(errorMessage, code, null);
+        throw SyntaxError();
       } else if (!message.id) {
         // no id, so assume notification
         this.factory.emit(message.method, message);
@@ -101,10 +99,9 @@ class JsonRpcClientProtocol {
       }
     } catch (e) {
       if (e instanceof SyntaxError) {
-        const id = this.serving_message_id;
         const code = ERR_CODES.parseError;
         const errorMessage = `Unable to parse message: '${chunk}'`;
-        this._raiseError(errorMessage, code, id);
+        this._raiseError(errorMessage, code, null);
       } else {
         throw e;
       }
