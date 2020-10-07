@@ -37,7 +37,7 @@ class JsonRpcClientProtocol {
           );
           setTimeout(() => {
             this.connect(this.server);
-          }, this.factory.options.connectionTimeout);
+          }, this.factory.connectionTimeout);
         } else {
           this.factory.pcolInstance = undefined;
           reject(error);
@@ -80,7 +80,7 @@ class JsonRpcClientProtocol {
         throw SyntaxError();
       } else if (!message.id) {
         // no id, so assume notification
-        this.factory.emit(message.method, message);
+        this.handleNotification(message);
       } else if (message.error) {
         // got an error back so reject the message
         const { id } = message;
@@ -89,9 +89,7 @@ class JsonRpcClientProtocol {
         this._raiseError(errorMessage, code, id);
       } else if (!message.method) {
         // no method, so assume response
-        this.serving_message_id = message.id;
-        this.responseQueue[this.serving_message_id] = message;
-        this.handleResponse(this.serving_message_id);
+        this.handleResponse(message);
       } else {
         const code = ERR_CODES.unknown;
         const errorMessage = ERR_MSGS.unknown;
@@ -108,6 +106,10 @@ class JsonRpcClientProtocol {
     }
   }
 
+  handleNotification(message) {
+    this.factory.emit(message.method, message);
+  }
+
   handleBatch(message) {
     // possible batch request
     message.forEach((res) => {
@@ -118,23 +120,14 @@ class JsonRpcClientProtocol {
     this.gotBatchResponse(message);
   }
 
-  _raiseError(message, code, id) {
-    const error = formatError({
-      jsonrpc: this.version,
-      delimiter: this.delimiter,
-      id,
-      code,
-      message
-    });
-    throw new Error(error);
-  }
-
-  handleResponse(id) {
+  handleResponse(message) {
+    this.serving_message_id = message.id;
+    this.responseQueue[message.id] = message;
     try {
-      const response = this.getResponse(id);
-      this.pendingCalls[id].resolve(response);
-      delete this.responseQueue[id];
-      this.factory.cleanUp(id);
+      const response = this.getResponse(message.id);
+      this.pendingCalls[message.id].resolve(response);
+      delete this.responseQueue[message.id];
+      this.factory.cleanUp(message.id);
     } catch (e) {
       if (e instanceof TypeError) {
         // probably a parse error, which might not have an id
@@ -304,6 +297,17 @@ class JsonRpcClientProtocol {
         );
       }
     }
+  }
+
+  _raiseError(message, code, id) {
+    const error = formatError({
+      jsonrpc: this.version,
+      delimiter: this.delimiter,
+      id,
+      code,
+      message
+    });
+    throw new Error(error);
   }
 
   handleError(error) {
