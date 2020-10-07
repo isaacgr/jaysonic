@@ -36,6 +36,7 @@ class JsonRpcClientFactory extends EventEmitter {
     };
     this.requestTimeout = this.options.timeout * 1000;
     this.remainingRetries = this.options.retries;
+    this.connectionTimeout = this.options.connectionTimeout;
 
     this.server = { host: this.options.host, port: this.options.port };
   }
