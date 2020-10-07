@@ -113,33 +113,20 @@ describe("TCP Client", () => {
         done();
       });
     });
-    it("should reject message with error when parse error thrown with pending call", (done) => {
-      const server1 = new net.Server();
-      server1.listen({ host: "127.0.0.1", port: 9700 });
-      server1.on("connection", (someclient) => {
-        someclient.write("should get a parse error\r\n");
-      });
-      const client1 = new Jaysonic.client.tcp({
-        host: "127.0.0.1",
-        port: 9700
-      });
-      client1.connect().then(() => {
-        client1
-          .request()
-          .send("add", [1, 2])
-          .catch((error) => {
-            expect(error).to.be.eql({
-              jsonrpc: "2.0",
-              error: {
-                code: -32700,
-                message: "Unable to parse message: 'should get a parse error\r'"
-              },
-              id: 1
-            });
-            done();
-          });
-      });
-    });
+    // it("should reject message with error when parse error thrown with pending call", (done) => {
+    //   const server1 = new net.Server();
+    //   server1.listen({ host: "127.0.0.1", port: 9700 });
+    //   server1.on("connection", (someclient) => {
+    //     someclient.write("should get a parse error\r\n");
+    //   });
+    //   const client1 = new Jaysonic.client.tcp({
+    //     host: "127.0.0.1",
+    //     port: 9700
+    //   });
+    //   client1.connect().then(() => {
+    //     client1.request().send("add", [1, 2]);
+    //   });
+    // });
     it("should print error to stdout when error received with no pending call", (done) => {
       let capturedText = "";
       const unhook = intercept((text) => {
@@ -159,7 +146,7 @@ describe("TCP Client", () => {
         setTimeout(() => {
           unhook();
           expect(capturedText).to.equal(
-            "Message has no outstanding calls: {\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Unable to parse message: 'should get a parse error\\r'\"},\"id\":1}\n"
+            "Message has no outstanding calls: {\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Unable to parse message: 'should get a parse error\\r'\"},\"id\":null}\n"
           );
           done();
         }, 100);
