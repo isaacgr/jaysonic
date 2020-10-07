@@ -1,11 +1,12 @@
-const JsonRpcClientProtocol = require("./base");
 const WebSocket = require("ws");
+const JsonRpcClientProtocol = require("./base");
 
 class WsClientProtocol extends JsonRpcClientProtocol {
   constructor(factory, version, delimiter) {
     super(factory, version, delimiter);
     this.url = this.factory.url;
   }
+
   connect() {
     return new Promise((resolve, reject) => {
       const { perMessageDeflate } = this.factory.options;
