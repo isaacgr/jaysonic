@@ -152,71 +152,59 @@ class JsonRpcClientProtocol {
     return this.responseQueue[id];
   }
 
-  request() {
-    return {
-      message: (method, params, id = true) => {
-        const request = formatRequest({
-          method,
-          params,
-          id: id ? this.message_id : undefined,
-          options: this.factory.options
-        });
-        if (id) {
-          this.message_id += 1;
-        }
-        return request;
-      },
+  message(method, params, id = true) {
+    const request = formatRequest({
+      method,
+      params,
+      id: id ? this.message_id : undefined,
+      options: this.factory.options
+    });
+    if (id) {
+      this.message_id += 1;
+    }
+    return request;
+  }
 
-      send: (method, params) =>
-        new Promise((resolve, reject) => {
-          const requestId = this.message_id;
-          this.pendingCalls[requestId] = { resolve, reject };
-          try {
-            this.connector.write(this.request().message(method, params));
-          } catch (e) {
-            // this.connector is probably undefined
-            reject(e);
-          }
-          this.factory.timeouts[requestId] = setTimeout(() => {
-            this.factory.cleanUp(requestId);
-            try {
-              const error = JSON.parse(
-                formatError({
-                  jsonrpc: this.version,
-                  delimiter: this.delimiter,
-                  id: null,
-                  code: ERR_CODES.timeout,
-                  message: ERR_MSGS.timeout
-                })
-              );
-              this.pendingCalls[requestId].reject(error);
-              delete this.pendingCalls[requestId];
-            } catch (e) {
-              if (e instanceof TypeError) {
-                console.error(
-                  `Message has no outstanding calls: ${JSON.stringify(e)}`
-                );
-              }
-            }
-          }, this.factory.requestTimeout);
-        }),
-      notify: (method, params) => {
-        const request = formatRequest({
-          method,
-          params,
-          options: this.factory.options
+  notify(method, params) {
+    const request = formatRequest({
+      method,
+      params,
+      options: this.factory.options
+    });
+    return new Promise((resolve, reject) => {
+      try {
+        this.connector.write(request, () => {
+          resolve(request);
         });
-        return new Promise((resolve, reject) => {
-          try {
-            this.connector.write(request, () => {
-              resolve(request);
-            });
-          } catch (e) {
-            // this.connector is probably undefined
-            reject(e);
-          }
-        });
+      } catch (e) {
+        // this.connector is probably undefined
+        reject(e);
       }
+    });
+  }
+
+  send(method, params) {
+    return new Promise((resolve, reject) => {
+      const requestId = this.message_id;
+      this.pendingCalls[requestId] = { resolve, reject };
+      try {
+        this.connector.write(this.message(method, params));
+      } catch (e) {
+        // this.connector is probably undefined
+        reject(e);
+      }
+      this.factory.timeouts[requestId] = setTimeout(() => {
+        this._timeoutPendingCalls(requestId);
+      }, this.factory.requestTimeout);
+    });
+  }
+
+  request() {
+    const self = this;
+    return {
+      message: this.message.bind(self),
+      send: this.send.bind(self),
+      notify: this.notify.bind(self)
     };
   }
 
