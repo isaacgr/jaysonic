@@ -163,8 +163,8 @@ class JsonRpcClientProtocol {
   }
 
   notify(method, params) {
-    const request = this.message(method, params, false);
     return new Promise((resolve, reject) => {
+      const request = this.message(method, params, false);
       try {
         this.connector.write(request, () => {
           resolve(request);
@@ -178,16 +178,15 @@ class JsonRpcClientProtocol {
 
   send(method, params) {
     return new Promise((resolve, reject) => {
-      const requestId = this.message_id;
       const request = this.message(method, params);
-      this.pendingCalls[requestId] = { resolve, reject };
+      this.pendingCalls[JSON.parse(request).id] = { resolve, reject };
       try {
         this.connector.write(request);
       } catch (e) {
         // this.connector is probably undefined
         reject(e);
       }
-      this._timeoutPendingCalls(requestId);
+      this._timeoutPendingCalls(JSON.parse(request).id);
     });
   }
 
@@ -246,9 +245,7 @@ class JsonRpcClientProtocol {
     // find the resolve and reject objects that match the batch request ids
     for (const ids of Object.keys(this.pendingCalls)) {
       const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
-      const difference = arrays.reduce((a, b) =>
-        a.filter((c) => !b.includes(c))
-      );
+      const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
       if (difference.length === 0) {
         this.factory.cleanUp(ids);
         this._resolveOrRejectBatch(batch, batchResponseIds);
