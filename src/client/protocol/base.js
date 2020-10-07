@@ -166,11 +166,7 @@ class JsonRpcClientProtocol {
   }
 
   notify(method, params) {
-    const request = formatRequest({
-      method,
-      params,
-      options: this.factory.options
-    });
+    const request = this.message(method, params, false);
     return new Promise((resolve, reject) => {
       try {
         this.connector.write(request, () => {
@@ -186,16 +182,15 @@ class JsonRpcClientProtocol {
   send(method, params) {
     return new Promise((resolve, reject) => {
       const requestId = this.message_id;
+      const request = this.message(method, params);
       this.pendingCalls[requestId] = { resolve, reject };
       try {
-        this.connector.write(this.message(method, params));
+        this.connector.write(request);
       } catch (e) {
         // this.connector is probably undefined
         reject(e);
       }
-      this.factory.timeouts[requestId] = setTimeout(() => {
-        this._timeoutPendingCalls(requestId);
-      }, this.factory.requestTimeout);
+      this._timeoutPendingCalls(requestId);
     });
   }
 
@@ -236,9 +231,7 @@ class JsonRpcClientProtocol {
         // this.connector is probably undefined
         reject(e.message);
       }
-      this.factory.timeouts[String(batchIds)] = setTimeout(() => {
-        this._timeoutPendingCalls(String(batchIds));
-      }, this.factory.requestTimeout);
+      this._timeoutPendingCalls(String(batchIds));
     });
   }
 
@@ -267,24 +260,28 @@ class JsonRpcClientProtocol {
   }
 
   _timeoutPendingCalls(id) {
-    this.factory.cleanUp(id);
-    try {
-      const error = JSON.parse(
-        formatError({
-          jsonrpc: this.version,
-          delimiter: this.delimiter,
-          id: typeof id === "string" ? null : id,
-          code: ERR_CODES.timeout,
-          message: ERR_MSGS.timeout
-        })
-      );
-      this.pendingCalls[id].reject(error);
-      delete this.pendingCalls[id];
-    } catch (e) {
-      if (e instanceof TypeError) {
-        console.error(`Message has no outstanding calls: ${JSON.stringify(e)}`);
+    this.factory.timeouts[id] = setTimeout(() => {
+      this.factory.cleanUp(id);
+      try {
+        const error = JSON.parse(
+          formatError({
+            jsonrpc: this.version,
+            delimiter: this.delimiter,
+            id: typeof id === "string" ? null : id,
+            code: ERR_CODES.timeout,
+            message: ERR_MSGS.timeout
+          })
+        );
+        this.pendingCalls[id].reject(error);
+        delete this.pendingCalls[id];
+      } catch (e) {
+        if (e instanceof TypeError) {
+          console.error(
+            `Message has no outstanding calls: ${JSON.stringify(e)}`
+          );
+        }
       }
-    }
+    }, this.factory.requestTimeout);
   }
 
   _resolveOrRejectBatch(batch, batchIds) {
