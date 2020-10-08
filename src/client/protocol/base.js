@@ -10,6 +10,7 @@ class JsonRpcClientProtocol {
     }
     this.factory = factory;
     this.connector = undefined;
+    this.listener = undefined;
     this.delimiter = delimiter;
     this.version = version;
     this.message_id = 1;
@@ -26,6 +27,7 @@ class JsonRpcClientProtocol {
       this.connector.connect(this.server);
       this.connector.setEncoding("utf8");
       this.connector.on("connect", () => {
+        this.listener = this.connector;
         this.listen();
         resolve(this.server);
       });
@@ -52,7 +54,7 @@ class JsonRpcClientProtocol {
   }
 
   listen() {
-    this.connector.on("data", (data) => {
+    this.listener.on("data", (data) => {
       this.messageBuffer.push(data);
       this._waitForData();
     });
@@ -142,6 +144,10 @@ class JsonRpcClientProtocol {
     return this.responseQueue[id];
   }
 
+  write(request, cb) {
+    this.connector.write(request, cb);
+  }
+
   message(method, params, id = true) {
     const request = formatRequest({
       method,
@@ -159,7 +165,7 @@ class JsonRpcClientProtocol {
     return new Promise((resolve, reject) => {
       const request = this.message(method, params, false);
       try {
-        this.connector.write(request, () => {
+        this.write(request, () => {
           resolve(request);
         });
       } catch (e) {
@@ -174,7 +180,7 @@ class JsonRpcClientProtocol {
       const request = this.message(method, params);
       this.pendingCalls[JSON.parse(request).id] = { resolve, reject };
       try {
-        this.connector.write(request);
+        this.write(request);
       } catch (e) {
         // this.connector is probably undefined
         reject(e);
@@ -215,7 +221,7 @@ class JsonRpcClientProtocol {
       this.pendingCalls[String(batchIds)] = { resolve, reject };
       const request = JSON.stringify(batchRequests);
       try {
-        this.connector.write(request + this.delimiter);
+        this.write(request + this.delimiter);
       } catch (e) {
         // this.connector is probably undefined
         reject(e.message);

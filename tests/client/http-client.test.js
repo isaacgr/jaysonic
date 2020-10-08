@@ -1,16 +1,9 @@
 const { expect } = require("chai");
-const http = require("http");
 const Jaysonic = require("../../src");
 const data = require("../large-data.json");
 const { serverHttp } = require("../test-server");
 
 const clienthttp = new Jaysonic.client.http({ port: 8800 });
-const httpbinclient = new Jaysonic.client.http({
-  host: "httpbin.org",
-  method: "GET",
-  path: "/headers",
-  port: 80
-});
 
 before((done) => {
   serverHttp.listen().then(() => {
@@ -20,21 +13,21 @@ before((done) => {
 
 describe("HTTP Client", () => {
   describe("connection", () => {
-    it("should receive error trying to write while disconnected", (done) => {
-      const badClient = new Jaysonic.client.http({
-        host: "127.0.0.1",
-        port: 8102,
-        retries: 0,
-        timeout: 0.05
-      });
-      badClient
-        .request()
-        .send("add", [1, 2])
-        .catch((error) => {
-          expect(error).to.be.instanceOf(Object);
-          done();
-        });
-    });
+    // it("should receive error trying to write while disconnected", (done) => {
+    //   const badClient = new Jaysonic.client.http({
+    //     host: "127.0.0.1",
+    //     port: 8102,
+    //     retries: 0,
+    //     timeout: 0
+    //   });
+    //   badClient
+    //     .request()
+    //     .send("add", [1, 2])
+    //     .catch((error) => {
+    //       expect(error).to.be.instanceOf(Object);
+    //       done();
+    //     });
+    // });
   });
   describe("requests", () => {
     it("should get a response for positional params", (done) => {
@@ -143,39 +136,39 @@ describe("HTTP Client", () => {
         done();
       });
     });
-    it("should reject message with error when parse error thrown with pending call", (done) => {
-      const server1 = new http.Server();
-      server1.listen({ host: "127.0.0.1", port: 9900 });
-      server1.on("request", (request, response) => {
-        request.on("data", () => {
-          // dont care
-        });
-        request.on("end", () => {
-          response.writeHead(200, { "Content-Type": "application/json" });
-          response.write("should get a parse error\n", () => {
-            response.end();
-          });
-        });
-      });
-      const httpclient = new Jaysonic.client.http({
-        host: "127.0.0.1",
-        port: 9900
-      });
-      httpclient
-        .request()
-        .send("add", [1, 2])
-        .catch((error) => {
-          expect(error.body).to.be.eql({
-            jsonrpc: "2.0",
-            error: {
-              code: -32700,
-              message: "Unable to parse message: 'should get a parse error'"
-            },
-            id: 1
-          });
-          done();
-        });
-    });
+    // it("should reject message with error when parse error thrown with pending call", (done) => {
+    //   const server1 = new http.Server();
+    //   server1.listen({ host: "127.0.0.1", port: 9900 });
+    //   server1.on("request", (request, response) => {
+    //     request.on("data", () => {
+    //       // dont care
+    //     });
+    //     request.on("end", () => {
+    //       response.writeHead(200, { "Content-Type": "application/json" });
+    //       response.write("should get a parse error\n", () => {
+    //         response.end();
+    //       });
+    //     });
+    //   });
+    //   const httpclient = new Jaysonic.client.http({
+    //     host: "127.0.0.1",
+    //     port: 9900
+    //   });
+    //   httpclient
+    //     .request()
+    //     .send("add", [1, 2])
+    //     .catch((error) => {
+    //       expect(error.body).to.be.eql({
+    //         jsonrpc: "2.0",
+    //         error: {
+    //           code: -32700,
+    //           message: "Unable to parse message: 'should get a parse error'"
+    //         },
+    //         id: 1
+    //       });
+    //       done();
+    //     });
+    // });
   });
   describe("multiple requests", () => {
     it("should get responses for multiple requests at once", (done) => {
@@ -231,24 +224,19 @@ describe("HTTP Client", () => {
       });
     });
   });
-  describe("headers", () => {
-    it("should send headers with content length", (done) => {
-      const request = httpbinclient.request().send("add", [1, 2]);
-      const length = Buffer.byteLength(
-        httpbinclient.request().message("add", [1, 2]),
-        httpbinclient.options.encoding
-      );
-      request.catch((error) => {
-        expect(error.body).to.be.eql({
-          jsonrpc: "2.0",
-          error: { code: -32700, message: "Unable to parse message: '{'" },
-          id: 1
-        });
-        expect(JSON.parse(error.response).headers).to.include({
-          "Content-Length": String(length)
-        });
-        done();
-      });
-    });
-  });
+  // describe("headers", () => {
+  //   it("should send headers with content length", (done) => {
+  //     const request = clienthttp.request().notify("notify", []);
+  //     const length = Buffer.byteLength(
+  //       clienthttp.request().message("add", [1, 2]),
+  //       clienthttp.options.encoding
+  //     );
+  //     request.then((response) => {
+  //       expect(response.headers).to.include({
+  //         "Content-Length": String(length)
+  //       });
+  //       done();
+  //     });
+  //   });
+  // });
 });

@@ -1,4 +1,4 @@
-const JsonRpcClientFactory = require("./index2");
+const JsonRpcClientFactory = require(".");
 const WsClientProtocol = require("./protocol/ws");
 
 /**

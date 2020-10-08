@@ -98,7 +98,7 @@ describe("#54 Request timeout", () => {
           expect(error).to.be.eql({
             jsonrpc: "2.0",
             error: { code: -32000, message: "Request Timeout" },
-            id: null
+            id: 1
           });
           done();
         });

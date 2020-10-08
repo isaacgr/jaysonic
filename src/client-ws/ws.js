@@ -97,8 +97,7 @@ class WSClient extends EventTarget {
       }
     }
     // if no more events of the removed event method are left,remove the group
-    if (this.eventListenerList[method].length === 0)
-      delete this.eventListenerList[method];
+    if (this.eventListenerList[method].length === 0) delete this.eventListenerList[method];
   }
 
   unsubscribeAll(method) {

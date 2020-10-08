@@ -13,6 +13,7 @@ class WsClientProtocol extends JsonRpcClientProtocol {
       this.connector = new WebSocket(this.url, perMessageDeflate);
       this.connector.onopen = (event) => {
         this.connector.write = this.connector.send; // tcp uses .write(), ws uses .send()
+        this.listener = this.connector;
         this.listen();
         resolve(event);
       };
@@ -55,7 +56,7 @@ class WsClientProtocol extends JsonRpcClientProtocol {
   }
 
   listen() {
-    this.connector.onmessage = (message) => {
+    this.listener.onmessage = (message) => {
       this.messageBuffer.push(message.data);
       this._waitForData(message.data);
     };
