@@ -56,6 +56,13 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
     };
   }
 
+  getBatchResponse(batch) {
+    return {
+      body: batch,
+      ...this.connector
+    };
+  }
+
   rejectPendingCalls(error) {
     const err = {
       body: error,
@@ -69,38 +76,6 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
         // probably a parse error, which might not have an id
         console.error(
           `Message has no outstanding calls: ${JSON.stringify(err.body)}`
-        );
-      }
-    }
-  }
-
-  _resolveOrRejectBatch(batch, batchIds) {
-    const batchResponse = {
-      body: batch,
-      ...this.connector
-    };
-    try {
-      const invalidBatches = [];
-      batch.forEach((message) => {
-        if (message.error) {
-          // reject the whole message if there are any errors
-          this.pendingCalls[batchIds].reject(batchResponse);
-          invalidBatches.push(batchIds);
-        }
-      });
-      if (invalidBatches.length !== 0) {
-        invalidBatches.forEach((id) => {
-          delete this.pendingCalls[id];
-        });
-      } else {
-        this.pendingCalls[batchIds].resolve(batchResponse);
-        delete this.pendingCalls[batchIds];
-      }
-    } catch (e) {
-      if (e instanceof TypeError) {
-        // no outstanding calls
-        console.log(
-          `Batch response has no outstanding calls. Response IDs [${batchIds}]`
         );
       }
     }

@@ -252,6 +252,10 @@ class JsonRpcClientProtocol {
     }
   }
 
+  getBatchResponse(batch) {
+    return batch;
+  }
+
   _timeoutPendingCalls(id) {
     this.factory.timeouts[id] = setTimeout(() => {
       this.factory.cleanUp(id);
@@ -278,12 +282,13 @@ class JsonRpcClientProtocol {
   }
 
   _resolveOrRejectBatch(batch, batchIds) {
+    const batchResponse = this.getBatchResponse(batch);
     try {
       const invalidBatches = [];
       batch.forEach((message) => {
         if (message.error) {
           // reject the whole message if there are any errors
-          this.pendingCalls[batchIds].reject(batch);
+          this.pendingCalls[batchIds].reject(batchResponse);
           invalidBatches.push(batchIds);
         }
       });
@@ -292,7 +297,7 @@ class JsonRpcClientProtocol {
           delete this.pendingCalls[id];
         });
       } else {
-        this.pendingCalls[batchIds].resolve(batch);
+        this.pendingCalls[batchIds].resolve(batchResponse);
         delete this.pendingCalls[batchIds];
       }
     } catch (e) {
