@@ -1,4 +1,3 @@
-const net = require("net");
 const { formatRequest, formatError } = require("../../functions");
 const { ERR_CODES, ERR_MSGS } = require("../../constants");
 const { MessageBuffer } = require("../../buffer");
@@ -23,7 +22,7 @@ class JsonRpcClientProtocol {
 
   connect() {
     return new Promise((resolve, reject) => {
-      this.connector = new net.Socket();
+      this.setConnector();
       this.connector.connect(this.server);
       this.connector.setEncoding("utf8");
       this.connector.on("connect", () => {

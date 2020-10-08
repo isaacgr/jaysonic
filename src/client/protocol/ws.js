@@ -7,10 +7,14 @@ class WsClientProtocol extends JsonRpcClientProtocol {
     this.url = this.factory.url;
   }
 
+  setConnector() {
+    const { perMessageDeflate } = this.factory.options;
+    this.connector = new WebSocket(this.url, perMessageDeflate);
+  }
+
   connect() {
     return new Promise((resolve, reject) => {
-      const { perMessageDeflate } = this.factory.options;
-      this.connector = new WebSocket(this.url, perMessageDeflate);
+      this.setConnector();
       this.connector.onopen = (event) => {
         this.connector.write = this.connector.send; // tcp uses .write(), ws uses .send()
         this.listener = this.connector;
@@ -38,12 +42,14 @@ class WsClientProtocol extends JsonRpcClientProtocol {
           }, this.factory.connectionTimeout);
         } else {
           this.factory.pcolInstance = undefined;
-          reject({
-            error: {
-              code: "ECONNREFUSED",
-              message: `connection refused ${this.url}`
-            }
-          });
+          reject(
+            Error({
+              error: {
+                code: "ECONNREFUSED",
+                message: `connection refused ${this.url}`
+              }
+            })
+          );
         }
       };
     });

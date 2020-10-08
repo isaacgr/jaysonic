@@ -1,6 +1,11 @@
 const WsClientProtocol = require("./ws");
 
 class WsBrowserClientProtocol extends WsClientProtocol {
+  setConnector() {
+    const { protocols } = this.factory.options;
+    this.connector = new window.WebSocket(this.url, protocols);
+  }
+
   handleBatch(message) {
     // check if any requests are notifications
     message.forEach((res) => {
