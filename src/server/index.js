@@ -121,7 +121,7 @@ class Server extends EventEmitter {
             return;
           }
           return this.getResult(message)
-            .then(result => JSON.parse(result))
+            .then((result) => JSON.parse(result))
             .catch((error) => {
               throw error;
             });
@@ -129,12 +129,14 @@ class Server extends EventEmitter {
           return Promise.reject(e);
         }
       })
-      .filter(el => el != null);
+      .filter((el) => el != null);
     if (batchRequests.length === 0) {
       return Promise.resolve({ empty: true });
     }
     return Promise.all(
-      batchRequests.map(promise => promise.catch(error => JSON.parse(error.message)))
+      batchRequests.map((promise) =>
+        promise.catch((error) => JSON.parse(error.message))
+      )
     );
   }
 
@@ -226,9 +228,9 @@ class Server extends EventEmitter {
     }
 
     if (
-      message.params
-      && !Array.isArray(message.params)
-      && !(message.params === Object(message.params))
+      message.params &&
+      !Array.isArray(message.params) &&
+      !(message.params === Object(message.params))
     ) {
       throw new Error(
         formatError({
@@ -282,8 +284,8 @@ class Server extends EventEmitter {
           ? this.methods[message.method](params)
           : this.methods[message.method]();
         if (
-          result
-          && (typeof result.then === "function" || result instanceof Promise)
+          result &&
+          (typeof result.then === "function" || result instanceof Promise)
         ) {
           Promise.all([result])
             .then((results) => {
@@ -361,7 +363,7 @@ Server.http = require("./http");
  * @type ServerTCP
  * @static
  */
-Server.tcp = require("./tcp");
+Server.tcp = require("./tcp2");
 
 /**
  * WS server constructor
