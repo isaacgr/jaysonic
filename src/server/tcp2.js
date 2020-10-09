@@ -49,20 +49,7 @@ class TcpServerFactory extends JsonRpcServerFactory {
     if (notifications.length === 0 || !Array.isArray(notifications)) {
       throw new Error("Invalid arguments");
     }
-    const responses = notifications.map(([method, params]) => {
-      if (!method && !params) {
-        throw new Error("Unable to generate a response object");
-      }
-      const response = {
-        method,
-        params,
-        delimiter: this.options.delimiter
-      };
-      if (this.options.version === "2.0") {
-        response.jsonrpc = "2.0";
-      }
-      return response;
-    });
+    const responses = this._getNotificationResponses(notifications);
     if (responses.length === 0) {
       throw new Error("Unable to generate a response object");
     }
@@ -78,9 +65,15 @@ class TcpServerFactory extends JsonRpcServerFactory {
       });
       response += "]";
     }
-    /**
-     * Returns list of error objects if there was an error sending to any client
-     */
+    return this.sendNotifications(response);
+  }
+
+  /**
+   * Returns list of error objects if there was an error sending to any client
+   * Otherwise Returns true if the entire data was sent successfully
+   * Returns false if all or part of the data was not
+   */
+  sendNotifications(response) {
     return this.connectedClients.map((client) => {
       try {
         return client.write(
@@ -90,6 +83,23 @@ class TcpServerFactory extends JsonRpcServerFactory {
         // possibly client disconnected
         return e;
       }
+    });
+  }
+
+  _getNotificationResponses(notifications) {
+    return notifications.map(([method, params]) => {
+      if (!method && !params) {
+        throw new Error("Unable to generate a response object");
+      }
+      const response = {
+        method,
+        params,
+        delimiter: this.options.delimiter
+      };
+      if (this.options.version === "2.0") {
+        response.jsonrpc = "2.0";
+      }
+      return response;
     });
   }
 }
