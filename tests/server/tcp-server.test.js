@@ -15,19 +15,21 @@ server.method("typeerror", ([a]) => {
 });
 server.method(
   "promiseresolve",
-  () => new Promise((resolve) => {
-    setTimeout(() => {
-      resolve("worked");
-    }, 10);
-  })
+  () =>
+    new Promise((resolve) => {
+      setTimeout(() => {
+        resolve("worked");
+      }, 10);
+    })
 );
 server.method(
   "promisereject",
-  () => new Promise((resolve, reject) => {
-    setTimeout(() => {
-      reject(new Error("broke"));
-    }, 10);
-  })
+  () =>
+    new Promise((resolve, reject) => {
+      setTimeout(() => {
+        reject(new Error("broke"));
+      }, 10);
+    })
 );
 
 before((done) => {
@@ -236,7 +238,7 @@ describe("TCP Server", () => {
         .catch((result) => {
           expect(result).to.be.eql({
             jsonrpc: "2.0",
-            error: { code: -32603, message: "\"broke\"" },
+            error: { code: -32603, message: '"broke"' },
             id: 6
           });
           done();

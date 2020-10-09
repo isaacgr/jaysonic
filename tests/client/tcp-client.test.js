@@ -146,7 +146,7 @@ describe("TCP Client", () => {
         setTimeout(() => {
           unhook();
           expect(capturedText).to.equal(
-            "Message has no outstanding calls: {\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Unable to parse message: 'should get a parse error\\r'\"},\"id\":null}\n"
+            'Message has no outstanding calls: {"jsonrpc":"2.0","error":{"code":-32700,"message":"Unable to parse message: \'should get a parse error\\r\'"},"id":null}\n'
           );
           done();
         }, 100);
@@ -319,13 +319,13 @@ describe("TCP Client", () => {
         ["test", []]
       ]);
     });
-    it("should be unable to subscribe, unsub, or unsub all for \"batchResponse\"", (done) => {
+    it('should be unable to subscribe, unsub, or unsub all for "batchResponse"', (done) => {
       try {
         client.subscribe("batchResponse", () => {});
       } catch (e) {
         expect(e.message).to.be.a(
           "string",
-          "\"batchResponse\" is a reserved event name"
+          '"batchResponse" is a reserved event name'
         );
       }
       try {
@@ -333,7 +333,7 @@ describe("TCP Client", () => {
       } catch (e) {
         expect(e.message).to.be.a(
           "string",
-          "\"batchResponse\" is a reserved event name"
+          '"batchResponse" is a reserved event name'
         );
       }
       try {
@@ -341,7 +341,7 @@ describe("TCP Client", () => {
       } catch (e) {
         expect(e.message).to.be.a(
           "string",
-          "\"batchResponse\" is a reserved event name"
+          '"batchResponse" is a reserved event name'
         );
       }
       done();

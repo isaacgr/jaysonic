@@ -31,7 +31,10 @@ class JsonRpcServerProtocol {
       const chunk = this.messageBuffer.handleData();
       this.handleValidation(chunk)
         .then((message) => {
-          this.handleValidMessage(message);
+          // batch notifications can return 'undefined'
+          if (message) {
+            this.handleValidMessage(message);
+          }
         })
         .catch((error) => {
           this.sendError(error.message);
@@ -72,8 +75,8 @@ class JsonRpcServerProtocol {
       // possible batch request
       return this.handleBatchRequest(message);
     } else if (!(message === Object(message))) {
-      const code = ERR_CODES.parseError;
-      const errorMessage = `Unable to parse message: '${chunk}'`;
+      const code = ERR_CODES.invalidRequest;
+      const errorMessage = ERR_MSGS.invalidRequest;
       this._raiseError(errorMessage, code, null);
     } else if (!message.id) {
       // no id, so assume notification
@@ -119,7 +122,9 @@ class JsonRpcServerProtocol {
       this.writeToClient(message, message.notification);
     } else {
       this.getResult(message)
-        .then((result) => this.writeToClient(result))
+        .then((result) => {
+          this.writeToClient(result);
+        })
         .catch((error) => {
           this.sendError(error);
         });
@@ -140,14 +145,17 @@ class JsonRpcServerProtocol {
         try {
           const message = this.validateMessage(request);
           if (message.notification) {
-            this.emit(message.notification.method, message.notification);
-            return;
+            this.factory.emit(
+              message.notification.method,
+              message.notification
+            );
+          } else {
+            return this.getResult(message)
+              .then((result) => JSON.parse(result))
+              .catch((error) => {
+                throw error;
+              });
           }
-          return this.getResult(message)
-            .then((result) => JSON.parse(result))
-            .catch((error) => {
-              throw error;
-            });
         } catch (e) {
           return Promise.reject(e);
         }
