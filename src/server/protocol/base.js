@@ -29,29 +29,16 @@ class JsonRpcServerProtocol {
   _waitForData() {
     while (!this.messageBuffer.isFinished()) {
       const chunk = this.messageBuffer.handleData();
-      this.handleValidation(chunk)
-        .then((message) => {
-          // batch notifications can return 'undefined'
-          if (message) {
-            this.handleValidMessage(message);
-          }
-        })
-        .catch((error) => {
-          this.sendError(error.message);
-        });
-    }
-  }
-
-  handleValidation(chunk) {
-    return new Promise((resolve, reject) => {
       try {
         const result = this.validateRequest(chunk);
-        const message = this.validateMessage(result);
-        resolve(message);
+        const isMessage = this.maybeHandleRequest(result);
+        if (isMessage) {
+          this.handleRequest(result);
+        }
       } catch (e) {
-        reject(e);
+        this.handleError(e);
       }
-    });
+    }
   }
 
   validateRequest(request) {
@@ -70,17 +57,26 @@ class JsonRpcServerProtocol {
     }
   }
 
-  validateMessage(message) {
-    if (Array.isArray(message)) {
+  maybeHandleRequest(result) {
+    if (Array.isArray(result)) {
       // possible batch request
-      return this.handleBatchRequest(message);
-    } else if (!(message === Object(message))) {
+      this.handleBatchRequest(result).then((res) => {
+        this.writeToClient(JSON.stringify(res) + this.delimiter);
+      });
+    } else if (result === Object(result) && !result.id) {
+      // no id, so assume notification
+      this.handleNotification(result);
+    } else {
+      this.validateMessage(result);
+      return true;
+    }
+  }
+
+  validateMessage(message) {
+    if (!(message === Object(message))) {
       const code = ERR_CODES.invalidRequest;
       const errorMessage = ERR_MSGS.invalidRequest;
       this._raiseError(errorMessage, code, null);
-    } else if (!message.id) {
-      // no id, so assume notification
-      return { notification: message };
     } else if (!(typeof message.method === "string")) {
       const code = ERR_CODES.invalidRequest;
       const errorMessage = ERR_MSGS.invalidRequest;
@@ -106,69 +102,43 @@ class JsonRpcServerProtocol {
         const errorMessage = ERR_MSGS.invalidRequest;
         const id = message.id;
         this._raiseError(errorMessage, code, id);
-      } else {
-        // data looks good
-        return message;
       }
-    } else {
-      return message;
     }
   }
 
-  handleValidMessage(message) {
-    if (Array.isArray(message)) {
-      this.writeToClient(JSON.stringify(message) + this.delimiter);
-    } else if (message.notification) {
-      this.writeToClient(message, message.notification);
-    } else {
-      this.getResult(message)
-        .then((result) => {
-          this.writeToClient(result);
-        })
-        .catch((error) => {
-          this.sendError(error);
-        });
-    }
+  writeToClient(message) {
+    this.client.write(message);
   }
 
-  writeToClient(message, notification) {
-    if (notification) {
-      this.factory.emit(message.notification.method, notification);
-    } else {
-      this.client.write(message);
-    }
+  handleNotification(message) {
+    this.factory.emit(message.method, message);
+  }
+
+  handleRequest(message) {
+    this.getResult(message)
+      .then((result) => {
+        this.writeToClient(result);
+      })
+      .catch((error) => {
+        this.handleError(Error(error));
+      });
   }
 
   handleBatchRequest(requests) {
-    const batchRequests = requests
+    const batchResponses = requests
       .map((request) => {
         try {
-          const message = this.validateMessage(request);
-          if (message.notification) {
-            this.factory.emit(
-              message.notification.method,
-              message.notification
-            );
-          } else {
-            return this.getResult(message)
-              .then((result) => JSON.parse(result))
-              .catch((error) => {
-                throw error;
-              });
-          }
+          this.maybeHandleRequest(request);
+          return this.getResult(request)
+            .then((result) => JSON.parse(result))
+            .catch((error) => JSON.parse(error));
         } catch (e) {
-          return Promise.reject(e);
+          // basically reject the whole batch if any one thing fails
+          return JSON.parse(e.message);
         }
       })
       .filter((el) => el != null);
-    if (batchRequests.length === 0) {
-      return;
-    }
-    return Promise.all(
-      batchRequests.map((promise) =>
-        promise.catch((error) => JSON.parse(error.message))
-      )
-    );
+    return Promise.all(batchResponses);
   }
 
   getResult(message) {
@@ -250,8 +220,20 @@ class JsonRpcServerProtocol {
     throw new Error(error);
   }
 
-  sendError(error) {
-    this.writeToClient(error);
+  handleError(error) {
+    let err;
+    try {
+      err = JSON.stringify(JSON.parse(error.message));
+    } catch (e) {
+      err = formatError({
+        jsonrpc: this.version,
+        delimiter: this.delimiter,
+        id: null,
+        code: ERR_CODES.unknown,
+        message: JSON.stringify(error, Object.getOwnPropertyNames(error))
+      });
+    }
+    this.writeToClient(err + this.delimiter);
   }
 }
 
