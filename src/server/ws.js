@@ -1,7 +1,6 @@
 const WebSocket = require("ws");
-const Server = require(".");
-const { formatResponse } = require("../functions");
-const { WSServerProtocol } = require("./protocol/ws");
+const JsonRpcServerFactory = require(".");
+const WSServerProtocol = require("./protocol/ws");
 
 /**
  * Constructor for Jsonic WS client
@@ -11,17 +10,12 @@ const { WSServerProtocol } = require("./protocol/ws");
  * @param {Object} [options] optional settings for client
  * @return WSClient
  */
-class WSServer extends Server {
+class WSServer extends JsonRpcServerFactory {
   constructor(options) {
     super(options);
 
-    this.connectedClients = [];
     const defaults = {
-      host: "127.0.0.1",
       path: null,
-      port: 8100,
-      version: "2.0",
-      delimiter: "\n",
       // all the ws options on the github page
       perMessageDeflate: {
         zlibDeflateOptions: {
@@ -38,20 +32,28 @@ class WSServer extends Server {
 
     this.options = {
       ...defaults,
-      ...(options || {})
+      ...(this.options || {})
     };
   }
 
+  setSever() {
+    this.server = new WebSocket.Server(this.options);
+  }
+
+  /**
+   * WS server needs to override listen method from parent
+   * since the ws library starts listening on instantiation
+   */
   listen() {
-    /**
-     * WS server needs to override listen method from parent
-     * since the ws library starts listening on instantiation
-     */
     return new Promise((resolve, reject) => {
+      if (this.listening) {
+        // not having this caused MaxEventListeners error
+        return reject(Error("server already listening"));
+      }
+      this.setSever();
+      this.listening = true;
+      this.pcolInstance = this.buildProtocol();
       try {
-        this.server = new WebSocket.Server(this.options);
-        this.handleData();
-        this.handleError();
         resolve({
           host: this.options.host,
           port: this.options.port,
@@ -63,81 +65,28 @@ class WSServer extends Server {
     });
   }
 
-  handleData() {
+  buildProtocol() {
     this.server.on("connection", (client) => {
       this.emit("clientConnected", client);
       this.connectedClients.push(client);
-      const wsServerProtocol = new WSServerProtocol(
+      this.pcolInstance = new WSServerProtocol(
         this,
         client,
+        this.options.version,
         this.options.delimiter
       );
-      wsServerProtocol.clientConnected();
+      this.pcolInstance.clientConnected();
     });
   }
 
-  clientConnected(cb) {
-    this.on("clientConnected", client => cb({
-      host: client.remoteAddress,
-      port: client.remotePort
-    }));
-  }
-
-  clientDisconnected(cb) {
-    this.on("clientDisconnected", (client) => {
-      const clientIndex = this.connectedClients.findIndex(c => client === c);
-      if (clientIndex === -1) {
-        return cb(`Unknown client ${JSON.stringify(client)}`);
-      }
-      const [deletedClient] = this.connectedClients.splice(clientIndex, 1);
-      return cb({
-        host: deletedClient.remoteAddress,
-        port: deletedClient.remotePort
-      });
-    });
-  }
-
-  notify(notifications) {
-    if (notifications.length === 0 || !Array.isArray(notifications)) {
-      throw new Error("Invalid arguments");
-    }
-    const responses = notifications.map(([method, params]) => {
-      if (!method && !params) {
-        throw new Error("Unable to generate a response object");
-      }
-      const response = this.options.version === "2.0"
-        ? {
-          jsonrpc: "2.0",
-          method,
-          params,
-          delimiter: this.options.delimiter
-        }
-        : {
-          method,
-          params,
-          delimiter: this.options.delimiter
-        };
-      return response;
-    });
-    if (responses.length === 0) {
-      throw new Error("Unable to generate a response object");
-    }
-    let response;
-    if (responses.length === 1) {
-      response = formatResponse(responses[0]);
-    } else {
-      response = "[";
-      responses.forEach((res, idx) => {
-        response += formatResponse(res);
-        response += idx === responses.length - 1 ? "" : ",";
-      });
-      response += "]";
-    }
-    /**
-     * Returns list of error objects if there was an error sending to any client
-     */
+  /**
+   * Returns list of error objects if there was an error sending to any client
+   * Otherwise Returns true if the entire data was sent successfully
+   * Returns false if all or part of the data was not
+   */
+  sendNotifications(response) {
     if (this.connectedClients.length === 0) {
-      return [new Error("No clients connected")];
+      return [Error("No clients connected")];
     }
     return this.connectedClients.map((client) => {
       try {
