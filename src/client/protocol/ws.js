@@ -27,12 +27,15 @@ class WsClientProtocol extends JsonRpcClientProtocol {
           reject(error);
         }
       };
-      this.connector.onclose = (code, message) => {
+      this.connector.onclose = (event) => {
         if (this.connector.__clientClosed) {
           console.log(
-            `Client closed connection. Code[${code}]. Reason [${message}]`
+            `Client closed connection. Code[${event.code}]. Reason [${event.message}]`
           );
-        } else if (this.factory.remainingRetries) {
+        } else {
+          if (this.factory.remainingRetries === 0) {
+            reject(event);
+          }
           this.factory.remainingRetries -= 1;
           console.error(
             `Connection failed. ${this.factory.remainingRetries} attempts left.`
@@ -40,16 +43,6 @@ class WsClientProtocol extends JsonRpcClientProtocol {
           setTimeout(() => {
             this.connect();
           }, this.factory.connectionTimeout);
-        } else {
-          this.factory.pcolInstance = undefined;
-          reject(
-            Error({
-              error: {
-                code: "ECONNREFUSED",
-                message: `connection refused ${this.url}`
-              }
-            })
-          );
         }
       };
     });

@@ -168,10 +168,7 @@ class JsonRpcServerProtocol {
         const result = params
           ? this.factory.methods[message.method](params)
           : this.factory.methods[message.method]();
-        if (
-          result
-          && (typeof result.then === "function" || result instanceof Promise)
-        ) {
+        if (result instanceof Promise || typeof result.then === "function") {
           Promise.all([result])
             .then((results) => {
               response.result = results || 0;
