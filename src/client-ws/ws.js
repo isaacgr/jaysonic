@@ -86,18 +86,12 @@ class WSClient extends EventTarget {
     // remove listener
     this.removeEventListener(method, cb);
 
-    if (!this.eventListenerList) this.eventListenerList = {};
-    if (!this.eventListenerList[method]) this.eventListenerList[method] = [];
-
     // Find the event in the list and remove it
-    for (let i = 0; i < this.eventListenerList[method].length; i += 1) {
-      if (this.eventListenerList[method][i].listener === cb) {
-        this.eventListenerList[method].splice(i, 1);
-        break;
-      }
-    }
+    this._removeListener(method, cb);
+
     // if no more events of the removed event method are left,remove the group
-    if (this.eventListenerList[method].length === 0) delete this.eventListenerList[method];
+    if (this.eventListenerList[method].length === 0)
+      delete this.eventListenerList[method];
   }
 
   unsubscribeAll(method) {
@@ -109,18 +103,21 @@ class WSClient extends EventTarget {
       // remove listener
       this.removeEventListener(method, cb);
 
-      if (!this.eventListenerList) this.eventListenerList = {};
-      if (!this.eventListenerList[method]) this.eventListenerList[method] = [];
-
       // Find the event in the list and remove it
-      for (let i = 0; i < this.eventListenerList[method].length; i += 1) {
-        if (this.eventListenerList[method][i].listener === cb) {
-          this.eventListenerList[method].splice(i, 1);
-          break;
-        }
-      }
+      this._removeListener(method, cb);
     }
     delete this.eventListenerList[method];
+  }
+
+  _removeListener(method, cb) {
+    if (!this.eventListenerList) this.eventListenerList = {};
+    if (!this.eventListenerList[method]) this.eventListenerList[method] = [];
+    for (let i = 0; i < this.eventListenerList[method].length; i += 1) {
+      if (this.eventListenerList[method][i].listener === cb) {
+        this.eventListenerList[method].splice(i, 1);
+        break;
+      }
+    }
   }
 
   getEventListeners(type) {
