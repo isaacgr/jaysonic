@@ -1,8 +1,8 @@
 const JsonRpcServerProtocol = require("./base");
 
 class HttpServerProtocol extends JsonRpcServerProtocol {
-  constructor(factory, client, response, delimiter) {
-    super(factory, client, delimiter);
+  constructor(factory, client, response, version, delimiter) {
+    super(factory, client, version, delimiter);
     this.response = response;
   }
 
@@ -19,6 +19,11 @@ class HttpServerProtocol extends JsonRpcServerProtocol {
     this.response.write(message, () => {
       this.response.end();
     });
+  }
+
+  handleNotification(message) {
+    this.factory.emit(message.method, message);
+    this.writeToClient(message, true);
   }
 
   clientConnected() {
@@ -41,4 +46,4 @@ class HttpServerProtocol extends JsonRpcServerProtocol {
   }
 }
 
-module.exports = { HttpServerProtocol };
+module.exports = HttpServerProtocol;

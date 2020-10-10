@@ -13,8 +13,8 @@ class MessageBuffer {
 
   isFinished() {
     if (
-      this.buffer.length === 0
-      || this.buffer.indexOf(this.delimiter) === -1
+      this.buffer.length === 0 ||
+      this.buffer.indexOf(this.delimiter) === -1
     ) {
       return true;
     }

@@ -1,4 +1,5 @@
 const EventEmitter = require("events");
+const { formatResponse } = require("../functions");
 
 /**
  * @class JsonRpcServerFactory
@@ -34,6 +35,7 @@ class JsonRpcServerFactory extends EventEmitter {
     this.methods = {};
     this.connectedClients = [];
     this.listening = false;
+    this.pcolInstance = undefined;
   }
 
   listen() {
@@ -55,6 +57,10 @@ class JsonRpcServerFactory extends EventEmitter {
       });
       this.setupListeners();
     });
+  }
+
+  buildProtocol() {
+    throw new Error("function must be overwritten in subclass");
   }
 
   setupListeners() {
@@ -100,20 +106,67 @@ class JsonRpcServerFactory extends EventEmitter {
     this.removeAllListeners([method]);
   }
 
-  notify() {
-    throw new Error("function must be overwritten in subclass");
+  notify(notifications) {
+    if (notifications.length === 0 || !Array.isArray(notifications)) {
+      throw new Error("Invalid arguments");
+    }
+    const responses = this._getNotificationResponses(notifications);
+    if (responses.length === 0) {
+      throw new Error("Unable to generate a response object");
+    }
+    let response;
+    if (responses.length === 1) {
+      response = formatResponse(responses[0]);
+    } else {
+      // batch notification responses
+      response = "[";
+      responses.forEach((res, idx) => {
+        response += formatResponse(res);
+        response += idx === responses.length - 1 ? "" : ",";
+      });
+      response += "]";
+    }
+    return this.sendNotifications(response);
   }
 
-  buildProtocol() {
-    throw new Error("function must be overwritten in subclass");
+  _getNotificationResponses(notifications) {
+    return notifications.map(([method, params]) => {
+      if (!method && !params) {
+        throw new Error("Unable to generate a response object");
+      }
+      const response = {
+        method,
+        params,
+        delimiter: this.options.delimiter
+      };
+      if (this.options.version === "2.0") {
+        response.jsonrpc = "2.0";
+      }
+      return response;
+    });
   }
 
-  clientConnected() {
-    throw new Error("function must be overwritten in subclass");
+  clientConnected(cb) {
+    this.on("clientConnected", (client) => {
+      cb({
+        host: client.remoteAddress,
+        port: client.remotePort
+      });
+    });
   }
 
-  clientDisconnected() {
-    throw new Error("function must be overwritten in subsclass");
+  clientDisconnected(cb) {
+    this.on("clientDisconnected", (client) => {
+      const clientIndex = this.connectedClients.findIndex((c) => client === c);
+      if (clientIndex === -1) {
+        return cb(`Unknown client ${JSON.stringify(client)}`);
+      }
+      const [deletedClient] = this.connectedClients.splice(clientIndex, 1);
+      return cb({
+        host: deletedClient.remoteAddress,
+        port: deletedClient.remotePort
+      });
+    });
   }
 }
 
@@ -124,7 +177,7 @@ module.exports = JsonRpcServerFactory;
  * @type ServerHTTP
  * @static
  */
-JsonRpcServerFactory.http = require("./http");
+JsonRpcServerFactory.http = require("./http2");
 
 /**
  * TCP server constructor
@@ -138,4 +191,4 @@ JsonRpcServerFactory.tcp = require("./tcp2");
  * @type ServerWS
  * @static
  */
-JsonRpcServerFactory.ws = require("./ws");
+JsonRpcServerFactory.ws = require("./ws2");

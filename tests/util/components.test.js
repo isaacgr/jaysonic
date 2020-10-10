@@ -7,9 +7,11 @@ const {
 } = require("../../src/functions");
 
 const Jaysonic = require("../../src");
+const baseProtocol = require("../../src/server/protocol/base");
 
 const server = new Jaysonic.server.tcp();
 const wss = new Jaysonic.server.ws();
+const protocol = new baseProtocol(undefined, undefined, "2.0", "\n");
 
 describe("formatRequest", () => {
   describe("methods", () => {
@@ -106,7 +108,7 @@ describe("formatRequest", () => {
         options: { delimiter: "\n" }
       };
       const message = formatRequest(params);
-      expect(message).to.be.eql("{\"method\":\"test\",\"jsonrpc\":\"2.0\",\"id\":1}\n");
+      expect(message).to.be.eql('{"method":"test","jsonrpc":"2.0","id":1}\n');
       done();
     });
   });
@@ -183,7 +185,7 @@ describe("formatResponse", () => {
           delimiter: "\n"
         };
         const response = formatResponse(params);
-        expect(response).to.eql("{\"result\":19,\"jsonrpc\":\"2.0\",\"id\":1}\n");
+        expect(response).to.eql('{"result":19,"jsonrpc":"2.0","id":1}\n');
         done();
       });
       it("should return notification with params", (done) => {
@@ -195,7 +197,7 @@ describe("formatResponse", () => {
         };
         const response = formatResponse(params);
         expect(response).to.eql(
-          "{\"params\":[1,2,3,4,5],\"jsonrpc\":\"2.0\",\"method\":\"update\"}\n"
+          '{"params":[1,2,3,4,5],"jsonrpc":"2.0","method":"update"}\n'
         );
         done();
       });
@@ -209,7 +211,7 @@ describe("formatResponse", () => {
         };
         const response = formatResponse(params);
         expect(response).to.eql(
-          "{\"result\":\"Hello JSON-RPC\",\"error\":null,\"id\":1}\n"
+          '{"result":"Hello JSON-RPC","error":null,"id":1}\n'
         );
         done();
       });
@@ -221,7 +223,7 @@ describe("formatResponse", () => {
         };
         const response = formatResponse(params);
         expect(response).to.eql(
-          "{\"params\":[1,2,3,4,5],\"error\":null,\"method\":\"update\",\"id\":null}\n"
+          '{"params":[1,2,3,4,5],"error":null,"method":"update","id":null}\n'
         );
         done();
       });
@@ -257,7 +259,7 @@ describe("formatError", () => {
       };
       const response = formatError(params);
       expect(response).to.eql(
-        "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32601,\"message\":\"Method not found\"},\"id\":1}\n"
+        '{"jsonrpc":"2.0","error":{"code":-32601,"message":"Method not found"},"id":1}\n'
       );
       done();
     });
@@ -270,7 +272,7 @@ describe("formatError", () => {
       };
       const response = formatError(params);
       expect(response).to.eql(
-        "{\"result\":null,\"error\":{\"code\":-32601,\"message\":\"Method not found\"},\"id\":1}\n"
+        '{"result":null,"error":{"code":-32601,"message":"Method not found"},"id":1}\n'
       );
       done();
     });
@@ -285,7 +287,7 @@ describe("formatError", () => {
       };
       const response = formatError(params);
       expect(response).to.eql(
-        "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32601,\"message\":\"Method not found\",\"data\":[1,2,3,4,5]},\"id\":1}\n"
+        '{"jsonrpc":"2.0","error":{"code":-32601,"message":"Method not found","data":[1,2,3,4,5]},"id":1}\n'
       );
       done();
     });
@@ -294,7 +296,7 @@ describe("formatError", () => {
 
 describe("getResult()", () => {
   it("should return 'invalid params' if result is undefined", (done) => {
-    server
+    protocol
       .getResult({
         jsonrpc: "2.0",
         method: "test",
@@ -303,7 +305,7 @@ describe("getResult()", () => {
       })
       .catch((error) => {
         expect(error).to.eql(
-          "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32602,\"message\":\"Invalid Parameters\"},\"id\":1}\n"
+          '{"jsonrpc":"2.0","error":{"code":-32602,"message":"Invalid Parameters"},"id":1}\n'
         );
         done();
       });
@@ -384,14 +386,14 @@ describe("server.notify()", () => {
       }
     });
     it("should return an error if no clients are connected", (done) => {
-      const res = server.notify([["test", []]]);
+      const res = wss.notify([["test", []]]);
       expect(res).to.be.an("array");
       expect(res[0]).to.be.instanceOf(Error);
       expect(res[0].message).to.be.a("string", "No clients connected");
       done();
     });
     it("should return a list of error objects if there was an issue sending out to a client", (done) => {
-      server.connectedClients.push(1);
+      wss.connectedClients.push(1);
       const res = server.notify([["test", []]]);
       expect(res).to.be.an("array");
       expect(res[0]).to.be.instanceOf(Error);

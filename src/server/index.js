@@ -356,7 +356,7 @@ module.exports = Server;
  * @type ServerHTTP
  * @static
  */
-Server.http = require("./http");
+Server.http = require("./http2");
 
 /**
  * TCP server constructor
@@ -370,4 +370,4 @@ Server.tcp = require("./tcp2");
  * @type ServerWS
  * @static
  */
-Server.ws = require("./ws");
+Server.ws = require("./ws2");
