@@ -52,29 +52,6 @@ class HTTPServer extends JsonRpcServerFactory {
     }
     response.writeHead(statusCode, header);
   }
-
-  clientConnected(cb) {
-    this.on("clientConnected", (client) => {
-      cb({
-        host: client.remoteAddress,
-        port: client.remotePort
-      });
-    });
-  }
-
-  clientDisconnected(cb) {
-    this.on("clientDisconnected", (client) => {
-      const clientIndex = this.connectedClients.findIndex((c) => client === c);
-      if (clientIndex === -1) {
-        return cb(`Unknown client ${JSON.stringify(client)}`);
-      }
-      const [deletedClient] = this.connectedClients.splice(clientIndex, 1);
-      return cb({
-        host: deletedClient.remoteAddress,
-        port: deletedClient.remotePort
-      });
-    });
-  }
 }
 
 module.exports = HTTPServer;
