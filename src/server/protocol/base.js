@@ -143,6 +143,16 @@ class JsonRpcServerProtocol {
     // function needs to be async since the method can be a promise
     return new Promise((resolve, reject) => {
       const { params } = message;
+      const response = {
+        jsonrpc: message.jsonrpc,
+        id: message.id,
+        delimiter: this.delimiter
+      };
+      const error = {
+        jsonrpc: message.jsonrpc,
+        id: message.id,
+        delimiter: this.delimiter
+      };
       try {
         const result = params
           ? this.factory.methods[message.method](params)
@@ -153,56 +163,27 @@ class JsonRpcServerProtocol {
         ) {
           Promise.all([result])
             .then((results) => {
-              resolve(
-                formatResponse({
-                  jsonrpc: message.jsonrpc,
-                  id: message.id,
-                  result: results || 0,
-                  delimiter: this.delimiter
-                })
-              );
+              response.result = results || 0;
+              resolve(formatResponse(response));
             })
             .catch((resError) => {
-              const error = formatError({
-                jsonrpc: message.jsonrpc,
-                id: message.id,
-                code: ERR_CODES.internal,
-                message: `${JSON.stringify(resError.message || resError)}`,
-                delimiter: this.delimiter
-              });
-              reject(error);
+              error.code = ERR_CODES.internal;
+              error.message = `${JSON.stringify(resError.message || resError)}`;
+              reject(formatError(error));
             });
         } else {
-          resolve(
-            formatResponse({
-              jsonrpc: message.jsonrpc,
-              id: message.id,
-              result: result || 0,
-              delimiter: this.delimiter
-            })
-          );
+          response.result = result || 0;
+          resolve(formatResponse(response));
         }
       } catch (e) {
         if (e instanceof TypeError) {
-          reject(
-            formatError({
-              jsonrpc: message.jsonrpc,
-              id: message.id,
-              code: ERR_CODES.invalidParams,
-              message: ERR_MSGS.invalidParams,
-              delimiter: this.delimiter
-            })
-          );
+          error.code = ERR_CODES.invalidParams;
+          error.message = ERR_MSGS.invalidParams;
+          reject(formatError(error));
         }
-        reject(
-          formatError({
-            jsonrpc: message.jsonrpc,
-            id: message.id,
-            code: ERR_CODES.unknown,
-            message: ERR_MSGS.unknown,
-            delimiter: this.delimiter
-          })
-        );
+        error.code = ERR_CODES.unknown;
+        error.message = ERR_MSGS.unknown;
+        reject(formatError(error));
       }
     });
   }
