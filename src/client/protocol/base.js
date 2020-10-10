@@ -79,7 +79,7 @@ class JsonRpcClientProtocol {
       } else if (!(message === Object(message))) {
         // error out if it cant be parsed
         throw SyntaxError();
-      } else if (!message.id) {
+      } else if (!("id" in message)) {
         // no id, so assume notification
         this.handleNotification(message);
       } else if (message.error) {

@@ -59,11 +59,22 @@ class JsonRpcServerProtocol {
 
   maybeHandleRequest(result) {
     if (Array.isArray(result)) {
+      if (result.length === 0) {
+        return this.writeToClient(
+          formatError({
+            code: ERR_CODES.invalidRequest,
+            message: ERR_MSGS.invalidRequest,
+            delimiter: this.delimiter,
+            jsonrpc: this.version,
+            id: null
+          })
+        );
+      }
       // possible batch request
       this.handleBatchRequest(result).then((res) => {
         this.writeToClient(JSON.stringify(res) + this.delimiter);
       });
-    } else if (result === Object(result) && !result.id) {
+    } else if (result === Object(result) && !("id" in result)) {
       // no id, so assume notification
       this.handleNotification(result);
     } else {
@@ -80,26 +91,26 @@ class JsonRpcServerProtocol {
     } else if (!(typeof message.method === "string")) {
       const code = ERR_CODES.invalidRequest;
       const errorMessage = ERR_MSGS.invalidRequest;
-      const id = message.id;
+      const { id } = message;
       this._raiseError(errorMessage, code, id);
     } else if (!(message.method in this.factory.methods)) {
       const code = ERR_CODES.methodNotFound;
       const errorMessage = ERR_MSGS.methodNotFound;
-      const id = message.id;
+      const { id } = message;
       this._raiseError(errorMessage, code, id);
     } else if (
-      message.params &&
-      !Array.isArray(message.params) &&
-      !(message.params === Object(message.params))
+      message.params
+      && !Array.isArray(message.params)
+      && !(message.params === Object(message.params))
     ) {
       const code = ERR_CODES.invalidParams;
       const errorMessage = ERR_MSGS.invalidParams;
-      const id = message.id;
+      const { id } = message;
       this._raiseError(errorMessage, code, id);
     } else if (message.jsonrpc && this.version !== "2.0") {
       const code = ERR_CODES.invalidRequest;
       const errorMessage = ERR_MSGS.invalidRequest;
-      const id = message.id;
+      const { id } = message;
       this._raiseError(errorMessage, code, id);
     }
   }
@@ -128,14 +139,14 @@ class JsonRpcServerProtocol {
         try {
           this.maybeHandleRequest(request);
           return this.getResult(request)
-            .then((result) => JSON.parse(result))
-            .catch((error) => JSON.parse(error));
+            .then(result => JSON.parse(result))
+            .catch(error => JSON.parse(error));
         } catch (e) {
           // basically reject the whole batch if any one thing fails
           return JSON.parse(e.message);
         }
       })
-      .filter((el) => el != null);
+      .filter(el => el != null);
     return Promise.all(batchResponses);
   }
 
@@ -158,8 +169,8 @@ class JsonRpcServerProtocol {
           ? this.factory.methods[message.method](params)
           : this.factory.methods[message.method]();
         if (
-          result &&
-          (typeof result.then === "function" || result instanceof Promise)
+          result
+          && (typeof result.then === "function" || result instanceof Promise)
         ) {
           Promise.all([result])
             .then((results) => {

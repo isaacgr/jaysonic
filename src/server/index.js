@@ -157,7 +157,7 @@ class JsonRpcServerFactory extends EventEmitter {
 
   clientDisconnected(cb) {
     this.on("clientDisconnected", (client) => {
-      const clientIndex = this.connectedClients.findIndex((c) => client === c);
+      const clientIndex = this.connectedClients.findIndex(c => client === c);
       if (clientIndex === -1) {
         return cb(`Unknown client ${JSON.stringify(client)}`);
       }

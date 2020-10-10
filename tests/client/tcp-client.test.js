@@ -146,7 +146,7 @@ describe("TCP Client", () => {
         setTimeout(() => {
           unhook();
           expect(capturedText).to.equal(
-            'Message has no outstanding calls: {"jsonrpc":"2.0","error":{"code":-32700,"message":"Unable to parse message: \'should get a parse error\\r\'"},"id":null}\n'
+            "Message has no outstanding calls: {\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Unable to parse message: 'should get a parse error\\r'\"},\"id\":null}\n"
           );
           done();
         }, 100);
@@ -184,7 +184,21 @@ describe("TCP Client", () => {
         done();
       });
     });
-    it("should receive 'invalid request' error for non empty array", (done) => {
+    it("should receive 'invalid request' error for and empty array", (done) => {
+      let capturedText = "";
+      const unhook = intercept((text) => {
+        capturedText += text;
+      });
+      client.batch([]);
+      setTimeout(() => {
+        unhook();
+        expect(capturedText).to.equal(
+          "Message has no outstanding calls: {\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32600,\"message\":\"Invalid Request\"},\"id\":null}\n"
+        );
+        done();
+      }, 100);
+    });
+    it("should receive 'invalid request' error in an array for non empty array", (done) => {
       const request = client.batch([1]);
       request.catch((response) => {
         expect(response).to.eql([
@@ -319,13 +333,13 @@ describe("TCP Client", () => {
         ["test", []]
       ]);
     });
-    it('should be unable to subscribe, unsub, or unsub all for "batchResponse"', (done) => {
+    it("should be unable to subscribe, unsub, or unsub all for \"batchResponse\"", (done) => {
       try {
         client.subscribe("batchResponse", () => {});
       } catch (e) {
         expect(e.message).to.be.a(
           "string",
-          '"batchResponse" is a reserved event name'
+          "\"batchResponse\" is a reserved event name"
         );
       }
       try {
@@ -333,7 +347,7 @@ describe("TCP Client", () => {
       } catch (e) {
         expect(e.message).to.be.a(
           "string",
-          '"batchResponse" is a reserved event name'
+          "\"batchResponse\" is a reserved event name"
         );
       }
       try {
@@ -341,7 +355,7 @@ describe("TCP Client", () => {
       } catch (e) {
         expect(e.message).to.be.a(
           "string",
-          '"batchResponse" is a reserved event name'
+          "\"batchResponse\" is a reserved event name"
         );
       }
       done();
