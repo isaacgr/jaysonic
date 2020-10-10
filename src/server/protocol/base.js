@@ -96,13 +96,11 @@ class JsonRpcServerProtocol {
       const errorMessage = ERR_MSGS.invalidParams;
       const id = message.id;
       this._raiseError(errorMessage, code, id);
-    } else if (message.jsonrpc) {
-      if (this.version !== "2.0") {
-        const code = ERR_CODES.invalidRequest;
-        const errorMessage = ERR_MSGS.invalidRequest;
-        const id = message.id;
-        this._raiseError(errorMessage, code, id);
-      }
+    } else if (message.jsonrpc && this.version !== "2.0") {
+      const code = ERR_CODES.invalidRequest;
+      const errorMessage = ERR_MSGS.invalidRequest;
+      const id = message.id;
+      this._raiseError(errorMessage, code, id);
     }
   }
 
