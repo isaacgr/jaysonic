@@ -4,11 +4,11 @@ const WSServerProtocol = require("./protocol/ws");
 
 /**
  * Constructor for Jsonic WS client
- * @class WSClient
+ * @class WSServer
  * @constructor
- * @extends Client
+ * @extends JsonRpcServerFactory
  * @param {Object} [options] optional settings for client
- * @return WSClient
+ * @return WSServer
  */
 class WSServer extends JsonRpcServerFactory {
   constructor(options) {
@@ -79,25 +79,10 @@ class WSServer extends JsonRpcServerFactory {
     });
   }
 
-  /**
-   * Returns list of error objects if there was an error sending to any client
-   * Otherwise Returns true if the entire data was sent successfully
-   * Returns false if all or part of the data was not
-   */
-  sendNotifications(response) {
-    if (this.connectedClients.length === 0) {
-      return [Error("No clients connected")];
-    }
-    return this.connectedClients.map((client) => {
-      try {
-        return client.send(
-          JSON.stringify(JSON.parse(response)) + this.options.delimiter
-        );
-      } catch (e) {
-        // possibly client disconnected
-        return e;
-      }
-    });
+  sendNotification(client, response) {
+    return client.send(
+      JSON.stringify(JSON.parse(response)) + this.options.delimiter
+    );
   }
 }
 

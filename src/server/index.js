@@ -126,7 +126,22 @@ class JsonRpcServerFactory extends EventEmitter {
       });
       response += "]";
     }
-    return this.sendNotifications(response);
+    if (this.connectedClients.length === 0) {
+      return [Error("No clients connected")];
+    }
+    /**
+     * Returns list of error objects if there was an error sending to any client
+     * Otherwise Returns true if the entire data was sent successfully
+     * Returns false if all or part of the data was not
+     */
+    return this.connectedClients.map((client) => {
+      try {
+        return this.sendNotification(client, response);
+      } catch (e) {
+        // possibly client disconnected
+        return e;
+      }
+    });
   }
 
   _getNotificationResponses(notifications) {

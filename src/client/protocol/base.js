@@ -22,28 +22,31 @@ class JsonRpcClientProtocol {
 
   connect() {
     return new Promise((resolve, reject) => {
-      this.setConnector();
-      this.connector.connect(this.server);
-      this.connector.setEncoding("utf8");
-      this.connector.on("connect", () => {
-        this.listener = this.connector;
-        this.listen();
-        resolve(this.server);
-      });
-      this.connector.on("error", (error) => {
-        if (error.code === "ECONNREFUSED" && this.factory.remainingRetries) {
-          this.factory.remainingRetries -= 1;
-          console.error(
-            `Unable to connect. Retrying. ${this.factory.remainingRetries} attempts left.`
-          );
-          setTimeout(() => {
-            this.connect(this.server);
-          }, this.factory.connectionTimeout);
-        } else {
-          this.factory.pcolInstance = undefined;
-          reject(error);
-        }
-      });
+      const retryConnection = () => {
+        this.setConnector();
+        this.connector.connect(this.server);
+        this.connector.setEncoding("utf8");
+        this.connector.on("connect", () => {
+          this.listener = this.connector;
+          this.listen();
+          resolve(this.server);
+        });
+        this.connector.on("error", (error) => {
+          if (error.code === "ECONNREFUSED" && this.factory.remainingRetries) {
+            this.factory.remainingRetries -= 1;
+            console.error(
+              `Unable to connect. Retrying. ${this.factory.remainingRetries} attempts left.`
+            );
+            setTimeout(() => {
+              retryConnection();
+            }, this.factory.connectionTimeout);
+          } else {
+            this.factory.pcolInstance = undefined;
+            reject(error);
+          }
+        });
+      };
+      return retryConnection();
     });
   }
 

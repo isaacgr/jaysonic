@@ -85,33 +85,35 @@ class JsonRpcServerProtocol {
 
   validateMessage(message) {
     if (!(message === Object(message))) {
-      const code = ERR_CODES.invalidRequest;
-      const errorMessage = ERR_MSGS.invalidRequest;
-      this._raiseError(errorMessage, code, null);
+      this._raiseError(ERR_MSGS.invalidRequest, ERR_CODES.invalidRequest, null);
     } else if (!(typeof message.method === "string")) {
-      const code = ERR_CODES.invalidRequest;
-      const errorMessage = ERR_MSGS.invalidRequest;
-      const { id } = message;
-      this._raiseError(errorMessage, code, id);
+      this._raiseError(
+        ERR_MSGS.invalidRequest,
+        ERR_CODES.invalidRequest,
+        message.id
+      );
     } else if (!(message.method in this.factory.methods)) {
-      const code = ERR_CODES.methodNotFound;
-      const errorMessage = ERR_MSGS.methodNotFound;
-      const { id } = message;
-      this._raiseError(errorMessage, code, id);
+      this._raiseError(
+        ERR_MSGS.methodNotFound,
+        ERR_CODES.methodNotFound,
+        message.id
+      );
     } else if (
       message.params
       && !Array.isArray(message.params)
       && !(message.params === Object(message.params))
     ) {
-      const code = ERR_CODES.invalidParams;
-      const errorMessage = ERR_MSGS.invalidParams;
-      const { id } = message;
-      this._raiseError(errorMessage, code, id);
+      this._raiseError(
+        ERR_MSGS.invalidParams,
+        ERR_CODES.invalidParams,
+        message.id
+      );
     } else if (message.jsonrpc && this.version !== "2.0") {
-      const code = ERR_CODES.invalidRequest;
-      const errorMessage = ERR_MSGS.invalidRequest;
-      const { id } = message;
-      this._raiseError(errorMessage, code, id);
+      this._raiseError(
+        ERR_MSGS.invalidRequest,
+        ERR_CODES.invalidRequest,
+        message.id
+      );
     }
   }
 
@@ -187,10 +189,10 @@ class JsonRpcServerProtocol {
         if (e instanceof TypeError) {
           error.code = ERR_CODES.invalidParams;
           error.message = ERR_MSGS.invalidParams;
-          reject(formatError(error));
+        } else {
+          error.code = ERR_CODES.unknown;
+          error.message = ERR_MSGS.unknown;
         }
-        error.code = ERR_CODES.unknown;
-        error.message = ERR_MSGS.unknown;
         reject(formatError(error));
       }
     });
