@@ -1,7 +1,7 @@
 const http = require("http");
-const Server = require(".");
+const JsonRpcServerFactory = require(".");
+const HttpServerProtocol = require("./protocol/http");
 const { errorToStatus } = require("../constants");
-const { HttpServerProtocol } = require("../ServerProtocol");
 
 /**
  * Constructor for Jsonic HTTP server
@@ -11,19 +11,15 @@ const { HttpServerProtocol } = require("../ServerProtocol");
  * @param {Object} [options] optional settings for server
  * @return HTTPServer
  */
-class HTTPServer extends Server {
-  constructor(options) {
-    super(options);
-
-    this.connectedClients = [];
-    this.responseBuffer = [];
-    this.initserver();
+class HTTPServer extends JsonRpcServerFactory {
+  setServer() {
+    this.server = new http.Server();
   }
 
-  initserver() {
-    this.server = new http.Server();
+  buildProtocol() {
     this.server.on("connection", (client) => {
       this.connectedClients.push(client);
+      this.emit("clientConnected", client);
       client.on("close", () => {
         this.emit("clientDisconnected");
       });
@@ -31,17 +27,15 @@ class HTTPServer extends Server {
         this.emit("clientDisconnected");
       });
     });
-  }
-
-  handleData() {
     this.server.on("request", (request, response) => {
-      const httpProtocol = new HttpServerProtocol(
+      this.pcolInstance = new HttpServerProtocol(
         this,
         request,
         response,
+        this.options.version,
         this.options.delimiter
       );
-      httpProtocol.clientConnected();
+      this.pcolInstance.clientConnected();
     });
   }
 
@@ -57,29 +51,6 @@ class HTTPServer extends Server {
       statusCode = errorToStatus[String(errorCode)];
     }
     response.writeHead(statusCode, header);
-  }
-
-  clientConnected(cb) {
-    this.on("clientConnected", (client) => {
-      cb({
-        host: client.remoteAddress,
-        port: client.remotePort
-      });
-    });
-  }
-
-  clientDisconnected(cb) {
-    this.on("clientDisconnected", (client) => {
-      const clientIndex = this.connectedClients.findIndex(c => client === c);
-      if (clientIndex === -1) {
-        return cb(`Unknown client ${JSON.stringify(client)}`);
-      }
-      const [deletedClient] = this.connectedClients.splice(clientIndex, 1);
-      return cb({
-        host: deletedClient.remoteAddress,
-        port: deletedClient.remotePort
-      });
-    });
   }
 }
 

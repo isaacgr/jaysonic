@@ -7,9 +7,11 @@ const {
 } = require("../../src/functions");
 
 const Jaysonic = require("../../src");
+const baseProtocol = require("../../src/server/protocol/base");
 
 const server = new Jaysonic.server.tcp();
 const wss = new Jaysonic.server.ws();
+const protocol = new baseProtocol(undefined, undefined, "2.0", "\n");
 
 describe("formatRequest", () => {
   describe("methods", () => {
@@ -294,7 +296,7 @@ describe("formatError", () => {
 
 describe("getResult()", () => {
   it("should return 'invalid params' if result is undefined", (done) => {
-    server
+    protocol
       .getResult({
         jsonrpc: "2.0",
         method: "test",
@@ -384,14 +386,14 @@ describe("server.notify()", () => {
       }
     });
     it("should return an error if no clients are connected", (done) => {
-      const res = server.notify([["test", []]]);
+      const res = wss.notify([["test", []]]);
       expect(res).to.be.an("array");
       expect(res[0]).to.be.instanceOf(Error);
       expect(res[0].message).to.be.a("string", "No clients connected");
       done();
     });
     it("should return a list of error objects if there was an issue sending out to a client", (done) => {
-      server.connectedClients.push(1);
+      wss.connectedClients.push(1);
       const res = server.notify([["test", []]]);
       expect(res).to.be.an("array");
       expect(res[0]).to.be.instanceOf(Error);

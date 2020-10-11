@@ -69,6 +69,7 @@
     "babelify": "^10.0.0",
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
+    "commander": "^6.1.0",
     "coveralls": "^3.1.0",
     "eslint": "^5.16.0",
     "eslint-config-airbnb-base": "^13.1.0",
@@ -80,11 +81,10 @@
     "intercept-stdout": "^0.1.2",
     "jsdom": "15.1.1",
     "jsdom-global": "3.0.2",
-    "mocha": "^6.1.4"
+    "mocha": "^6.1.4",
+    "nyc": "^15.1.0"
   },
   "dependencies": {
-    "commander": "^6.1.0",
-    "nyc": "^15.1.0",
     "ws": "^7.1.0"
   }
 }

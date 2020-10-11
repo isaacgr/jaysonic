@@ -47,6 +47,7 @@
 
 [![Build Status](https://travis-ci.com/isaacgr/jaysonic.svg?branch=master)](https://travis-ci.com/isaacgr/jaysonic)
 [![Coverage Status](https://coveralls.io/repos/github/isaacgr/jaysonic/badge.svg?branch=master)](https://coveralls.io/github/isaacgr/jaysonic?branch=master)
+[![Maintainability](https://api.codeclimate.com/v1/badges/b061f4e44fa85d5e8b04/maintainability)](https://codeclimate.com/github/isaacgr/jaysonic/maintainability)
 ---
 
 A TCP, HTTP and WebSocket server and client that implement the JSON-RPC 2.0 Specification.
@@ -115,12 +116,20 @@ const ws = new Jaysonic.client.ws();
 
 The client and server support changing the JSON-RPC version and the delimiter used. Just pass them in the same object as the host and port to override the defaults.
 
+#### Client and server options
+
 `host`: The host IP to serve from for the server, or to connect to by the client. Default is `127.0.0.1`. Note this is only available for the HTTP and TCP server/client. \
 `port`: The host port to serve from for the server, or to connect to by the client. Default is `8100`. \
 `delimiter`: Delimiter to break requests by. Defaults to `\n`. \
-`version`: RPC version to use. Defaults to `2.0`. \
+`version`: RPC version to use. Defaults to `2.0`.
+
+#### Client only options
+
 `retries`: The number of retry attempts for the client to connect to the server. Default is `2`. \
-`timeout`: The amount of time before a request times out. Will return a `-32000` error code. The default value is `30` (in seconds).
+`timeout`: The amount of time before a request times out. Will return a `-32000` error code. The default value is `30` (in seconds). \
+`connectionTimeout`: The amount of time between connection retry attempts to a server. The default value is `5000` (in milliseconds).
+
+#### Other client and server options
 
 The TCP and HTTP server have an additional option specified by the [NodeJS Docs](https://nodejs.org/api/net.html#net_server_listen_options_callback).
 
