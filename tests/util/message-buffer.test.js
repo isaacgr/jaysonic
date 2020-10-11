@@ -173,7 +173,7 @@ describe("Message Buffer", () => {
             });
             unhook();
             expect(capturedText).to.equal(
-              "Message has no outstanding calls: {\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Unable to parse message: 'test{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"method\\\":\\\"notify\\\",\\\"params\\\":1}'\"},\"id\":1}\n"
+              "Message has no outstanding calls: {\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Unable to parse message: 'test{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"method\\\":\\\"notify\\\",\\\"params\\\":1}'\"},\"id\":null}\n"
             );
             done();
           }, 100);
