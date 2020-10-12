@@ -2,7 +2,7 @@ const EventEmitter = require("events");
 const { formatResponse } = require("../functions");
 
 /**
- * @class JsonRpcServerFactory
+ * Creates an instance of JsonRpcServerFactory
  * @extends events
  */
 class JsonRpcServerFactory extends EventEmitter {
@@ -102,6 +102,24 @@ class JsonRpcServerFactory extends EventEmitter {
     this.server.on("close", () => {
       this.listening = false;
     });
+    this.on("clientConnected", (client) => {
+      this.clientConnected({
+        host: client.remoteAddress,
+        port: client.remotePort
+      });
+    });
+    this.on("clientDisconnected", (client) => {
+      const clientIndex = this.connectedClients.findIndex((c) => client === c);
+      if (clientIndex === -1) {
+        this.clientDisconnected(`Unknown client ${JSON.stringify(client)}`);
+      } else {
+        const [deletedClient] = this.connectedClients.splice(clientIndex, 1);
+        this.clientDisconnected({
+          host: deletedClient.remoteAddress,
+          port: deletedClient.remotePort
+        });
+      }
+    });
   }
 
   /**
@@ -169,6 +187,7 @@ class JsonRpcServerFactory extends EventEmitter {
       try {
         return this.sendNotification(client, response);
       } catch (e) {
+        console.log("here");
         // possibly client disconnected
         return e;
       }
@@ -192,27 +211,12 @@ class JsonRpcServerFactory extends EventEmitter {
     });
   }
 
-  clientConnected(cb) {
-    this.on("clientConnected", (client) => {
-      cb({
-        host: client.remoteAddress,
-        port: client.remotePort
-      });
-    });
+  clientConnected(event) {
+    return event;
   }
 
-  clientDisconnected(cb) {
-    this.on("clientDisconnected", (client) => {
-      const clientIndex = this.connectedClients.findIndex(c => client === c);
-      if (clientIndex === -1) {
-        return cb(`Unknown client ${JSON.stringify(client)}`);
-      }
-      const [deletedClient] = this.connectedClients.splice(clientIndex, 1);
-      return cb({
-        host: deletedClient.remoteAddress,
-        port: deletedClient.remotePort
-      });
-    });
+  clientDisconnected(event) {
+    return event;
   }
 }
 

@@ -160,9 +160,9 @@ class JsonRpcServerProtocol {
         message.id
       );
     } else if (
-      message.params
-      && !Array.isArray(message.params)
-      && !(message.params === Object(message.params))
+      message.params &&
+      !Array.isArray(message.params) &&
+      !(message.params === Object(message.params))
     ) {
       this._raiseError(
         ERR_MSGS.invalidParams,
@@ -228,14 +228,14 @@ class JsonRpcServerProtocol {
         try {
           this._maybeHandleRequest(request);
           return this.getResult(request)
-            .then(result => JSON.parse(result))
-            .catch(error => JSON.parse(error));
+            .then((result) => JSON.parse(result))
+            .catch((error) => JSON.parse(error));
         } catch (e) {
           // basically reject the whole batch if any one thing fails
           return JSON.parse(e.message);
         }
       })
-      .filter(el => el != null);
+      .filter((el) => el != null);
     return Promise.all(batchResponses);
   }
 
@@ -283,9 +283,11 @@ class JsonRpcServerProtocol {
         if (e instanceof TypeError) {
           error.code = ERR_CODES.invalidParams;
           error.message = ERR_MSGS.invalidParams;
+          // error.data = e.message;
         } else {
           error.code = ERR_CODES.unknown;
           error.message = ERR_MSGS.unknown;
+          // error.data = e.message;
         }
         reject(formatError(error));
       }

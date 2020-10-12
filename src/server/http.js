@@ -21,9 +21,9 @@ class HttpServerFactory extends JsonRpcServerFactory {
       client.on("close", () => {
         this.emit("clientDisconnected");
       });
-      client.on("end", () => {
-        this.emit("clientDisconnected");
-      });
+      // client.on("end", () => {
+      //   this.emit("clientDisconnected");
+      // });
     });
     this.server.on("request", (request, response) => {
       this.pcolInstance = new HttpServerProtocol(
