@@ -1,7 +1,7 @@
 const http = require("http");
 const JsonRpcServerFactory = require(".");
 const HttpServerProtocol = require("./protocol/http");
-const { errorToStatus } = require("../constants");
+const { errorToStatus } = require("../util/constants");
 
 /**
  * Creates instance of HttpServerFactory

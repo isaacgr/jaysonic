@@ -1,49 +1,84 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-    
-    <meta charset="utf-8">
-    <title>server/index.js - Documentation</title>
-    
-    
-    <script src="scripts/prettify/prettify.js"></script>
-    <script src="scripts/prettify/lang-css.js"></script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
-    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
-    <script src="scripts/nav.js" defer></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<title>Jaysonic Source: server/index.js</title>
+
+	<!--[if lt IE 9]>
+	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	<link type="text/css" rel="stylesheet" href="styles/sunlight.dark.css">
+
+	<link type="text/css" rel="stylesheet" href="styles/site.simplex.css">
+
 </head>
+
 <body>
 
-<input type="checkbox" id="nav-trigger" class="nav-trigger" />
-<label for="nav-trigger" class="navicon-button x">
-  <div class="navicon"></div>
-</label>
+<div class="navbar navbar-default navbar-fixed-top ">
+<div class="container">
+	<div class="navbar-header">
+		<a class="navbar-brand" href="index.html">Jaysonic</a>
+		<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#topNavigation">
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+        </button>
+	</div>
+	<div class="navbar-collapse collapse" id="topNavigation">
+		<ul class="nav navbar-nav">
+			
+			<li class="dropdown">
+				<a href="namespaces.list.html" class="dropdown-toggle" data-toggle="dropdown">Namespaces<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="Jaysonic.html">Jaysonic</a></li><li><a href="Utils.html">Utils</a></li><li><a href="Utils.format.html">Utils.format</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="HttpClientFactory.html">HttpClientFactory</a></li><li><a href="HttpClientProtocol.html">HttpClientProtocol</a></li><li><a href="HttpServerFactory.html">HttpServerFactory</a></li><li><a href="HttpServerProtocol.html">HttpServerProtocol</a></li><li><a href="JsonRpcClientFactory.html">JsonRpcClientFactory</a></li><li><a href="JsonRpcClientProtocol.html">JsonRpcClientProtocol</a></li><li><a href="JsonRpcServerFactory.html">JsonRpcServerFactory</a></li><li><a href="JsonRpcServerProtocol.html">JsonRpcServerProtocol</a></li><li><a href="MessageBuffer.html">MessageBuffer</a></li><li><a href="TcpClientFactory.html">TcpClientFactory</a></li><li><a href="TcpClientProtocol.html">TcpClientProtocol</a></li><li><a href="TcpServerFactory.html">TcpServerFactory</a></li><li><a href="TcpServerProtocol.html">TcpServerProtocol</a></li><li><a href="WsBrowserClientFactory.html">WsBrowserClientFactory</a></li><li><a href="WsBrowserClientProtocol.html">WsBrowserClientProtocol</a></li><li><a href="WsClientFactory.html">WsClientFactory</a></li><li><a href="WsClientProtocol.html">WsClientProtocol</a></li><li><a href="WsServerFactory.html">WsServerFactory</a></li><li><a href="WsServerProtocol.html">WsServerProtocol</a></li>
+				</ul>
+			</li>
+			
+		</ul>
+        
+            <div class="col-sm-3 col-md-3">
+                <form class="navbar-form" role="search">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search" name="q" id="search-input">
+                        <div class="input-group-btn">
+                            <button class="btn btn-default" id="search-submit"><i class="glyphicon glyphicon-search"></i></button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        
+	</div>
 
-<label for="nav-trigger" class="overlay"></label>
+</div>
+</div>
 
-<nav >
+
+<div class="container" id="toc-content">
+<div class="row">
+
+	
+	<div class="col-md-12">
+	
+		<div id="main">
+			
+
+		<h1 class="page-title">Source: server/index.js</h1>
     
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="HttpClientFactory.html">HttpClientFactory</a><ul class='methods'><li data-type='method'><a href="HttpClientFactory.html#batch">batch</a></li><li data-type='method'><a href="HttpClientFactory.html#cleanUp">cleanUp</a></li><li data-type='method'><a href="HttpClientFactory.html#connect">connect</a></li><li data-type='method'><a href="HttpClientFactory.html#end">end</a></li><li data-type='method'><a href="HttpClientFactory.html#request">request</a></li><li data-type='method'><a href="HttpClientFactory.html#serverDisconnected">serverDisconnected</a></li><li data-type='method'><a href="HttpClientFactory.html#subscribe">subscribe</a></li><li data-type='method'><a href="HttpClientFactory.html#unsubscribe">unsubscribe</a></li><li data-type='method'><a href="HttpClientFactory.html#unsubscribeAll">unsubscribeAll</a></li></ul></li><li><a href="HttpClientProtocol.html">HttpClientProtocol</a><ul class='methods'><li data-type='method'><a href="HttpClientProtocol.html#batch">batch</a></li><li data-type='method'><a href="HttpClientProtocol.html#connect">connect</a></li><li data-type='method'><a href="HttpClientProtocol.html#end">end</a></li><li data-type='method'><a href="HttpClientProtocol.html#getBatchResponse">getBatchResponse</a></li><li data-type='method'><a href="HttpClientProtocol.html#getResponse">getResponse</a></li><li data-type='method'><a href="HttpClientProtocol.html#gotBatchResponse">gotBatchResponse</a></li><li data-type='method'><a href="HttpClientProtocol.html#handleBatch">handleBatch</a></li><li data-type='method'><a href="HttpClientProtocol.html#handleError">handleError</a></li><li data-type='method'><a href="HttpClientProtocol.html#handleNotification">handleNotification</a></li><li data-type='method'><a href="HttpClientProtocol.html#handleResponse">handleResponse</a></li><li data-type='method'><a href="HttpClientProtocol.html#listen">listen</a></li><li data-type='method'><a href="HttpClientProtocol.html#message">message</a></li><li data-type='method'><a href="HttpClientProtocol.html#notify">notify</a></li><li data-type='method'><a href="HttpClientProtocol.html#rejectPendingCalls">rejectPendingCalls</a></li><li data-type='method'><a href="HttpClientProtocol.html#request">request</a></li><li data-type='method'><a href="HttpClientProtocol.html#send">send</a></li><li data-type='method'><a href="HttpClientProtocol.html#setConnector">setConnector</a></li><li data-type='method'><a href="HttpClientProtocol.html#verifyData">verifyData</a></li><li data-type='method'><a href="HttpClientProtocol.html#write">write</a></li></ul></li><li><a href="HttpServerFactory.html">HttpServerFactory</a><ul class='methods'><li data-type='method'><a href="HttpServerFactory.html#buildProtocol">buildProtocol</a></li><li data-type='method'><a href="HttpServerFactory.html#close">close</a></li><li data-type='method'><a href="HttpServerFactory.html#listen">listen</a></li><li data-type='method'><a href="HttpServerFactory.html#setServer">setServer</a></li><li data-type='method'><a href="HttpServerFactory.html#setupListeners">setupListeners</a></li></ul></li><li><a href="HttpServerProtocol.html">HttpServerProtocol</a><ul class='methods'><li data-type='method'><a href="HttpServerProtocol.html#clientConnected">clientConnected</a></li><li data-type='method'><a href="HttpServerProtocol.html#getResult">getResult</a></li><li data-type='method'><a href="HttpServerProtocol.html#handleBatchRequest">handleBatchRequest</a></li><li data-type='method'><a href="HttpServerProtocol.html#handleError">handleError</a></li><li data-type='method'><a href="HttpServerProtocol.html#handleNotification">handleNotification</a></li><li data-type='method'><a href="HttpServerProtocol.html#handleRequest">handleRequest</a></li><li data-type='method'><a href="HttpServerProtocol.html#validateMessage">validateMessage</a></li><li data-type='method'><a href="HttpServerProtocol.html#validateRequest">validateRequest</a></li><li data-type='method'><a href="HttpServerProtocol.html#writeToClient">writeToClient</a></li></ul></li><li><a href="JsonRpcClientFactory.html">JsonRpcClientFactory</a><ul class='methods'><li data-type='method'><a href="JsonRpcClientFactory.html#batch">batch</a></li><li data-type='method'><a href="JsonRpcClientFactory.html#cleanUp">cleanUp</a></li><li data-type='method'><a href="JsonRpcClientFactory.html#connect">connect</a></li><li data-type='method'><a href="JsonRpcClientFactory.html#end">end</a></li><li data-type='method'><a href="JsonRpcClientFactory.html#request">request</a></li><li data-type='method'><a href="JsonRpcClientFactory.html#serverDisconnected">serverDisconnected</a></li><li data-type='method'><a href="JsonRpcClientFactory.html#subscribe">subscribe</a></li><li data-type='method'><a href="JsonRpcClientFactory.html#unsubscribe">unsubscribe</a></li><li data-type='method'><a href="JsonRpcClientFactory.html#unsubscribeAll">unsubscribeAll</a></li></ul></li><li><a href="JsonRpcClientProtocol.html">JsonRpcClientProtocol</a><ul class='methods'><li data-type='method'><a href="JsonRpcClientProtocol.html#batch">batch</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#connect">connect</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#end">end</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#getBatchResponse">getBatchResponse</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#getResponse">getResponse</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#gotBatchResponse">gotBatchResponse</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#handleBatch">handleBatch</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#handleError">handleError</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#handleNotification">handleNotification</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#handleResponse">handleResponse</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#listen">listen</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#message">message</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#notify">notify</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#rejectPendingCalls">rejectPendingCalls</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#request">request</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#send">send</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#setConnector">setConnector</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#verifyData">verifyData</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#write">write</a></li></ul></li><li><a href="JsonRpcServerFactory.html">JsonRpcServerFactory</a><ul class='methods'><li data-type='method'><a href="JsonRpcServerFactory.html#buildProtocol">buildProtocol</a></li><li data-type='method'><a href="JsonRpcServerFactory.html#close">close</a></li><li data-type='method'><a href="JsonRpcServerFactory.html#listen">listen</a></li><li data-type='method'><a href="JsonRpcServerFactory.html#setServer">setServer</a></li><li data-type='method'><a href="JsonRpcServerFactory.html#setupListeners">setupListeners</a></li></ul></li><li><a href="JsonRpcServerProtocol.html">JsonRpcServerProtocol</a><ul class='methods'><li data-type='method'><a href="JsonRpcServerProtocol.html#clientConnected">clientConnected</a></li><li data-type='method'><a href="JsonRpcServerProtocol.html#getResult">getResult</a></li><li data-type='method'><a href="JsonRpcServerProtocol.html#handleBatchRequest">handleBatchRequest</a></li><li data-type='method'><a href="JsonRpcServerProtocol.html#handleError">handleError</a></li><li data-type='method'><a href="JsonRpcServerProtocol.html#handleNotification">handleNotification</a></li><li data-type='method'><a href="JsonRpcServerProtocol.html#handleRequest">handleRequest</a></li><li data-type='method'><a href="JsonRpcServerProtocol.html#validateMessage">validateMessage</a></li><li data-type='method'><a href="JsonRpcServerProtocol.html#validateRequest">validateRequest</a></li><li data-type='method'><a href="JsonRpcServerProtocol.html#writeToClient">writeToClient</a></li></ul></li><li><a href="MessageBuffer.html">MessageBuffer</a><ul class='methods'><li data-type='method'><a href="MessageBuffer.html#getMessage">getMessage</a></li><li data-type='method'><a href="MessageBuffer.html#handleData">handleData</a></li><li data-type='method'><a href="MessageBuffer.html#isFinished">isFinished</a></li><li data-type='method'><a href="MessageBuffer.html#push">push</a></li></ul></li><li><a href="TcpClientFactory.html">TcpClientFactory</a><ul class='methods'><li data-type='method'><a href="TcpClientFactory.html#batch">batch</a></li><li data-type='method'><a href="TcpClientFactory.html#cleanUp">cleanUp</a></li><li data-type='method'><a href="TcpClientFactory.html#connect">connect</a></li><li data-type='method'><a href="TcpClientFactory.html#end">end</a></li><li data-type='method'><a href="TcpClientFactory.html#request">request</a></li><li data-type='method'><a href="TcpClientFactory.html#serverDisconnected">serverDisconnected</a></li><li data-type='method'><a href="TcpClientFactory.html#subscribe">subscribe</a></li><li data-type='method'><a href="TcpClientFactory.html#unsubscribe">unsubscribe</a></li><li data-type='method'><a href="TcpClientFactory.html#unsubscribeAll">unsubscribeAll</a></li></ul></li><li><a href="TcpClientProtocol.html">TcpClientProtocol</a><ul class='methods'><li data-type='method'><a href="TcpClientProtocol.html#batch">batch</a></li><li data-type='method'><a href="TcpClientProtocol.html#connect">connect</a></li><li data-type='method'><a href="TcpClientProtocol.html#end">end</a></li><li data-type='method'><a href="TcpClientProtocol.html#getBatchResponse">getBatchResponse</a></li><li data-type='method'><a href="TcpClientProtocol.html#getResponse">getResponse</a></li><li data-type='method'><a href="TcpClientProtocol.html#gotBatchResponse">gotBatchResponse</a></li><li data-type='method'><a href="TcpClientProtocol.html#handleBatch">handleBatch</a></li><li data-type='method'><a href="TcpClientProtocol.html#handleError">handleError</a></li><li data-type='method'><a href="TcpClientProtocol.html#handleNotification">handleNotification</a></li><li data-type='method'><a href="TcpClientProtocol.html#handleResponse">handleResponse</a></li><li data-type='method'><a href="TcpClientProtocol.html#listen">listen</a></li><li data-type='method'><a href="TcpClientProtocol.html#message">message</a></li><li data-type='method'><a href="TcpClientProtocol.html#notify">notify</a></li><li data-type='method'><a href="TcpClientProtocol.html#rejectPendingCalls">rejectPendingCalls</a></li><li data-type='method'><a href="TcpClientProtocol.html#request">request</a></li><li data-type='method'><a href="TcpClientProtocol.html#send">send</a></li><li data-type='method'><a href="TcpClientProtocol.html#setConnector">setConnector</a></li><li data-type='method'><a href="TcpClientProtocol.html#verifyData">verifyData</a></li><li data-type='method'><a href="TcpClientProtocol.html#write">write</a></li></ul></li><li><a href="TcpServerFactory.html">TcpServerFactory</a><ul class='methods'><li data-type='method'><a href="TcpServerFactory.html#buildProtocol">buildProtocol</a></li><li data-type='method'><a href="TcpServerFactory.html#close">close</a></li><li data-type='method'><a href="TcpServerFactory.html#listen">listen</a></li><li data-type='method'><a href="TcpServerFactory.html#sendNotification">sendNotification</a></li><li data-type='method'><a href="TcpServerFactory.html#setServer">setServer</a></li><li data-type='method'><a href="TcpServerFactory.html#setupListeners">setupListeners</a></li></ul></li><li><a href="TcpServerProtocol.html">TcpServerProtocol</a><ul class='methods'><li data-type='method'><a href="TcpServerProtocol.html#clientConnected">clientConnected</a></li><li data-type='method'><a href="TcpServerProtocol.html#getResult">getResult</a></li><li data-type='method'><a href="TcpServerProtocol.html#handleBatchRequest">handleBatchRequest</a></li><li data-type='method'><a href="TcpServerProtocol.html#handleError">handleError</a></li><li data-type='method'><a href="TcpServerProtocol.html#handleNotification">handleNotification</a></li><li data-type='method'><a href="TcpServerProtocol.html#handleRequest">handleRequest</a></li><li data-type='method'><a href="TcpServerProtocol.html#validateMessage">validateMessage</a></li><li data-type='method'><a href="TcpServerProtocol.html#validateRequest">validateRequest</a></li><li data-type='method'><a href="TcpServerProtocol.html#writeToClient">writeToClient</a></li></ul></li><li><a href="WsBrowserClientFactory.html">WsBrowserClientFactory</a><ul class='methods'><li data-type='method'><a href="WsBrowserClientFactory.html#batch">batch</a></li><li data-type='method'><a href="WsBrowserClientFactory.html#cleanUp">cleanUp</a></li><li data-type='method'><a href="WsBrowserClientFactory.html#connect">connect</a></li><li data-type='method'><a href="WsBrowserClientFactory.html#end">end</a></li><li data-type='method'><a href="WsBrowserClientFactory.html#request">request</a></li><li data-type='method'><a href="WsBrowserClientFactory.html#subscribe">subscribe</a></li><li data-type='method'><a href="WsBrowserClientFactory.html#unsubscribe">unsubscribe</a></li><li data-type='method'><a href="WsBrowserClientFactory.html#unsubscribeAll">unsubscribeAll</a></li></ul></li><li><a href="WsBrowserClientProtocol.html">WsBrowserClientProtocol</a><ul class='methods'><li data-type='method'><a href="WsBrowserClientProtocol.html#batch">batch</a></li><li data-type='method'><a href="WsBrowserClientProtocol.html#getBatchResponse">getBatchResponse</a></li><li data-type='method'><a href="WsBrowserClientProtocol.html#getResponse">getResponse</a></li><li data-type='method'><a href="WsBrowserClientProtocol.html#gotBatchResponse">gotBatchResponse</a></li><li data-type='method'><a href="WsBrowserClientProtocol.html#handleBatch">handleBatch</a></li><li data-type='method'><a href="WsBrowserClientProtocol.html#handleError">handleError</a></li><li data-type='method'><a href="WsBrowserClientProtocol.html#handleNotification">handleNotification</a></li><li data-type='method'><a href="WsBrowserClientProtocol.html#handleResponse">handleResponse</a></li><li data-type='method'><a href="WsBrowserClientProtocol.html#message">message</a></li><li data-type='method'><a href="WsBrowserClientProtocol.html#notify">notify</a></li><li data-type='method'><a href="WsBrowserClientProtocol.html#rejectPendingCalls">rejectPendingCalls</a></li><li data-type='method'><a href="WsBrowserClientProtocol.html#request">request</a></li><li data-type='method'><a href="WsBrowserClientProtocol.html#send">send</a></li><li data-type='method'><a href="WsBrowserClientProtocol.html#setConnector">setConnector</a></li><li data-type='method'><a href="WsBrowserClientProtocol.html#verifyData">verifyData</a></li><li data-type='method'><a href="WsBrowserClientProtocol.html#write">write</a></li></ul></li><li><a href="WsClientFactory.html">WsClientFactory</a><ul class='methods'><li data-type='method'><a href="WsClientFactory.html#batch">batch</a></li><li data-type='method'><a href="WsClientFactory.html#cleanUp">cleanUp</a></li><li data-type='method'><a href="WsClientFactory.html#connect">connect</a></li><li data-type='method'><a href="WsClientFactory.html#end">end</a></li><li data-type='method'><a href="WsClientFactory.html#request">request</a></li><li data-type='method'><a href="WsClientFactory.html#serverDisconnected">serverDisconnected</a></li><li data-type='method'><a href="WsClientFactory.html#subscribe">subscribe</a></li><li data-type='method'><a href="WsClientFactory.html#unsubscribe">unsubscribe</a></li><li data-type='method'><a href="WsClientFactory.html#unsubscribeAll">unsubscribeAll</a></li></ul></li><li><a href="WsClientProtocol.html">WsClientProtocol</a><ul class='methods'><li data-type='method'><a href="WsClientProtocol.html#batch">batch</a></li><li data-type='method'><a href="WsClientProtocol.html#connect">connect</a></li><li data-type='method'><a href="WsClientProtocol.html#end">end</a></li><li data-type='method'><a href="WsClientProtocol.html#getBatchResponse">getBatchResponse</a></li><li data-type='method'><a href="WsClientProtocol.html#getResponse">getResponse</a></li><li data-type='method'><a href="WsClientProtocol.html#gotBatchResponse">gotBatchResponse</a></li><li data-type='method'><a href="WsClientProtocol.html#handleBatch">handleBatch</a></li><li data-type='method'><a href="WsClientProtocol.html#handleError">handleError</a></li><li data-type='method'><a href="WsClientProtocol.html#handleNotification">handleNotification</a></li><li data-type='method'><a href="WsClientProtocol.html#handleResponse">handleResponse</a></li><li data-type='method'><a href="WsClientProtocol.html#listen">listen</a></li><li data-type='method'><a href="WsClientProtocol.html#message">message</a></li><li data-type='method'><a href="WsClientProtocol.html#notify">notify</a></li><li data-type='method'><a href="WsClientProtocol.html#rejectPendingCalls">rejectPendingCalls</a></li><li data-type='method'><a href="WsClientProtocol.html#request">request</a></li><li data-type='method'><a href="WsClientProtocol.html#send">send</a></li><li data-type='method'><a href="WsClientProtocol.html#setConnector">setConnector</a></li><li data-type='method'><a href="WsClientProtocol.html#verifyData">verifyData</a></li><li data-type='method'><a href="WsClientProtocol.html#write">write</a></li></ul></li><li><a href="WsServerFactory.html">WsServerFactory</a><ul class='methods'><li data-type='method'><a href="WsServerFactory.html#buildProtocol">buildProtocol</a></li><li data-type='method'><a href="WsServerFactory.html#close">close</a></li><li data-type='method'><a href="WsServerFactory.html#listen">listen</a></li><li data-type='method'><a href="WsServerFactory.html#sendNotification">sendNotification</a></li><li data-type='method'><a href="WsServerFactory.html#setServer">setServer</a></li><li data-type='method'><a href="WsServerFactory.html#setSever">setSever</a></li><li data-type='method'><a href="WsServerFactory.html#setupListeners">setupListeners</a></li></ul></li><li><a href="WsServerProtocol.html">WsServerProtocol</a><ul class='methods'><li data-type='method'><a href="WsServerProtocol.html#clientConnected">clientConnected</a></li><li data-type='method'><a href="WsServerProtocol.html#getResult">getResult</a></li><li data-type='method'><a href="WsServerProtocol.html#handleBatchRequest">handleBatchRequest</a></li><li data-type='method'><a href="WsServerProtocol.html#handleError">handleError</a></li><li data-type='method'><a href="WsServerProtocol.html#handleNotification">handleNotification</a></li><li data-type='method'><a href="WsServerProtocol.html#handleRequest">handleRequest</a></li><li data-type='method'><a href="WsServerProtocol.html#validateMessage">validateMessage</a></li><li data-type='method'><a href="WsServerProtocol.html#validateRequest">validateRequest</a></li><li data-type='method'><a href="WsServerProtocol.html#writeToClient">writeToClient</a></li></ul></li></ul><h3>Namespaces</h3><ul><li><a href="Jaysonic.html">Jaysonic</a></li></ul><h3>Global</h3><ul><li><a href="global.html#formatError">formatError</a></li><li><a href="global.html#formatRequest">formatRequest</a></li><li><a href="global.html#formatResponse">formatResponse</a></li></ul>
-</nav>
-
-<div id="main">
-    
-    <h1 class="page-title">server/index.js</h1>
-    
-
-    
-
-
-
-    
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>const EventEmitter = require("events");
-const { formatResponse } = require("../functions");
+<section>
+    <article>
+        <pre
+            class="sunlight-highlight-javascript linenums">const EventEmitter = require("events");
+const { formatResponse } = require("../util/format");
 
 /**
  * Creates an instance of JsonRpcServerFactory
@@ -153,7 +188,7 @@ class JsonRpcServerFactory extends EventEmitter {
       });
     });
     this.on("clientDisconnected", (client) => {
-      const clientIndex = this.connectedClients.findIndex((c) => client === c);
+      const clientIndex = this.connectedClients.findIndex(c => client === c);
       if (clientIndex === -1) {
         this.clientDisconnected(`Unknown client ${JSON.stringify(client)}`);
       } else {
@@ -286,27 +321,135 @@ JsonRpcServerFactory.tcp = require("./tcp");
  * @static
  */
 JsonRpcServerFactory.ws = require("./ws");
-</code></pre>
-        </article>
-    </section>
+</pre>
+    </article>
+</section>
 
 
 
 
-    
-    
+
+		</div>
+	</div>
+
+	<div class="clearfix"></div>
+
+	
+
+</div>
 </div>
 
-<br class="clear">
+
+    <div class="modal fade" id="searchResults">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Search results</h4>
+          </div>
+          <div class="modal-body"></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div>
+
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.6</a> on Mon Oct 12 2020 10:57:20 GMT-0400 (Eastern Daylight Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+
+
+<span class="jsdoc-message">
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.6</a>
+	
+		on 2020-10-12T13:28:18-04:00
+	
+	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
+</span>
 </footer>
 
-<script>prettyPrint();</script>
-<script src="scripts/polyfill.js"></script>
-<script src="scripts/linenumber.js"></script>
+<script src="scripts/docstrap.lib.js"></script>
+<script src="scripts/toc.js"></script>
 
+    <script type="text/javascript" src="scripts/fulltext-search-ui.js"></script>
+
+
+<script>
+$( function () {
+	$( "[id*='$']" ).each( function () {
+		var $this = $( this );
+
+		$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
+	} );
+
+	$( ".tutorial-section pre, .readme-section pre, pre.prettyprint.source" ).each( function () {
+		var $this = $( this );
+
+		var example = $this.find( "code" );
+		exampleText = example.html();
+		var lang = /{@lang (.*?)}/.exec( exampleText );
+		if ( lang && lang[1] ) {
+			exampleText = exampleText.replace( lang[0], "" );
+			example.html( exampleText );
+			lang = lang[1];
+		} else {
+			var langClassMatch = example.parent()[0].className.match(/lang\-(\S+)/);
+			lang = langClassMatch ? langClassMatch[1] : "javascript";
+		}
+
+		if ( lang ) {
+
+			$this
+			.addClass( "sunlight-highlight-" + lang )
+			.addClass( "linenums" )
+			.html( example.html() );
+
+		}
+	} );
+
+	Sunlight.highlightAll( {
+		lineNumbers : true,
+		showMenu : true,
+		enableDoclinks : true
+	} );
+
+	$.catchAnchorLinks( {
+        navbarOffset: 10
+	} );
+	$( "#toc" ).toc( {
+		anchorName  : function ( i, heading, prefix ) {
+			return $( heading ).attr( "id" ) || ( prefix + i );
+		},
+		selectors   : "#toc-content h1,#toc-content h2,#toc-content h3,#toc-content h4",
+		showAndHide : false,
+		smoothScrolling: true
+	} );
+
+	$( "#main span[id^='toc']" ).addClass( "toc-shim" );
+	$( '.dropdown-toggle' ).dropdown();
+
+    $( "table" ).each( function () {
+      var $this = $( this );
+      $this.addClass('table');
+    } );
+
+} );
+</script>
+
+
+
+<!--Navigation and Symbol Display-->
+
+
+<!--Google Analytics-->
+
+
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            SearcherDisplay.init();
+        });
+    </script>
 
 
 </body>

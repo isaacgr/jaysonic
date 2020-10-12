@@ -1,6 +1,6 @@
-const { formatRequest, formatError } = require("../../functions");
-const { ERR_CODES, ERR_MSGS } = require("../../constants");
-const { MessageBuffer } = require("../../buffer");
+const { formatRequest, formatError } = require("../../util/format");
+const { ERR_CODES, ERR_MSGS } = require("../../util/constants");
+const MessageBuffer = require("../../util/buffer");
 
 /**
  * Creates an instance of the base client protocol class.

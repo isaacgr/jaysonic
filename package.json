@@ -44,7 +44,7 @@
     "coverage": "nyc npm run test",
     "lint": "./node_modules/eslint/bin/eslint.js .",
     "lint-fix": "./node_modules/eslint/bin/eslint.js --fix .",
-    "build-docs": "./node_modules/.bin/jsdoc -r src/ -d ./docs -c jsdoc.json --readme README.md",
+    "build-docs": "./node_modules/.bin/jsdoc -r src/ -d ./docs -c jsdoc.json -t ./node_modules/ink-docstrap/template --readme README.md",
     "build": "./node_modules/.bin/babel src --out-dir lib",
     "prepare": "npm run test && npm run lint-fix && npm run build-docs && npm run build"
   },
@@ -69,6 +69,7 @@
     "eslint-plugin-node": "^9.1.0",
     "eslint-plugin-promise": "^4.1.1",
     "eslint-plugin-standard": "^4.0.0",
+    "ink-docstrap": "^1.3.2",
     "intercept-stdout": "^0.1.2",
     "jsdoc": "^3.6.6",
     "jsdom": "15.1.1",

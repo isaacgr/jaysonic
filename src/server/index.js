@@ -1,5 +1,5 @@
 const EventEmitter = require("events");
-const { formatResponse } = require("../functions");
+const { formatResponse } = require("../util/format");
 
 /**
  * Creates an instance of JsonRpcServerFactory
@@ -109,7 +109,7 @@ class JsonRpcServerFactory extends EventEmitter {
       });
     });
     this.on("clientDisconnected", (client) => {
-      const clientIndex = this.connectedClients.findIndex((c) => client === c);
+      const clientIndex = this.connectedClients.findIndex(c => client === c);
       if (clientIndex === -1) {
         this.clientDisconnected(`Unknown client ${JSON.stringify(client)}`);
       } else {

@@ -1,45 +1,78 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-    
-    <meta charset="utf-8">
-    <title>JsonRpcClientProtocol - Documentation</title>
-    
-    
-    <script src="scripts/prettify/prettify.js"></script>
-    <script src="scripts/prettify/lang-css.js"></script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
-    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
-    <script src="scripts/nav.js" defer></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<title>Jaysonic Class: JsonRpcClientProtocol</title>
+
+	<!--[if lt IE 9]>
+	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	<link type="text/css" rel="stylesheet" href="styles/sunlight.dark.css">
+
+	<link type="text/css" rel="stylesheet" href="styles/site.simplex.css">
+
 </head>
+
 <body>
 
-<input type="checkbox" id="nav-trigger" class="nav-trigger" />
-<label for="nav-trigger" class="navicon-button x">
-  <div class="navicon"></div>
-</label>
+<div class="navbar navbar-default navbar-fixed-top ">
+<div class="container">
+	<div class="navbar-header">
+		<a class="navbar-brand" href="index.html">Jaysonic</a>
+		<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#topNavigation">
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+        </button>
+	</div>
+	<div class="navbar-collapse collapse" id="topNavigation">
+		<ul class="nav navbar-nav">
+			
+			<li class="dropdown">
+				<a href="namespaces.list.html" class="dropdown-toggle" data-toggle="dropdown">Namespaces<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="Jaysonic.html">Jaysonic</a></li><li><a href="Utils.html">Utils</a></li><li><a href="Utils.format.html">Utils.format</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="HttpClientFactory.html">HttpClientFactory</a></li><li><a href="HttpClientProtocol.html">HttpClientProtocol</a></li><li><a href="HttpServerFactory.html">HttpServerFactory</a></li><li><a href="HttpServerProtocol.html">HttpServerProtocol</a></li><li><a href="JsonRpcClientFactory.html">JsonRpcClientFactory</a></li><li><a href="JsonRpcClientProtocol.html">JsonRpcClientProtocol</a></li><li><a href="JsonRpcServerFactory.html">JsonRpcServerFactory</a></li><li><a href="JsonRpcServerProtocol.html">JsonRpcServerProtocol</a></li><li><a href="MessageBuffer.html">MessageBuffer</a></li><li><a href="TcpClientFactory.html">TcpClientFactory</a></li><li><a href="TcpClientProtocol.html">TcpClientProtocol</a></li><li><a href="TcpServerFactory.html">TcpServerFactory</a></li><li><a href="TcpServerProtocol.html">TcpServerProtocol</a></li><li><a href="WsBrowserClientFactory.html">WsBrowserClientFactory</a></li><li><a href="WsBrowserClientProtocol.html">WsBrowserClientProtocol</a></li><li><a href="WsClientFactory.html">WsClientFactory</a></li><li><a href="WsClientProtocol.html">WsClientProtocol</a></li><li><a href="WsServerFactory.html">WsServerFactory</a></li><li><a href="WsServerProtocol.html">WsServerProtocol</a></li>
+				</ul>
+			</li>
+			
+		</ul>
+        
+            <div class="col-sm-3 col-md-3">
+                <form class="navbar-form" role="search">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search" name="q" id="search-input">
+                        <div class="input-group-btn">
+                            <button class="btn btn-default" id="search-submit"><i class="glyphicon glyphicon-search"></i></button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        
+	</div>
 
-<label for="nav-trigger" class="overlay"></label>
-
-<nav >
-    
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="HttpClientFactory.html">HttpClientFactory</a><ul class='methods'><li data-type='method'><a href="HttpClientFactory.html#batch">batch</a></li><li data-type='method'><a href="HttpClientFactory.html#cleanUp">cleanUp</a></li><li data-type='method'><a href="HttpClientFactory.html#connect">connect</a></li><li data-type='method'><a href="HttpClientFactory.html#end">end</a></li><li data-type='method'><a href="HttpClientFactory.html#request">request</a></li><li data-type='method'><a href="HttpClientFactory.html#serverDisconnected">serverDisconnected</a></li><li data-type='method'><a href="HttpClientFactory.html#subscribe">subscribe</a></li><li data-type='method'><a href="HttpClientFactory.html#unsubscribe">unsubscribe</a></li><li data-type='method'><a href="HttpClientFactory.html#unsubscribeAll">unsubscribeAll</a></li></ul></li><li><a href="HttpClientProtocol.html">HttpClientProtocol</a><ul class='methods'><li data-type='method'><a href="HttpClientProtocol.html#batch">batch</a></li><li data-type='method'><a href="HttpClientProtocol.html#connect">connect</a></li><li data-type='method'><a href="HttpClientProtocol.html#end">end</a></li><li data-type='method'><a href="HttpClientProtocol.html#getBatchResponse">getBatchResponse</a></li><li data-type='method'><a href="HttpClientProtocol.html#getResponse">getResponse</a></li><li data-type='method'><a href="HttpClientProtocol.html#gotBatchResponse">gotBatchResponse</a></li><li data-type='method'><a href="HttpClientProtocol.html#handleBatch">handleBatch</a></li><li data-type='method'><a href="HttpClientProtocol.html#handleError">handleError</a></li><li data-type='method'><a href="HttpClientProtocol.html#handleNotification">handleNotification</a></li><li data-type='method'><a href="HttpClientProtocol.html#handleResponse">handleResponse</a></li><li data-type='method'><a href="HttpClientProtocol.html#listen">listen</a></li><li data-type='method'><a href="HttpClientProtocol.html#message">message</a></li><li data-type='method'><a href="HttpClientProtocol.html#notify">notify</a></li><li data-type='method'><a href="HttpClientProtocol.html#rejectPendingCalls">rejectPendingCalls</a></li><li data-type='method'><a href="HttpClientProtocol.html#request">request</a></li><li data-type='method'><a href="HttpClientProtocol.html#send">send</a></li><li data-type='method'><a href="HttpClientProtocol.html#setConnector">setConnector</a></li><li data-type='method'><a href="HttpClientProtocol.html#verifyData">verifyData</a></li><li data-type='method'><a href="HttpClientProtocol.html#write">write</a></li></ul></li><li><a href="HttpServerFactory.html">HttpServerFactory</a><ul class='methods'><li data-type='method'><a href="HttpServerFactory.html#buildProtocol">buildProtocol</a></li><li data-type='method'><a href="HttpServerFactory.html#close">close</a></li><li data-type='method'><a href="HttpServerFactory.html#listen">listen</a></li><li data-type='method'><a href="HttpServerFactory.html#setServer">setServer</a></li><li data-type='method'><a href="HttpServerFactory.html#setupListeners">setupListeners</a></li></ul></li><li><a href="HttpServerProtocol.html">HttpServerProtocol</a><ul class='methods'><li data-type='method'><a href="HttpServerProtocol.html#clientConnected">clientConnected</a></li><li data-type='method'><a href="HttpServerProtocol.html#getResult">getResult</a></li><li data-type='method'><a href="HttpServerProtocol.html#handleBatchRequest">handleBatchRequest</a></li><li data-type='method'><a href="HttpServerProtocol.html#handleError">handleError</a></li><li data-type='method'><a href="HttpServerProtocol.html#handleNotification">handleNotification</a></li><li data-type='method'><a href="HttpServerProtocol.html#handleRequest">handleRequest</a></li><li data-type='method'><a href="HttpServerProtocol.html#validateMessage">validateMessage</a></li><li data-type='method'><a href="HttpServerProtocol.html#validateRequest">validateRequest</a></li><li data-type='method'><a href="HttpServerProtocol.html#writeToClient">writeToClient</a></li></ul></li><li><a href="JsonRpcClientFactory.html">JsonRpcClientFactory</a><ul class='methods'><li data-type='method'><a href="JsonRpcClientFactory.html#batch">batch</a></li><li data-type='method'><a href="JsonRpcClientFactory.html#cleanUp">cleanUp</a></li><li data-type='method'><a href="JsonRpcClientFactory.html#connect">connect</a></li><li data-type='method'><a href="JsonRpcClientFactory.html#end">end</a></li><li data-type='method'><a href="JsonRpcClientFactory.html#request">request</a></li><li data-type='method'><a href="JsonRpcClientFactory.html#serverDisconnected">serverDisconnected</a></li><li data-type='method'><a href="JsonRpcClientFactory.html#subscribe">subscribe</a></li><li data-type='method'><a href="JsonRpcClientFactory.html#unsubscribe">unsubscribe</a></li><li data-type='method'><a href="JsonRpcClientFactory.html#unsubscribeAll">unsubscribeAll</a></li></ul></li><li><a href="JsonRpcClientProtocol.html">JsonRpcClientProtocol</a><ul class='methods'><li data-type='method'><a href="JsonRpcClientProtocol.html#batch">batch</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#connect">connect</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#end">end</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#getBatchResponse">getBatchResponse</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#getResponse">getResponse</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#gotBatchResponse">gotBatchResponse</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#handleBatch">handleBatch</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#handleError">handleError</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#handleNotification">handleNotification</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#handleResponse">handleResponse</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#listen">listen</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#message">message</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#notify">notify</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#rejectPendingCalls">rejectPendingCalls</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#request">request</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#send">send</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#setConnector">setConnector</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#verifyData">verifyData</a></li><li data-type='method'><a href="JsonRpcClientProtocol.html#write">write</a></li></ul></li><li><a href="JsonRpcServerFactory.html">JsonRpcServerFactory</a><ul class='methods'><li data-type='method'><a href="JsonRpcServerFactory.html#buildProtocol">buildProtocol</a></li><li data-type='method'><a href="JsonRpcServerFactory.html#close">close</a></li><li data-type='method'><a href="JsonRpcServerFactory.html#listen">listen</a></li><li data-type='method'><a href="JsonRpcServerFactory.html#setServer">setServer</a></li><li data-type='method'><a href="JsonRpcServerFactory.html#setupListeners">setupListeners</a></li></ul></li><li><a href="JsonRpcServerProtocol.html">JsonRpcServerProtocol</a><ul class='methods'><li data-type='method'><a href="JsonRpcServerProtocol.html#clientConnected">clientConnected</a></li><li data-type='method'><a href="JsonRpcServerProtocol.html#getResult">getResult</a></li><li data-type='method'><a href="JsonRpcServerProtocol.html#handleBatchRequest">handleBatchRequest</a></li><li data-type='method'><a href="JsonRpcServerProtocol.html#handleError">handleError</a></li><li data-type='method'><a href="JsonRpcServerProtocol.html#handleNotification">handleNotification</a></li><li data-type='method'><a href="JsonRpcServerProtocol.html#handleRequest">handleRequest</a></li><li data-type='method'><a href="JsonRpcServerProtocol.html#validateMessage">validateMessage</a></li><li data-type='method'><a href="JsonRpcServerProtocol.html#validateRequest">validateRequest</a></li><li data-type='method'><a href="JsonRpcServerProtocol.html#writeToClient">writeToClient</a></li></ul></li><li><a href="MessageBuffer.html">MessageBuffer</a><ul class='methods'><li data-type='method'><a href="MessageBuffer.html#getMessage">getMessage</a></li><li data-type='method'><a href="MessageBuffer.html#handleData">handleData</a></li><li data-type='method'><a href="MessageBuffer.html#isFinished">isFinished</a></li><li data-type='method'><a href="MessageBuffer.html#push">push</a></li></ul></li><li><a href="TcpClientFactory.html">TcpClientFactory</a><ul class='methods'><li data-type='method'><a href="TcpClientFactory.html#batch">batch</a></li><li data-type='method'><a href="TcpClientFactory.html#cleanUp">cleanUp</a></li><li data-type='method'><a href="TcpClientFactory.html#connect">connect</a></li><li data-type='method'><a href="TcpClientFactory.html#end">end</a></li><li data-type='method'><a href="TcpClientFactory.html#request">request</a></li><li data-type='method'><a href="TcpClientFactory.html#serverDisconnected">serverDisconnected</a></li><li data-type='method'><a href="TcpClientFactory.html#subscribe">subscribe</a></li><li data-type='method'><a href="TcpClientFactory.html#unsubscribe">unsubscribe</a></li><li data-type='method'><a href="TcpClientFactory.html#unsubscribeAll">unsubscribeAll</a></li></ul></li><li><a href="TcpClientProtocol.html">TcpClientProtocol</a><ul class='methods'><li data-type='method'><a href="TcpClientProtocol.html#batch">batch</a></li><li data-type='method'><a href="TcpClientProtocol.html#connect">connect</a></li><li data-type='method'><a href="TcpClientProtocol.html#end">end</a></li><li data-type='method'><a href="TcpClientProtocol.html#getBatchResponse">getBatchResponse</a></li><li data-type='method'><a href="TcpClientProtocol.html#getResponse">getResponse</a></li><li data-type='method'><a href="TcpClientProtocol.html#gotBatchResponse">gotBatchResponse</a></li><li data-type='method'><a href="TcpClientProtocol.html#handleBatch">handleBatch</a></li><li data-type='method'><a href="TcpClientProtocol.html#handleError">handleError</a></li><li data-type='method'><a href="TcpClientProtocol.html#handleNotification">handleNotification</a></li><li data-type='method'><a href="TcpClientProtocol.html#handleResponse">handleResponse</a></li><li data-type='method'><a href="TcpClientProtocol.html#listen">listen</a></li><li data-type='method'><a href="TcpClientProtocol.html#message">message</a></li><li data-type='method'><a href="TcpClientProtocol.html#notify">notify</a></li><li data-type='method'><a href="TcpClientProtocol.html#rejectPendingCalls">rejectPendingCalls</a></li><li data-type='method'><a href="TcpClientProtocol.html#request">request</a></li><li data-type='method'><a href="TcpClientProtocol.html#send">send</a></li><li data-type='method'><a href="TcpClientProtocol.html#setConnector">setConnector</a></li><li data-type='method'><a href="TcpClientProtocol.html#verifyData">verifyData</a></li><li data-type='method'><a href="TcpClientProtocol.html#write">write</a></li></ul></li><li><a href="TcpServerFactory.html">TcpServerFactory</a><ul class='methods'><li data-type='method'><a href="TcpServerFactory.html#buildProtocol">buildProtocol</a></li><li data-type='method'><a href="TcpServerFactory.html#close">close</a></li><li data-type='method'><a href="TcpServerFactory.html#listen">listen</a></li><li data-type='method'><a href="TcpServerFactory.html#sendNotification">sendNotification</a></li><li data-type='method'><a href="TcpServerFactory.html#setServer">setServer</a></li><li data-type='method'><a href="TcpServerFactory.html#setupListeners">setupListeners</a></li></ul></li><li><a href="TcpServerProtocol.html">TcpServerProtocol</a><ul class='methods'><li data-type='method'><a href="TcpServerProtocol.html#clientConnected">clientConnected</a></li><li data-type='method'><a href="TcpServerProtocol.html#getResult">getResult</a></li><li data-type='method'><a href="TcpServerProtocol.html#handleBatchRequest">handleBatchRequest</a></li><li data-type='method'><a href="TcpServerProtocol.html#handleError">handleError</a></li><li data-type='method'><a href="TcpServerProtocol.html#handleNotification">handleNotification</a></li><li data-type='method'><a href="TcpServerProtocol.html#handleRequest">handleRequest</a></li><li data-type='method'><a href="TcpServerProtocol.html#validateMessage">validateMessage</a></li><li data-type='method'><a href="TcpServerProtocol.html#validateRequest">validateRequest</a></li><li data-type='method'><a href="TcpServerProtocol.html#writeToClient">writeToClient</a></li></ul></li><li><a href="WsBrowserClientFactory.html">WsBrowserClientFactory</a><ul class='methods'><li data-type='method'><a href="WsBrowserClientFactory.html#batch">batch</a></li><li data-type='method'><a href="WsBrowserClientFactory.html#cleanUp">cleanUp</a></li><li data-type='method'><a href="WsBrowserClientFactory.html#connect">connect</a></li><li data-type='method'><a href="WsBrowserClientFactory.html#end">end</a></li><li data-type='method'><a href="WsBrowserClientFactory.html#request">request</a></li><li data-type='method'><a href="WsBrowserClientFactory.html#subscribe">subscribe</a></li><li data-type='method'><a href="WsBrowserClientFactory.html#unsubscribe">unsubscribe</a></li><li data-type='method'><a href="WsBrowserClientFactory.html#unsubscribeAll">unsubscribeAll</a></li></ul></li><li><a href="WsBrowserClientProtocol.html">WsBrowserClientProtocol</a><ul class='methods'><li data-type='method'><a href="WsBrowserClientProtocol.html#batch">batch</a></li><li data-type='method'><a href="WsBrowserClientProtocol.html#getBatchResponse">getBatchResponse</a></li><li data-type='method'><a href="WsBrowserClientProtocol.html#getResponse">getResponse</a></li><li data-type='method'><a href="WsBrowserClientProtocol.html#gotBatchResponse">gotBatchResponse</a></li><li data-type='method'><a href="WsBrowserClientProtocol.html#handleBatch">handleBatch</a></li><li data-type='method'><a href="WsBrowserClientProtocol.html#handleError">handleError</a></li><li data-type='method'><a href="WsBrowserClientProtocol.html#handleNotification">handleNotification</a></li><li data-type='method'><a href="WsBrowserClientProtocol.html#handleResponse">handleResponse</a></li><li data-type='method'><a href="WsBrowserClientProtocol.html#message">message</a></li><li data-type='method'><a href="WsBrowserClientProtocol.html#notify">notify</a></li><li data-type='method'><a href="WsBrowserClientProtocol.html#rejectPendingCalls">rejectPendingCalls</a></li><li data-type='method'><a href="WsBrowserClientProtocol.html#request">request</a></li><li data-type='method'><a href="WsBrowserClientProtocol.html#send">send</a></li><li data-type='method'><a href="WsBrowserClientProtocol.html#setConnector">setConnector</a></li><li data-type='method'><a href="WsBrowserClientProtocol.html#verifyData">verifyData</a></li><li data-type='method'><a href="WsBrowserClientProtocol.html#write">write</a></li></ul></li><li><a href="WsClientFactory.html">WsClientFactory</a><ul class='methods'><li data-type='method'><a href="WsClientFactory.html#batch">batch</a></li><li data-type='method'><a href="WsClientFactory.html#cleanUp">cleanUp</a></li><li data-type='method'><a href="WsClientFactory.html#connect">connect</a></li><li data-type='method'><a href="WsClientFactory.html#end">end</a></li><li data-type='method'><a href="WsClientFactory.html#request">request</a></li><li data-type='method'><a href="WsClientFactory.html#serverDisconnected">serverDisconnected</a></li><li data-type='method'><a href="WsClientFactory.html#subscribe">subscribe</a></li><li data-type='method'><a href="WsClientFactory.html#unsubscribe">unsubscribe</a></li><li data-type='method'><a href="WsClientFactory.html#unsubscribeAll">unsubscribeAll</a></li></ul></li><li><a href="WsClientProtocol.html">WsClientProtocol</a><ul class='methods'><li data-type='method'><a href="WsClientProtocol.html#batch">batch</a></li><li data-type='method'><a href="WsClientProtocol.html#connect">connect</a></li><li data-type='method'><a href="WsClientProtocol.html#end">end</a></li><li data-type='method'><a href="WsClientProtocol.html#getBatchResponse">getBatchResponse</a></li><li data-type='method'><a href="WsClientProtocol.html#getResponse">getResponse</a></li><li data-type='method'><a href="WsClientProtocol.html#gotBatchResponse">gotBatchResponse</a></li><li data-type='method'><a href="WsClientProtocol.html#handleBatch">handleBatch</a></li><li data-type='method'><a href="WsClientProtocol.html#handleError">handleError</a></li><li data-type='method'><a href="WsClientProtocol.html#handleNotification">handleNotification</a></li><li data-type='method'><a href="WsClientProtocol.html#handleResponse">handleResponse</a></li><li data-type='method'><a href="WsClientProtocol.html#listen">listen</a></li><li data-type='method'><a href="WsClientProtocol.html#message">message</a></li><li data-type='method'><a href="WsClientProtocol.html#notify">notify</a></li><li data-type='method'><a href="WsClientProtocol.html#rejectPendingCalls">rejectPendingCalls</a></li><li data-type='method'><a href="WsClientProtocol.html#request">request</a></li><li data-type='method'><a href="WsClientProtocol.html#send">send</a></li><li data-type='method'><a href="WsClientProtocol.html#setConnector">setConnector</a></li><li data-type='method'><a href="WsClientProtocol.html#verifyData">verifyData</a></li><li data-type='method'><a href="WsClientProtocol.html#write">write</a></li></ul></li><li><a href="WsServerFactory.html">WsServerFactory</a><ul class='methods'><li data-type='method'><a href="WsServerFactory.html#buildProtocol">buildProtocol</a></li><li data-type='method'><a href="WsServerFactory.html#close">close</a></li><li data-type='method'><a href="WsServerFactory.html#listen">listen</a></li><li data-type='method'><a href="WsServerFactory.html#sendNotification">sendNotification</a></li><li data-type='method'><a href="WsServerFactory.html#setServer">setServer</a></li><li data-type='method'><a href="WsServerFactory.html#setSever">setSever</a></li><li data-type='method'><a href="WsServerFactory.html#setupListeners">setupListeners</a></li></ul></li><li><a href="WsServerProtocol.html">WsServerProtocol</a><ul class='methods'><li data-type='method'><a href="WsServerProtocol.html#clientConnected">clientConnected</a></li><li data-type='method'><a href="WsServerProtocol.html#getResult">getResult</a></li><li data-type='method'><a href="WsServerProtocol.html#handleBatchRequest">handleBatchRequest</a></li><li data-type='method'><a href="WsServerProtocol.html#handleError">handleError</a></li><li data-type='method'><a href="WsServerProtocol.html#handleNotification">handleNotification</a></li><li data-type='method'><a href="WsServerProtocol.html#handleRequest">handleRequest</a></li><li data-type='method'><a href="WsServerProtocol.html#validateMessage">validateMessage</a></li><li data-type='method'><a href="WsServerProtocol.html#validateRequest">validateRequest</a></li><li data-type='method'><a href="WsServerProtocol.html#writeToClient">writeToClient</a></li></ul></li></ul><h3>Namespaces</h3><ul><li><a href="Jaysonic.html">Jaysonic</a></li></ul><h3>Global</h3><ul><li><a href="global.html#formatError">formatError</a></li><li><a href="global.html#formatRequest">formatRequest</a></li><li><a href="global.html#formatResponse">formatResponse</a></li></ul>
-</nav>
-
-<div id="main">
-    
-    <h1 class="page-title">JsonRpcClientProtocol</h1>
-    
-
-    
+</div>
+</div>
 
 
+<div class="container" id="toc-content">
+<div class="row">
 
+	
+	<div class="col-md-8">
+	
+		<div id="main">
+			
 
+	<h1 class="page-title">Class: JsonRpcClientProtocol</h1>
 <section>
 
 <header>
@@ -48,36 +81,29 @@
         JsonRpcClientProtocol
         </h2>
         
-            <div class="class-description usertext"><p>Creates an instance of the base client protocol class.
+            <div class="class-description"><p>Creates an instance of the base client protocol class.
 This is the class that all other client protocols inherit from.</p></div>
         
     
 </header>
 
+
 <article>
+    <div class="container-overview">
     
-        <div class="container-overview">
         
-            
+<hr>
+<dt>
+    <h4 class="name" id="JsonRpcClientProtocol"><span class="type-signature"></span>new JsonRpcClientProtocol(factory, version, delimiter)</h4>
+    
+    
+</dt>
+<dd>
 
     
-    <h2>Constructor</h2>
-    
-
-    <h4 class="name" id="JsonRpcClientProtocol"><span class="type-signature"></span>new JsonRpcClientProtocol<span class="signature">(factory, version, delimiter)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client_protocol_base.js.html">client/protocol/base.js</a>, <a href="client_protocol_base.js.html#line9">line 9</a>
-    </li></ul></dd>
+    <div class="description">
+        <p>JsonRpcClientProtocol contructor</p>
+    </div>
     
 
     
@@ -85,39 +111,11 @@ This is the class that all other client protocols inherit from.</p></div>
     
 
     
-
     
+        <h5>Parameters:</h5>
+        
 
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
+<table class="params table table-striped">
     <thead>
     <tr>
         
@@ -148,6 +146,114 @@ This is the class that all other client protocols inherit from.</p></div>
 <span class="param-type">class</span>
 
 
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Instance of <a href="JsonRpcClientFactory.html">JsonRpcClientFactory</a></p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>version</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+|
+
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>JSON-RPC version to use (1 or '2.0')</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>delimiter</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Delimiter to use for message buffer</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    <dl>
+
+<table class="props table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>factory</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">class</span>
+
+
+
             
             </td>
 
@@ -169,6 +275,7 @@ This is the class that all other client protocols inherit from.</p></div>
             
                 
 <span class="param-type">class</span>
+
 
 
             
@@ -197,6 +304,7 @@ This is the class that all other client protocols inherit from.</p></div>
 <span class="param-type">number</span>
 
 
+
             
             </td>
 
@@ -218,6 +326,7 @@ This is the class that all other client protocols inherit from.</p></div>
             
                 
 <span class="param-type">string</span>
+
 
 
             
@@ -243,6 +352,7 @@ This is the class that all other client protocols inherit from.</p></div>
 <span class="param-type">number</span>
 
 
+
             
             </td>
 
@@ -264,6 +374,7 @@ This is the class that all other client protocols inherit from.</p></div>
             
                 
 <span class="param-type">number</span>
+
 
 
             
@@ -289,6 +400,7 @@ This is the class that all other client protocols inherit from.</p></div>
 <span class="param-type">Object</span>
 
 
+
             
             </td>
 
@@ -310,6 +422,7 @@ This is the class that all other client protocols inherit from.</p></div>
             
                 
 <span class="param-type">Object.&lt;(string|number), JSON></span>
+
 
 
             
@@ -335,6 +448,7 @@ This is the class that all other client protocols inherit from.</p></div>
 <span class="param-type">Object</span>
 
 
+
             
             </td>
 
@@ -358,6 +472,7 @@ This is the class that all other client protocols inherit from.</p></div>
 <span class="param-type">class</span>
 
 
+
             
             </td>
 
@@ -371,143 +486,16 @@ This is the class that all other client protocols inherit from.</p></div>
     
     </tbody>
 </table>
-
-
-
-
-
-
-<div class="description usertext">
-    <p>JsonRpcClientProtocol contructor</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>factory</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">class</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Instance of <a href="JsonRpcClientFactory.html">JsonRpcClientFactory</a></p></td>
-        </tr>
+</dl>
 
     
 
-        <tr>
-            
-                <td class="name"><code>version</code></td>
-            
+	
 
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-|
+	
 
-<span class="param-type">number</span>
+	
 
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>JSON-RPC version to use (1 or '2.0')</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>delimiter</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Delimiter to use for message buffer</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-        </div>
     
 
     
@@ -515,10 +503,64 @@ This is the class that all other client protocols inherit from.</p></div>
     
 
     
-    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="client_protocol_base.js.html">client/protocol/base.js</a>,
+				 <a href="client_protocol_base.js.html#sunlight-1-line-9">line 9</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
     
 
-     
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
 
     
 
@@ -527,88 +569,35 @@ This is the class that all other client protocols inherit from.</p></div>
     
         <h3 class="subsection-title">Methods</h3>
 
-        
+        <dl>
             
+<hr>
+<dt>
+    <h4 class="name" id="batch"><span class="type-signature"></span>batch(requests)</h4>
+    
+    
+</dt>
+<dd>
 
     
-
-    <h4 class="name" id="batch"><span class="type-signature"></span>batch<span class="signature">(requests)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client_protocol_base.js.html">client/protocol/base.js</a>, <a href="client_protocol_base.js.html#line370">line 370</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Used to send a batch request to the server.</p>
+    <div class="description">
+        <p>Used to send a batch request to the server.</p>
 <p>Recommend using <a href="JsonRpcClientProtocol.html#message">message</a> to construct objects.</p>
 <p>Will use the IDs for the requests in the batch in an array as the keys for <code>pendingCalls</code>.
 How a client should associate batch responses is not in the spec, so this is the solution.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Example</h5>
-    
-    <pre class="prettyprint"><code>client.batch([client.message("foo", ["bar"]), client.message("hello", [], false)])</code></pre>
-
-
-
-
-    <h5>Parameters:</h5>
+    </div>
     
 
-<table class="params">
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
     <thead>
     <tr>
         
@@ -639,6 +628,7 @@ How a client should associate batch responses is not in the spec, so this is the
 <span class="param-type">Array</span>
 
 
+
             
             </td>
 
@@ -653,211 +643,221 @@ How a client should associate batch responses is not in the spec, so this is the
     </tbody>
 </table>
 
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
 
 
 
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="client_protocol_base.js.html">client/protocol/base.js</a>,
+				 <a href="client_protocol_base.js.html#sunlight-1-line-370">line 370</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
 
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
+    
+    <h5>Returns:</h5>
+    
+            
 <div class="param-desc">
     <p>Promise</p>
 </div>
 
 
 
+
+        
+
     
+        <h5>Example</h5>
+        
+    <pre class="sunlight-highlight-javascript">client.batch([client.message(&quot;foo&quot;, [&quot;bar&quot;]), client.message(&quot;hello&quot;, [], false)])</pre>
 
 
+    
+</dd>
 
         
             
+<hr>
+<dt>
+    <h4 class="name" id="connect"><span class="type-signature"></span>connect()</h4>
+    
+    
+</dt>
+<dd>
 
     
-
-    <h4 class="name" id="connect"><span class="type-signature"></span>connect<span class="signature">()</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client_protocol_base.js.html">client/protocol/base.js</a>, <a href="client_protocol_base.js.html#line71">line 71</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Make the connection to the server.</p>
+    <div class="description">
+        <p>Make the connection to the server.</p>
 <p>Calls <a href="JsonRpcClientProtocol.html#setConnector">setConnector</a> to establish the node client connection.</p>
 <p>Calls <a href="JsonRpcClientProtocol.html#listen">listen</a> if connection was successful, and will resolve the promise.</p>
 <p>Will retry connection on the <code>connectionTimeout</code> interval.
 Number of connection retries is based on <code>remainingRetries</code></p>
 <p>Will reject the promise if connect or re-connect attempts fail.</p>
-</div>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
 
 
 
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="client_protocol_base.js.html">client/protocol/base.js</a>,
+				 <a href="client_protocol_base.js.html#sunlight-1-line-71">line 71</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
 
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
+    
+    <h5>Returns:</h5>
+    
+            
 <div class="param-desc">
     <p>Promise</p>
 </div>
 
 
 
+
+        
+
     
-
-
+</dd>
 
         
             
+<hr>
+<dt>
+    <h4 class="name" id="end"><span class="type-signature"></span>end(cb)</h4>
+    
+    
+</dt>
+<dd>
 
     
-
-    <h4 class="name" id="end"><span class="type-signature"></span>end<span class="signature">(cb)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client_protocol_base.js.html">client/protocol/base.js</a>, <a href="client_protocol_base.js.html#line108">line 108</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Ends connection to the server.</p>
+    <div class="description">
+        <p>Ends connection to the server.</p>
 <p>Sets <code>JsonRpcClientFactory.pcolInstance</code> to <code>undefined</code></p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
+    </div>
     
 
-<table class="params">
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
     <thead>
     <tr>
         
@@ -888,6 +888,7 @@ Number of connection retries is based on <code>remainingRetries</code></p>
 <span class="param-type">function</span>
 
 
+
             
             </td>
 
@@ -902,48 +903,17 @@ Number of connection retries is based on <code>remainingRetries</code></p>
     </tbody>
 </table>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
     
 
-    <h4 class="name" id="getBatchResponse"><span class="type-signature"></span>getBatchResponse<span class="signature">(batch)</span><span class="type-signature"></span></h4>
-
     
-
-
-
-
 <dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client_protocol_base.js.html">client/protocol/base.js</a>, <a href="client_protocol_base.js.html#line427">line 427</a>
-    </li></ul></dd>
     
 
-    
+	
 
-    
+	
+
+	
 
     
 
@@ -953,48 +923,80 @@ Number of connection retries is based on <code>remainingRetries</code></p>
 
     
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
 
-    
 
-    
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="client_protocol_base.js.html">client/protocol/base.js</a>,
+				 <a href="client_protocol_base.js.html#sunlight-1-line-108">line 108</a>
+			</li>
+		</ul>
+	</dd>
+	
 
-    
+	
+
+	
+
+	
 </dl>
 
 
-
-
-
-<div class="description usertext">
-    <p>Returns the batch response.</p>
-<p>Overwrite if class needs to reformat in anyway (i.e. in <a href="HttpClientProtocol.html">HttpClientProtocol</a>)</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
     
 
-<table class="params">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="getBatchResponse"><span class="type-signature"></span>getBatchResponse(batch)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Returns the batch response.</p>
+<p>Overwrite if class needs to reformat in anyway (i.e. in <a href="HttpClientProtocol.html">HttpClientProtocol</a>)</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
     <thead>
     <tr>
         
@@ -1025,6 +1027,7 @@ Number of connection retries is based on <code>remainingRetries</code></p>
 <span class="param-type">Array</span>
 
 
+
             
             </td>
 
@@ -1039,48 +1042,17 @@ Number of connection retries is based on <code>remainingRetries</code></p>
     </tbody>
 </table>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
     
 
-    <h4 class="name" id="getResponse"><span class="type-signature"></span>getResponse<span class="signature">(id)</span><span class="type-signature"></span></h4>
-
     
-
-
-
-
 <dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client_protocol_base.js.html">client/protocol/base.js</a>, <a href="client_protocol_base.js.html#line247">line 247</a>
-    </li></ul></dd>
     
 
-    
+	
 
-    
+	
+
+	
 
     
 
@@ -1090,47 +1062,79 @@ Number of connection retries is based on <code>remainingRetries</code></p>
 
     
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
 
-    
 
-    
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="client_protocol_base.js.html">client/protocol/base.js</a>,
+				 <a href="client_protocol_base.js.html#sunlight-1-line-427">line 427</a>
+			</li>
+		</ul>
+	</dd>
+	
 
-    
+	
+
+	
+
+	
 </dl>
 
 
-
-
-
-<div class="description usertext">
-    <p>Get the outstanding request object for the given ID</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
     
 
-<table class="params">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="getResponse"><span class="type-signature"></span>getResponse(id)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Get the outstanding request object for the given ID</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
     <thead>
     <tr>
         
@@ -1164,6 +1168,7 @@ Number of connection retries is based on <code>remainingRetries</code></p>
 <span class="param-type">number</span>
 
 
+
             
             </td>
 
@@ -1178,48 +1183,17 @@ Number of connection retries is based on <code>remainingRetries</code></p>
     </tbody>
 </table>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
     
 
-    <h4 class="name" id="gotBatchResponse"><span class="type-signature"></span>gotBatchResponse<span class="signature">(batch)</span><span class="type-signature"></span></h4>
-
     
-
-
-
-
 <dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client_protocol_base.js.html">client/protocol/base.js</a>, <a href="client_protocol_base.js.html#line399">line 399</a>
-    </li></ul></dd>
     
 
-    
+	
 
-    
+	
+
+	
 
     
 
@@ -1229,48 +1203,80 @@ Number of connection retries is based on <code>remainingRetries</code></p>
 
     
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
 
-    
 
-    
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="client_protocol_base.js.html">client/protocol/base.js</a>,
+				 <a href="client_protocol_base.js.html#sunlight-1-line-247">line 247</a>
+			</li>
+		</ul>
+	</dd>
+	
 
-    
+	
+
+	
+
+	
 </dl>
 
 
-
-
-
-<div class="description usertext">
-    <p>Associate the ids in the batch message to their corresponding <code>pendingCalls</code>.</p>
-<p>Will call _resolveOrRejectBatch when object is determined</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
     
 
-<table class="params">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="gotBatchResponse"><span class="type-signature"></span>gotBatchResponse(batch)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Associate the ids in the batch message to their corresponding <code>pendingCalls</code>.</p>
+<p>Will call _resolveOrRejectBatch when object is determined</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
     <thead>
     <tr>
         
@@ -1301,6 +1307,7 @@ Number of connection retries is based on <code>remainingRetries</code></p>
 <span class="param-type">Array</span>
 
 
+
             
             </td>
 
@@ -1315,48 +1322,17 @@ Number of connection retries is based on <code>remainingRetries</code></p>
     </tbody>
 </table>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
     
 
-    <h4 class="name" id="handleBatch"><span class="type-signature"></span>handleBatch<span class="signature">(message)</span><span class="type-signature"></span></h4>
-
     
-
-
-
-
 <dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client_protocol_base.js.html">client/protocol/base.js</a>, <a href="client_protocol_base.js.html#line209">line 209</a>
-    </li></ul></dd>
     
 
-    
+	
 
-    
+	
+
+	
 
     
 
@@ -1366,47 +1342,79 @@ Number of connection retries is based on <code>remainingRetries</code></p>
 
     
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
 
-    
 
-    
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="client_protocol_base.js.html">client/protocol/base.js</a>,
+				 <a href="client_protocol_base.js.html#sunlight-1-line-399">line 399</a>
+			</li>
+		</ul>
+	</dd>
+	
 
-    
+	
+
+	
+
+	
 </dl>
 
 
-
-
-
-<div class="description usertext">
-    <p>Called when the received message is a batch</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
     
 
-<table class="params">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="handleBatch"><span class="type-signature"></span>handleBatch(message)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Called when the received message is a batch</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
     <thead>
     <tr>
         
@@ -1437,6 +1445,7 @@ Number of connection retries is based on <code>remainingRetries</code></p>
 <span class="param-type">Array.&lt;JSON></span>
 
 
+
             
             </td>
 
@@ -1451,48 +1460,17 @@ Number of connection retries is based on <code>remainingRetries</code></p>
     </tbody>
 </table>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
     
 
-    <h4 class="name" id="handleError"><span class="type-signature"></span>handleError<span class="signature">(error)</span><span class="type-signature"></span></h4>
-
     
-
-
-
-
 <dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client_protocol_base.js.html">client/protocol/base.js</a>, <a href="client_protocol_base.js.html#line525">line 525</a>
-    </li></ul></dd>
     
 
-    
+	
 
-    
+	
+
+	
 
     
 
@@ -1502,48 +1480,80 @@ Number of connection retries is based on <code>remainingRetries</code></p>
 
     
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
 
-    
 
-    
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="client_protocol_base.js.html">client/protocol/base.js</a>,
+				 <a href="client_protocol_base.js.html#sunlight-1-line-209">line 209</a>
+			</li>
+		</ul>
+	</dd>
+	
 
-    
+	
+
+	
+
+	
 </dl>
 
 
-
-
-
-<div class="description usertext">
-    <p>Calls <a href="JsonRpcClientProtocol.html#rejectPendingCalls">rejectPendingCalls</a> with error object.
-If the object cannot be parsed, then an unkown error code is sent with the error message</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
     
 
-<table class="params">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="handleError"><span class="type-signature"></span>handleError(error)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Calls <a href="JsonRpcClientProtocol.html#rejectPendingCalls">rejectPendingCalls</a> with error object.
+If the object cannot be parsed, then an unkown error code is sent with the error message</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
     <thead>
     <tr>
         
@@ -1574,6 +1584,7 @@ If the object cannot be parsed, then an unkown error code is sent with the error
 <span class="param-type">string</span>
 
 
+
             
             </td>
 
@@ -1588,48 +1599,17 @@ If the object cannot be parsed, then an unkown error code is sent with the error
     </tbody>
 </table>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
     
 
-    <h4 class="name" id="handleNotification"><span class="type-signature"></span>handleNotification<span class="signature">(message)</span><span class="type-signature"></span></h4>
-
     
-
-
-
-
 <dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client_protocol_base.js.html">client/protocol/base.js</a>, <a href="client_protocol_base.js.html#line200">line 200</a>
-    </li></ul></dd>
     
 
-    
+	
 
-    
+	
+
+	
 
     
 
@@ -1639,49 +1619,81 @@ If the object cannot be parsed, then an unkown error code is sent with the error
 
     
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
 
-    
 
-    
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="client_protocol_base.js.html">client/protocol/base.js</a>,
+				 <a href="client_protocol_base.js.html#sunlight-1-line-525">line 525</a>
+			</li>
+		</ul>
+	</dd>
+	
 
-    
+	
+
+	
+
+	
 </dl>
 
 
+    
 
+    
 
+    
 
-<div class="description usertext">
-    <p>Called when the received <code>message</code> is a notification.
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="handleNotification"><span class="type-signature"></span>handleNotification(message)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Called when the received <code>message</code> is a notification.
 Emits an event using <code>message.method</code> as the name.
 The data passed to the event handler is the <code>message</code>.</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
+    </div>
     
 
-<table class="params">
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
     <thead>
     <tr>
         
@@ -1712,6 +1724,7 @@ The data passed to the event handler is the <code>message</code>.</p>
 <span class="param-type">JSON</span>
 
 
+
             
             </td>
 
@@ -1726,48 +1739,17 @@ The data passed to the event handler is the <code>message</code>.</p>
     </tbody>
 </table>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
     
 
-    <h4 class="name" id="handleResponse"><span class="type-signature"></span>handleResponse<span class="signature">(message)</span><span class="type-signature"></span></h4>
-
     
-
-
-
-
 <dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client_protocol_base.js.html">client/protocol/base.js</a>, <a href="client_protocol_base.js.html#line224">line 224</a>
-    </li></ul></dd>
     
 
-    
+	
 
-    
+	
+
+	
 
     
 
@@ -1777,47 +1759,79 @@ The data passed to the event handler is the <code>message</code>.</p>
 
     
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
 
-    
 
-    
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="client_protocol_base.js.html">client/protocol/base.js</a>,
+				 <a href="client_protocol_base.js.html#sunlight-1-line-200">line 200</a>
+			</li>
+		</ul>
+	</dd>
+	
 
-    
+	
+
+	
+
+	
 </dl>
 
 
-
-
-
-<div class="description usertext">
-    <p>Called when the received message is a response object from the server</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
     
 
-<table class="params">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="handleResponse"><span class="type-signature"></span>handleResponse(message)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Called when the received message is a response object from the server</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
     <thead>
     <tr>
         
@@ -1848,6 +1862,7 @@ The data passed to the event handler is the <code>message</code>.</p>
 <span class="param-type">JSON</span>
 
 
+
             
             </td>
 
@@ -1862,48 +1877,17 @@ The data passed to the event handler is the <code>message</code>.</p>
     </tbody>
 </table>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
     
 
-    <h4 class="name" id="listen"><span class="type-signature"></span>listen<span class="signature">()</span><span class="type-signature"></span></h4>
-
     
-
-
-
-
 <dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client_protocol_base.js.html">client/protocol/base.js</a>, <a href="client_protocol_base.js.html#line119">line 119</a>
-    </li></ul></dd>
     
 
-    
+	
 
-    
+	
+
+	
 
     
 
@@ -1913,86 +1897,87 @@ The data passed to the event handler is the <code>message</code>.</p>
 
     
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
 
-    
 
-    
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="client_protocol_base.js.html">client/protocol/base.js</a>,
+				 <a href="client_protocol_base.js.html#sunlight-1-line-224">line 224</a>
+			</li>
+		</ul>
+	</dd>
+	
 
-    
+	
+
+	
+
+	
 </dl>
 
 
+    
 
+    
 
+    
 
-<div class="description usertext">
-    <p>Setup &quot;data&quot; event to listen for data coming into the client.</p>
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="listen"><span class="type-signature"></span>listen()</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Setup &quot;data&quot; event to listen for data coming into the client.</p>
 <p>Pushes received data into <code>messageBuffer</code> and calls
 _waitForData</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
+    </div>
+    
 
     
 
-    <h4 class="name" id="message"><span class="type-signature"></span>message<span class="signature">(method, params, id<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
-
     
 
+    
+    
 
-
-
+    
 <dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client_protocol_base.js.html">client/protocol/base.js</a>, <a href="client_protocol_base.js.html#line271">line 271</a>
-    </li></ul></dd>
     
 
-    
+	
 
-    
+	
+
+	
 
     
 
@@ -2002,53 +1987,79 @@ _waitForData</p>
 
     
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
 
-    
 
-    
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="client_protocol_base.js.html">client/protocol/base.js</a>,
+				 <a href="client_protocol_base.js.html#sunlight-1-line-119">line 119</a>
+			</li>
+		</ul>
+	</dd>
+	
 
-    
+	
+
+	
+
+	
 </dl>
 
 
-
-
-
-<div class="description usertext">
-    <p>Generate a stringified JSON-RPC message object</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Example</h5>
-    
-    <pre class="prettyprint"><code>client.message("hello", ["world"]) // returns {"jsonrpc": "2.0", "method": "hello", "params": ["world"], "id": 1}
-client.message("hello", ["world"], false) // returns {"jsonrpc": "2.0", "method": "hello", "params": ["world"]}</code></pre>
-
-
-
-
-    <h5>Parameters:</h5>
     
 
-<table class="params">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="message"><span class="type-signature"></span>message(method, params [, id])</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Generate a stringified JSON-RPC message object</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
     <thead>
     <tr>
         
@@ -2058,7 +2069,7 @@ client.message("hello", ["world"], false) // returns {"jsonrpc": "2.0", "method"
         <th>Type</th>
 
         
-        <th>Attributes</th>
+        <th>Argument</th>
         
 
         
@@ -2081,6 +2092,7 @@ client.message("hello", ["world"], false) // returns {"jsonrpc": "2.0", "method"
             
                 
 <span class="param-type">string</span>
+
 
 
             
@@ -2119,6 +2131,7 @@ client.message("hello", ["world"], false) // returns {"jsonrpc": "2.0", "method"
 |
 
 <span class="param-type">JSON</span>
+
 
 
             
@@ -2156,6 +2169,7 @@ client.message("hello", ["world"], false) // returns {"jsonrpc": "2.0", "method"
 <span class="param-type">boolean</span>
 
 
+
             
             </td>
 
@@ -2174,7 +2188,7 @@ client.message("hello", ["world"], false) // returns {"jsonrpc": "2.0", "method"
             
                 <td class="default">
                 
-                    <code>true</code>
+                    true
                 
                 </td>
             
@@ -2186,48 +2200,17 @@ client.message("hello", ["world"], false) // returns {"jsonrpc": "2.0", "method"
     </tbody>
 </table>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
     
 
-    <h4 class="name" id="notify"><span class="type-signature"></span>notify<span class="signature">(method, params)</span><span class="type-signature"></span></h4>
-
     
-
-
-
-
 <dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client_protocol_base.js.html">client/protocol/base.js</a>, <a href="client_protocol_base.js.html#line297">line 297</a>
-    </li></ul></dd>
     
 
-    
+	
 
-    
+	
+
+	
 
     
 
@@ -2237,54 +2220,88 @@ client.message("hello", ["world"], false) // returns {"jsonrpc": "2.0", "method"
 
     
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
 
-    
 
-    
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="client_protocol_base.js.html">client/protocol/base.js</a>,
+				 <a href="client_protocol_base.js.html#sunlight-1-line-271">line 271</a>
+			</li>
+		</ul>
+	</dd>
+	
 
-    
+	
+
+	
+
+	
 </dl>
 
 
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h5>Example</h5>
+        
+    <pre class="sunlight-highlight-javascript">client.message(&quot;hello&quot;, [&quot;world&quot;]) // returns {&quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;method&quot;: &quot;hello&quot;, &quot;params&quot;: [&quot;world&quot;], &quot;id&quot;: 1}
+client.message(&quot;hello&quot;, [&quot;world&quot;], false) // returns {&quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;method&quot;: &quot;hello&quot;, &quot;params&quot;: [&quot;world&quot;]}</pre>
 
 
+    
+</dd>
 
-<div class="description usertext">
-    <p>Send a notification to the server.</p>
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="notify"><span class="type-signature"></span>notify(method, params)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Send a notification to the server.</p>
 <p>Promise will resolve if the request was sucessfully sent, and reject if
 there was an error sending the request.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Example</h5>
-    
-    <pre class="prettyprint"><code>client.notify("hello", ["world"])</code></pre>
-
-
-
-
-    <h5>Parameters:</h5>
+    </div>
     
 
-<table class="params">
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
     <thead>
     <tr>
         
@@ -2315,6 +2332,7 @@ there was an error sending the request.</p>
 <span class="param-type">string</span>
 
 
+
             
             </td>
 
@@ -2341,6 +2359,7 @@ there was an error sending the request.</p>
 <span class="param-type">JSON</span>
 
 
+
             
             </td>
 
@@ -2355,109 +2374,117 @@ there was an error sending the request.</p>
     </tbody>
 </table>
 
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
 
 
 
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="client_protocol_base.js.html">client/protocol/base.js</a>,
+				 <a href="client_protocol_base.js.html#sunlight-1-line-297">line 297</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
 
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
+    
+    <h5>Returns:</h5>
+    
+            
 <div class="param-desc">
     <p>Promise</p>
 </div>
 
 
 
+
+        
+
     
+        <h5>Example</h5>
+        
+    <pre class="sunlight-highlight-javascript">client.notify(&quot;hello&quot;, [&quot;world&quot;])</pre>
 
 
+    
+</dd>
 
         
             
+<hr>
+<dt>
+    <h4 class="name" id="rejectPendingCalls"><span class="type-signature"></span>rejectPendingCalls(error)</h4>
+    
+    
+</dt>
+<dd>
 
     
-
-    <h4 class="name" id="rejectPendingCalls"><span class="type-signature"></span>rejectPendingCalls<span class="signature">(error)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client_protocol_base.js.html">client/protocol/base.js</a>, <a href="client_protocol_base.js.html#line550">line 550</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Reject the pending call for the given ID in the error object.
+    <div class="description">
+        <p>Reject the pending call for the given ID in the error object.
 If the error object has a null id, then log the message to the console.</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
+    </div>
     
 
-<table class="params">
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
     <thead>
     <tr>
         
@@ -2488,6 +2515,7 @@ If the error object has a null id, then log the message to the console.</p>
 <span class="param-type">string</span>
 
 
+
             
             </td>
 
@@ -2502,48 +2530,17 @@ If the error object has a null id, then log the message to the console.</p>
     </tbody>
 </table>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
     
 
-    <h4 class="name" id="request"><span class="type-signature"></span>request<span class="signature">()</span><span class="type-signature"></span></h4>
-
     
-
-
-
-
 <dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client_protocol_base.js.html">client/protocol/base.js</a>, <a href="client_protocol_base.js.html#line348">line 348</a>
-    </li></ul></dd>
     
 
-    
+	
 
-    
+	
+
+	
 
     
 
@@ -2553,159 +2550,189 @@ If the error object has a null id, then log the message to the console.</p>
 
     
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
 
-    
 
-    
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="client_protocol_base.js.html">client/protocol/base.js</a>,
+				 <a href="client_protocol_base.js.html#sunlight-1-line-550">line 550</a>
+			</li>
+		</ul>
+	</dd>
+	
 
-    
+	
+
+	
+
+	
 </dl>
 
 
-
-
-
-<div class="description usertext">
-    <p>Method used to call <a href="JsonRpcClientProtocol.html#message">message</a>, <a href="JsonRpcClientProtocol.html#notify">notify</a> and <a href="JsonRpcClientProtocol.html#send">send</a></p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Example</h5>
     
-    <pre class="prettyprint"><code>client.request().send("hello", ["world"])
-client.request().notify("foo")
-client.request().message("foo", ["bar"])</code></pre>
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
+    
+</dd>
 
         
+            
+<hr>
+<dt>
+    <h4 class="name" id="request"><span class="type-signature"></span>request()</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Method used to call <a href="JsonRpcClientProtocol.html#message">message</a>, <a href="JsonRpcClientProtocol.html#notify">notify</a> and <a href="JsonRpcClientProtocol.html#send">send</a></p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="client_protocol_base.js.html">client/protocol/base.js</a>,
+				 <a href="client_protocol_base.js.html#sunlight-1-line-348">line 348</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
 <div class="param-desc">
     <p>Object</p>
 </div>
 
 
 
+
+        
+
     
+        <h5>Example</h5>
+        
+    <pre class="sunlight-highlight-javascript">client.request().send(&quot;hello&quot;, [&quot;world&quot;])
+client.request().notify(&quot;foo&quot;)
+client.request().message(&quot;foo&quot;, [&quot;bar&quot;])</pre>
 
 
+    
+</dd>
 
         
             
+<hr>
+<dt>
+    <h4 class="name" id="send"><span class="type-signature"></span>send(method, params)</h4>
+    
+    
+</dt>
+<dd>
 
     
-
-    <h4 class="name" id="send"><span class="type-signature"></span>send<span class="signature">(method, params)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client_protocol_base.js.html">client/protocol/base.js</a>, <a href="client_protocol_base.js.html#line325">line 325</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Send a request to the server</p>
+    <div class="description">
+        <p>Send a request to the server</p>
 <p>Promise will resolve when a response has been received for the request.</p>
 <p>Promise will reject if the server responds with an error object, or if
 the response is not received within the set <code>requestTimeout</code></p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Example</h5>
-    
-    <pre class="prettyprint"><code>client.send("hello", {"foo": "bar"})</code></pre>
-
-
-
-
-    <h5>Parameters:</h5>
+    </div>
     
 
-<table class="params">
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
     <thead>
     <tr>
         
@@ -2736,6 +2763,7 @@ the response is not received within the set <code>requestTimeout</code></p>
 <span class="param-type">string</span>
 
 
+
             
             </td>
 
@@ -2762,6 +2790,7 @@ the response is not received within the set <code>requestTimeout</code></p>
 <span class="param-type">JSON</span>
 
 
+
             
             </td>
 
@@ -2776,146 +2805,123 @@ the response is not received within the set <code>requestTimeout</code></p>
     </tbody>
 </table>
 
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
 
 
 
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="client_protocol_base.js.html">client/protocol/base.js</a>,
+				 <a href="client_protocol_base.js.html#sunlight-1-line-325">line 325</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
 
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
+    
+    <h5>Returns:</h5>
+    
+            
 <div class="param-desc">
     <p>Promise</p>
 </div>
 
 
 
+
+        
+
     
+        <h5>Example</h5>
+        
+    <pre class="sunlight-highlight-javascript">client.send(&quot;hello&quot;, {&quot;foo&quot;: &quot;bar&quot;})</pre>
 
 
+    
+</dd>
 
         
             
+<hr>
+<dt>
+    <h4 class="name" id="setConnector"><span class="type-signature">&lt;abstract> </span>setConnector()</h4>
+    
+    
+</dt>
+<dd>
 
     
-
-    <h4 class="name" id="setConnector"><span class="type-signature">(abstract) </span>setConnector<span class="signature">()</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client_protocol_base.js.html">client/protocol/base.js</a>, <a href="client_protocol_base.js.html#line51">line 51</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Set the <code>connector</code> attribute for the protocol instance.
+    <div class="description">
+        <p>Set the <code>connector</code> attribute for the protocol instance.
 The connector is essentially the socket instance for the client.</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
+    </div>
+    
 
     
 
-    <h4 class="name" id="verifyData"><span class="type-signature"></span>verifyData<span class="signature">(chunk)</span><span class="type-signature"></span></h4>
-
     
 
+    
+    
 
-
-
+    
 <dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client_protocol_base.js.html">client/protocol/base.js</a>, <a href="client_protocol_base.js.html#line156">line 156</a>
-    </li></ul></dd>
     
 
-    
+	
 
-    
+	
+
+	
 
     
 
@@ -2925,50 +2931,82 @@ The connector is essentially the socket instance for the client.</p>
 
     
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
 
-    
 
-    
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="client_protocol_base.js.html">client/protocol/base.js</a>,
+				 <a href="client_protocol_base.js.html#sunlight-1-line-51">line 51</a>
+			</li>
+		</ul>
+	</dd>
+	
 
-    
+	
+
+	
+
+	
 </dl>
 
 
+    
 
+    
 
+    
 
-<div class="description usertext">
-    <p>Verify the incoming data returned from <code>messageBuffer</code></p>
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="verifyData"><span class="type-signature"></span>verifyData(chunk)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Verify the incoming data returned from <code>messageBuffer</code></p>
 <p>Throw an error if its not a valid JSON-RPC object.</p>
 <p>Call <a href="JsonRpcClientProtocol.html#handleNotification">handleNotification</a> if the message a notification.</p>
 <p>Call <a href="JsonRpcClientProtocol.html#handleBatch">handleBatch</a> if the message is a batch request.</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
+    </div>
     
 
-<table class="params">
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
     <thead>
     <tr>
         
@@ -2999,6 +3037,7 @@ The connector is essentially the socket instance for the client.</p>
 <span class="param-type">string</span>
 
 
+
             
             </td>
 
@@ -3013,48 +3052,17 @@ The connector is essentially the socket instance for the client.</p>
     </tbody>
 </table>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
     
 
-    <h4 class="name" id="write"><span class="type-signature"></span>write<span class="signature">(request, cb<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
-
     
-
-
-
-
 <dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client_protocol_base.js.html">client/protocol/base.js</a>, <a href="client_protocol_base.js.html#line257">line 257</a>
-    </li></ul></dd>
     
 
-    
+	
 
-    
+	
+
+	
 
     
 
@@ -3064,47 +3072,79 @@ The connector is essentially the socket instance for the client.</p>
 
     
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
 
-    
 
-    
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="client_protocol_base.js.html">client/protocol/base.js</a>,
+				 <a href="client_protocol_base.js.html#sunlight-1-line-156">line 156</a>
+			</li>
+		</ul>
+	</dd>
+	
 
-    
+	
+
+	
+
+	
 </dl>
 
 
-
-
-
-<div class="description usertext">
-    <p>Send a message to the server</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
     
 
-<table class="params">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="write"><span class="type-signature"></span>write(request [, cb])</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Send a message to the server</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
     <thead>
     <tr>
         
@@ -3114,7 +3154,7 @@ The connector is essentially the socket instance for the client.</p>
         <th>Type</th>
 
         
-        <th>Attributes</th>
+        <th>Argument</th>
         
 
         
@@ -3135,6 +3175,7 @@ The connector is essentially the socket instance for the client.</p>
             
                 
 <span class="param-type">string</span>
+
 
 
             
@@ -3168,6 +3209,7 @@ The connector is essentially the socket instance for the client.</p>
 <span class="param-type">function</span>
 
 
+
             
             </td>
 
@@ -3192,25 +3234,74 @@ The connector is essentially the socket instance for the client.</p>
     </tbody>
 </table>
 
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
 
 
 
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="client_protocol_base.js.html">client/protocol/base.js</a>,
+				 <a href="client_protocol_base.js.html#sunlight-1-line-257">line 257</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
 
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
+</dd>
 
-
-
-
-
-
-
-        
+        </dl>
     
 
     
@@ -3223,20 +3314,131 @@ The connector is essentially the socket instance for the client.</p>
 
 
 
-    
-    
+		</div>
+	</div>
+
+	<div class="clearfix"></div>
+
+	
+		<div class="col-md-3">
+			<div id="toc" class="col-md-3 hidden-xs hidden-sm hidden-md"></div>
+		</div>
+	
+
+</div>
 </div>
 
-<br class="clear">
+
+    <div class="modal fade" id="searchResults">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Search results</h4>
+          </div>
+          <div class="modal-body"></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div>
+
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.6</a> on Mon Oct 12 2020 10:57:20 GMT-0400 (Eastern Daylight Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+
+
+<span class="jsdoc-message">
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.6</a>
+	
+		on 2020-10-12T13:28:19-04:00
+	
+	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
+</span>
 </footer>
 
-<script>prettyPrint();</script>
-<script src="scripts/polyfill.js"></script>
-<script src="scripts/linenumber.js"></script>
+<script src="scripts/docstrap.lib.js"></script>
+<script src="scripts/toc.js"></script>
 
+    <script type="text/javascript" src="scripts/fulltext-search-ui.js"></script>
+
+
+<script>
+$( function () {
+	$( "[id*='$']" ).each( function () {
+		var $this = $( this );
+
+		$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
+	} );
+
+	$( ".tutorial-section pre, .readme-section pre, pre.prettyprint.source" ).each( function () {
+		var $this = $( this );
+
+		var example = $this.find( "code" );
+		exampleText = example.html();
+		var lang = /{@lang (.*?)}/.exec( exampleText );
+		if ( lang && lang[1] ) {
+			exampleText = exampleText.replace( lang[0], "" );
+			example.html( exampleText );
+			lang = lang[1];
+		} else {
+			var langClassMatch = example.parent()[0].className.match(/lang\-(\S+)/);
+			lang = langClassMatch ? langClassMatch[1] : "javascript";
+		}
+
+		if ( lang ) {
+
+			$this
+			.addClass( "sunlight-highlight-" + lang )
+			.addClass( "linenums" )
+			.html( example.html() );
+
+		}
+	} );
+
+	Sunlight.highlightAll( {
+		lineNumbers : true,
+		showMenu : true,
+		enableDoclinks : true
+	} );
+
+	$.catchAnchorLinks( {
+        navbarOffset: 10
+	} );
+	$( "#toc" ).toc( {
+		anchorName  : function ( i, heading, prefix ) {
+			return $( heading ).attr( "id" ) || ( prefix + i );
+		},
+		selectors   : "#toc-content h1,#toc-content h2,#toc-content h3,#toc-content h4",
+		showAndHide : false,
+		smoothScrolling: true
+	} );
+
+	$( "#main span[id^='toc']" ).addClass( "toc-shim" );
+	$( '.dropdown-toggle' ).dropdown();
+
+    $( "table" ).each( function () {
+      var $this = $( this );
+      $this.addClass('table');
+    } );
+
+} );
+</script>
+
+
+
+<!--Navigation and Symbol Display-->
+
+
+<!--Google Analytics-->
+
+
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            SearcherDisplay.init();
+        });
+    </script>
 
 
 </body>

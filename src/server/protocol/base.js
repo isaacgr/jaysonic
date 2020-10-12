@@ -1,6 +1,6 @@
-const { MessageBuffer } = require("../../buffer");
-const { formatResponse, formatError } = require("../../functions");
-const { ERR_CODES, ERR_MSGS } = require("../../constants");
+const MessageBuffer = require("../../util/buffer");
+const { formatResponse, formatError } = require("../../util/format");
+const { ERR_CODES, ERR_MSGS } = require("../../util/constants");
 
 /**
  * Creates an instance of JsonRpcServerProtocol. This is the
@@ -160,9 +160,9 @@ class JsonRpcServerProtocol {
         message.id
       );
     } else if (
-      message.params &&
-      !Array.isArray(message.params) &&
-      !(message.params === Object(message.params))
+      message.params
+      && !Array.isArray(message.params)
+      && !(message.params === Object(message.params))
     ) {
       this._raiseError(
         ERR_MSGS.invalidParams,
@@ -228,14 +228,14 @@ class JsonRpcServerProtocol {
         try {
           this._maybeHandleRequest(request);
           return this.getResult(request)
-            .then((result) => JSON.parse(result))
-            .catch((error) => JSON.parse(error));
+            .then(result => JSON.parse(result))
+            .catch(error => JSON.parse(error));
         } catch (e) {
           // basically reject the whole batch if any one thing fails
           return JSON.parse(e.message);
         }
       })
-      .filter((el) => el != null);
+      .filter(el => el != null);
     return Promise.all(batchResponses);
   }
 

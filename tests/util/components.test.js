@@ -4,7 +4,7 @@ const {
   formatRequest,
   formatResponse,
   formatError
-} = require("../../src/functions");
+} = require("../../src/util/format");
 
 const Jaysonic = require("../../src");
 const baseProtocol = require("../../src/server/protocol/base");
