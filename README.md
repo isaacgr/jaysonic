@@ -43,6 +43,7 @@
 [![Build Status](https://travis-ci.com/isaacgr/jaysonic.svg?branch=master)](https://travis-ci.com/isaacgr/jaysonic)
 [![Coverage Status](https://coveralls.io/repos/github/isaacgr/jaysonic/badge.svg?branch=master)](https://coveralls.io/github/isaacgr/jaysonic?branch=master)
 [![Maintainability](https://api.codeclimate.com/v1/badges/b061f4e44fa85d5e8b04/maintainability)](https://codeclimate.com/github/isaacgr/jaysonic/maintainability)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/34ec9715-e872-4a37-a53b-7a0207fc57a3/deploy-status)](https://app.netlify.com/sites/keen-sammet-556a43/deploys)
 ---
 
 A TCP, HTTP and WebSocket server and client that implement the JSON-RPC 2.0 Specification.
