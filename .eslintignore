@@ -1,4 +1,2 @@
 lib/*
-tests/client.js
-tests/general-test.js
-tests/websockets/*
+docs/
