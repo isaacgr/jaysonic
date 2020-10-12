@@ -224,21 +224,21 @@ module.exports = JsonRpcServerFactory;
 
 /**
  * HTTP server constructor
- * @type ServerHTTP
+ * @type HttpServerFactory
  * @static
  */
 JsonRpcServerFactory.http = require("./http");
 
 /**
  * TCP server constructor
- * @type ServerTCP
+ * @type TcpServerFactory
  * @static
  */
 JsonRpcServerFactory.tcp = require("./tcp");
 
 /**
  * WS server constructor
- * @type ServerWS
+ * @type WsServerFactory
  * @static
  */
 JsonRpcServerFactory.ws = require("./ws");

@@ -44,7 +44,7 @@
     "coverage": "nyc npm run test",
     "lint": "./node_modules/eslint/bin/eslint.js .",
     "lint-fix": "./node_modules/eslint/bin/eslint.js --fix .",
-    "build-docs": "./node_modules/.bin/jsdoc -r src/ -d ./docs -c jsdoc.json",
+    "build-docs": "./node_modules/.bin/jsdoc -r src/ -d ./docs -c jsdoc.json --readme README.md",
     "build": "./node_modules/.bin/babel src --out-dir lib",
     "prepare": "npm run test && npm run lint-fix && npm run build-docs && npm run build"
   },
