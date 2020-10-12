@@ -105,10 +105,10 @@ describe("formatRequest", () => {
       const params = {
         method: "test",
         id: 1,
-        options: { delimiter: "\n" }
+        delimiter: "\n"
       };
       const message = formatRequest(params);
-      expect(message).to.be.eql("{\"method\":\"test\",\"jsonrpc\":\"2.0\",\"id\":1}\n");
+      expect(message).to.be.eql('{"method":"test","jsonrpc":"2.0","id":1}\n');
       done();
     });
   });
@@ -185,7 +185,7 @@ describe("formatResponse", () => {
           delimiter: "\n"
         };
         const response = formatResponse(params);
-        expect(response).to.eql("{\"result\":19,\"jsonrpc\":\"2.0\",\"id\":1}\n");
+        expect(response).to.eql('{"result":19,"jsonrpc":"2.0","id":1}\n');
         done();
       });
       it("should return notification with params", (done) => {
@@ -197,7 +197,7 @@ describe("formatResponse", () => {
         };
         const response = formatResponse(params);
         expect(response).to.eql(
-          "{\"params\":[1,2,3,4,5],\"jsonrpc\":\"2.0\",\"method\":\"update\"}\n"
+          '{"params":[1,2,3,4,5],"jsonrpc":"2.0","method":"update"}\n'
         );
         done();
       });
@@ -211,7 +211,7 @@ describe("formatResponse", () => {
         };
         const response = formatResponse(params);
         expect(response).to.eql(
-          "{\"result\":\"Hello JSON-RPC\",\"error\":null,\"id\":1}\n"
+          '{"result":"Hello JSON-RPC","error":null,"id":1}\n'
         );
         done();
       });
@@ -223,7 +223,7 @@ describe("formatResponse", () => {
         };
         const response = formatResponse(params);
         expect(response).to.eql(
-          "{\"params\":[1,2,3,4,5],\"error\":null,\"method\":\"update\",\"id\":null}\n"
+          '{"params":[1,2,3,4,5],"error":null,"method":"update","id":null}\n'
         );
         done();
       });
@@ -259,7 +259,7 @@ describe("formatError", () => {
       };
       const response = formatError(params);
       expect(response).to.eql(
-        "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32601,\"message\":\"Method not found\"},\"id\":1}\n"
+        '{"jsonrpc":"2.0","error":{"code":-32601,"message":"Method not found"},"id":1}\n'
       );
       done();
     });
@@ -272,7 +272,7 @@ describe("formatError", () => {
       };
       const response = formatError(params);
       expect(response).to.eql(
-        "{\"result\":null,\"error\":{\"code\":-32601,\"message\":\"Method not found\"},\"id\":1}\n"
+        '{"result":null,"error":{"code":-32601,"message":"Method not found"},"id":1}\n'
       );
       done();
     });
@@ -287,7 +287,7 @@ describe("formatError", () => {
       };
       const response = formatError(params);
       expect(response).to.eql(
-        "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32601,\"message\":\"Method not found\",\"data\":[1,2,3,4,5]},\"id\":1}\n"
+        '{"jsonrpc":"2.0","error":{"code":-32601,"message":"Method not found","data":[1,2,3,4,5]},"id":1}\n'
       );
       done();
     });
@@ -305,7 +305,7 @@ describe("getResult()", () => {
       })
       .catch((error) => {
         expect(error).to.eql(
-          "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32602,\"message\":\"Invalid Parameters\"},\"id\":1}\n"
+          '{"jsonrpc":"2.0","error":{"code":-32602,"message":"Invalid Parameters"},"id":1}\n'
         );
         done();
       });
