@@ -32,7 +32,7 @@ class WsClientFactory extends JsonRpcClientFactory {
     this.url = this.options.url;
   }
 
-  /**@inheritdoc */
+  /** @inheritdoc */
   connect() {
     if (this.pcolInstance) {
       // not having this caused MaxEventListeners error
@@ -46,22 +46,22 @@ class WsClientFactory extends JsonRpcClientFactory {
     return this.pcolInstance.connect();
   }
 
-  /**@inheritdoc */
+  /** @inheritdoc */
   end(cb) {
     this.pcolInstance.end(cb);
   }
 
-  /**@inheritdoc */
+  /** @inheritdoc */
   subscribe(method, cb) {
     this.on(method, cb);
   }
 
-  /**@inheritdoc */
+  /** @inheritdoc */
   unsubscribe(method, cb) {
     this.removeListener(method, cb);
   }
 
-  /**@inheritdoc */
+  /** @inheritdoc */
   unsubscribeAll(method) {
     this.removeAllListeners([method]);
   }

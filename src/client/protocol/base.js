@@ -40,9 +40,10 @@ class JsonRpcClientProtocol {
     this.server = this.factory.server;
     this.messageBuffer = new MessageBuffer(this.delimiter);
   }
+
   /**
-   * Set the <code>connector</code> attribute for the protocol instance. The connector is essentially the
-   * socket instance for the client.
+   * Set the <code>connector</code> attribute for the protocol instance.
+   * The connector is essentially the socket instance for the client.
    *
    * @abstract
    *
@@ -100,10 +101,9 @@ class JsonRpcClientProtocol {
   /**
    * Ends connection to the server.
    *
-   * Sets <code>JsonRpcClientFactory.pcolInstance</code> to undefined
+   * Sets <code>JsonRpcClientFactory.pcolInstance</code> to <code>undefined</code>
    *
-   * The callback will be called when connection is sucessfully closed.
-   * @param {function} cb
+   * @param {function} cb Called when connection is sucessfully closed
    */
   end(cb) {
     this.factory.pcolInstance = undefined;
@@ -190,7 +190,8 @@ class JsonRpcClientProtocol {
   }
 
   /**
-   * Called when the received <code>message</code> is a notification. Emits an event using <code>message.method</code> as the name.
+   * Called when the received <code>message</code> is a notification.
+   * Emits an event using <code>message.method</code> as the name.
    * The data passed to the event handler is the <code>message</code>.
    *
    * @param {JSON} message A valid JSON-RPC message object
@@ -271,7 +272,8 @@ class JsonRpcClientProtocol {
       method,
       params,
       id: id ? this.message_id : undefined,
-      options: this.factory.options
+      version: this.version,
+      delimiter: this.delimiter
     });
     if (id) {
       this.message_id += 1;
@@ -356,8 +358,8 @@ class JsonRpcClientProtocol {
    *
    * Recommend using [message]{@link JsonRpcClientProtocol#message} to construct objects.
    *
-   * Will use the IDs for the requests in the batch in an array as the keys for <code>pendingCalls</code>. How a client should
-   * associate batch responses is not in the spec, so this is the solution
+   * Will use the IDs for the requests in the batch in an array as the keys for <code>pendingCalls</code>.
+   * How a client should associate batch responses is not in the spec, so this is the solution.
    *
    * @param {Array} requests An array of valid JSON-RPC message objects
    * @returns Promise
@@ -516,8 +518,8 @@ class JsonRpcClientProtocol {
   }
 
   /**
-   * Calls [rejectPendingCalls]{@link JsonRpcClientProtocol#rejectPendingCalls} with error object. If the object cannot be parsed, then an unkown
-   * error code is sent with the error message
+   * Calls [rejectPendingCalls]{@link JsonRpcClientProtocol#rejectPendingCalls} with error object.
+   * If the object cannot be parsed, then an unkown error code is sent with the error message
    *
    * @param {string} error Stringified JSON-RPC error object
    */
@@ -540,8 +542,8 @@ class JsonRpcClientProtocol {
   }
 
   /**
-   * Reject the pending call for the given ID in the error object. If the error object has a
-   * null id, then log the message to the console.
+   * Reject the pending call for the given ID in the error object.
+   * If the error object has a null id, then log the message to the console.
    *
    * @param {string} error Stringified JSON-RPC error object
    *

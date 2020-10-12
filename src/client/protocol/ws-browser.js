@@ -17,7 +17,7 @@ class WsBrowserClientProtocol extends WsClientProtocol {
     this.connector = new window.WebSocket(this.url, protocols);
   }
 
-  /**@inheritdoc */
+  /** @inheritdoc */
   handleBatch(message) {
     // check if any requests are notifications
     message.forEach((res) => {
@@ -30,7 +30,7 @@ class WsBrowserClientProtocol extends WsClientProtocol {
     this.gotBatchResponse(message);
   }
 
-  /**@inheritdoc */
+  /** @inheritdoc */
   handleNotification(message) {
     this.factory.dispatchEvent(
       new CustomEvent(message.method, { detail: message })

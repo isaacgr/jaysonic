@@ -140,8 +140,9 @@ class WsBrowserClientFactory extends EventTarget {
     this._removeListener(method, cb);
 
     // if no more events of the removed event method are left,remove the group
-    if (this.eventListenerList[method].length === 0)
+    if (this.eventListenerList[method].length === 0) {
       delete this.eventListenerList[method];
+    }
   }
 
   /**
@@ -151,8 +152,12 @@ class WsBrowserClientFactory extends EventTarget {
    * @abstract
    */
   unsubscribeAll(method) {
-    if (!this.eventListenerList) this.eventListenerList = {};
-    if (!this.eventListenerList[method]) this.eventListenerList[method] = [];
+    if (!this.eventListenerList) {
+      this.eventListenerList = {};
+    }
+    if (!this.eventListenerList[method]) {
+      this.eventListenerList[method] = [];
+    }
     // remove listener
     for (let j = 0; j < this.eventListenerList[method].length; j += 1) {
       const cb = this.eventListenerList[method][j].listener;
@@ -166,8 +171,12 @@ class WsBrowserClientFactory extends EventTarget {
   }
 
   _removeListener(method, cb) {
-    if (!this.eventListenerList) this.eventListenerList = {};
-    if (!this.eventListenerList[method]) this.eventListenerList[method] = [];
+    if (!this.eventListenerList) {
+      this.eventListenerList = {};
+    }
+    if (!this.eventListenerList[method]) {
+      this.eventListenerList[method] = [];
+    }
     for (let i = 0; i < this.eventListenerList[method].length; i += 1) {
       if (this.eventListenerList[method][i].listener === cb) {
         this.eventListenerList[method].splice(i, 1);
@@ -177,9 +186,13 @@ class WsBrowserClientFactory extends EventTarget {
   }
 
   getEventListeners(type) {
-    if (!this.eventListenerList) this.eventListenerList = {};
+    if (!this.eventListenerList) {
+      this.eventListenerList = {};
+    }
     // return requested listeners type or all them
-    if (type === undefined) return this.eventListenerList;
+    if (type === undefined) {
+      return this.eventListenerList;
+    }
     return this.eventListenerList[type];
   }
 }

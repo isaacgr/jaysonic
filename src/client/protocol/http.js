@@ -9,7 +9,7 @@ const JsonRpcClientProtocol = require("./base");
  * @requires http
  */
 class HttpClientProtocol extends JsonRpcClientProtocol {
-  /**@inheritdoc */
+  /** @inheritdoc */
   /**
    * @property {object} headers HTTP headers passed to the factory instance
    *
@@ -90,7 +90,7 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
     });
   }
 
-  /**@inheritdoc */
+  /** @inheritdoc */
   getResponse(id) {
     return {
       body: this.responseQueue[id],
@@ -98,7 +98,7 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
     };
   }
 
-  /**@inheritdoc */
+  /** @inheritdoc */
   getBatchResponse(batch) {
     return {
       body: batch,
@@ -106,7 +106,7 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
     };
   }
 
-  /**@inheritdoc */
+  /** @inheritdoc */
   rejectPendingCalls(error) {
     const err = {
       body: error,

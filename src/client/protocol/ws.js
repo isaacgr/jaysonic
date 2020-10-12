@@ -8,8 +8,8 @@ const JsonRpcClientProtocol = require("./base");
  * @requires ws
  */
 class WsClientProtocol extends JsonRpcClientProtocol {
-  /**@inheritdoc */
-  /**@property {string} url The websocket URL to connect to, i.e. <code>ws://127.0.0.1:8100</code> */
+  /** @inheritdoc */
+  /** @property {string} url The websocket URL to connect to, i.e. <code>ws://127.0.0.1:8100</code> */
   constructor(factory, version, delimiter) {
     super(factory, version, delimiter);
     this.url = this.factory.url;
@@ -68,14 +68,14 @@ class WsClientProtocol extends JsonRpcClientProtocol {
     });
   }
 
-  /**@inheritdoc */
+  /** @inheritdoc */
   end(code, reason) {
     this.factory.pcolInstance = undefined;
     this.connector.__clientClosed = true;
     this.connector.close(code, reason);
   }
 
-  /**@inheritdoc */
+  /** @inheritdoc */
   listen() {
     this.listener.onmessage = (message) => {
       this.messageBuffer.push(message.data);
