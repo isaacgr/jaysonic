@@ -19,11 +19,11 @@ class WsBrowserClientFactory extends EventTarget {
    * @param {number} [options.connectionTimeout=5000] Timeout for connection to server
    * @param {number} [options.retries=2] Number of connection retry attempts
    * @property {class} pcolInstance The [JsonRpcClientProtocol]{@link JsonRpcClientProtocol} instance
-   * @property {object} timeouts Key value pairs of request IDs to <code>setTimeout</code> instance
-   * @property {number} requestTimeout Same as <code>options.timeout</code>
-   * @property {number} remainingRetries Same as <code>options.retries</code>
-   * @property {number} connectionTimeout Same as <code>options.connectionTimeout</code>
-   * @property {string} url Same as <code>options.url</code>
+   * @property {object} timeouts Key value pairs of request IDs to `setTimeout` instance
+   * @property {number} requestTimeout Same as `options.timeout`
+   * @property {number} remainingRetries Same as `options.retries`
+   * @property {number} connectionTimeout Same as `options.connectionTimeout`
+   * @property {string} url Same as `options.url`
    */
   constructor(options) {
     super();
@@ -55,7 +55,7 @@ class WsBrowserClientFactory extends EventTarget {
   }
 
   /**
-   * Calls <code>connect()</code> on protocol instance
+   * Calls `connect()` on protocol instance
    *
    */
   connect() {
@@ -72,7 +72,7 @@ class WsBrowserClientFactory extends EventTarget {
   }
 
   /**
-   * Calls <code>end()</code> on protocol instance
+   * Calls `end()` on protocol instance
    *
    */
   end(cb) {
@@ -80,14 +80,14 @@ class WsBrowserClientFactory extends EventTarget {
   }
 
   /**
-   * Calls <code>request()</code> method on protocol instance
+   * Calls `request()` method on protocol instance
    */
   request() {
     return this.pcolInstance.request();
   }
 
   /**
-   * Calls <code>batch()</code> method on protocol instance
+   * Calls `batch()` method on protocol instance
    *
    * @param {JSON[]} requests Valid JSON-RPC batch request array
    */
@@ -96,7 +96,7 @@ class WsBrowserClientFactory extends EventTarget {
   }
 
   /**
-   * Clears pending timeouts kept in <code>timeouts</code> for the provided request IDs.
+   * Clears pending timeouts kept in `timeouts` for the provided request IDs.
    *
    * @param {string[]|number[]} ids Array of request IDs
    */

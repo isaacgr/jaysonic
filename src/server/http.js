@@ -4,18 +4,16 @@ const HttpServerProtocol = require("./protocol/http");
 const { errorToStatus } = require("../constants");
 
 /**
- * Constructor for Jsonic HTTP server
- * @class HTTPServer
- * @constructor
- * @extends Client
- * @param {Object} [options] optional settings for server
- * @return HTTPServer
+ * Creates instance of HttpServerFactory
+ * @extends JsonRpcServerFactory
  */
-class HTTPServer extends JsonRpcServerFactory {
+class HttpServerFactory extends JsonRpcServerFactory {
+  /** @inheritdoc */
   setServer() {
     this.server = new http.Server();
   }
 
+  /** @inheritdoc */
   buildProtocol() {
     this.server.on("connection", (client) => {
       this.connectedClients.push(client);
@@ -39,7 +37,14 @@ class HTTPServer extends JsonRpcServerFactory {
     });
   }
 
-  setResponseHeader({ response, errorCode, notification }) {
+  /**
+   * Set response header and response code
+   * @param {object} options
+   * @param {class} options.response Http response instance
+   * @param {boolean} options.notification Inidicate if setting header for notification
+   * @private
+   */
+  _setResponseHeader({ response, errorCode, notification }) {
     let statusCode = 200;
     if (notification) {
       statusCode = 204;
@@ -54,4 +59,4 @@ class HTTPServer extends JsonRpcServerFactory {
   }
 }
 
-module.exports = HTTPServer;
+module.exports = HttpServerFactory;

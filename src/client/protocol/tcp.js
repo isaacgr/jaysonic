@@ -9,10 +9,10 @@ const JsonRpcClientProtocol = require("./base");
  */
 class TcpClientProtocol extends JsonRpcClientProtocol {
   /**
-   * Set the <code>connector</code> attribute for the [JsonRpcClientProtocol]{@link JsonRpcClientProtocol} instance. The connector is essentially the
+   * Set the `connector` attribute for the [JsonRpcClientProtocol]{@link JsonRpcClientProtocol} instance. The connector is essentially the
    * socket instance for the client.
    *
-   * For the [TcpClientProtocol]{@link TcpClientProtocol} this is <code>net.Socket()</code>
+   * For the [TcpClientProtocol]{@link TcpClientProtocol} this is `net.Socket()`
    */
   setConnector() {
     this.connector = new net.Socket();

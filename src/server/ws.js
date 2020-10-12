@@ -3,14 +3,11 @@ const JsonRpcServerFactory = require(".");
 const WSServerProtocol = require("./protocol/ws");
 
 /**
- * Constructor for Jsonic WS client
- * @class WSServer
- * @constructor
+ * Creates and instance of WsServerFactory
  * @extends JsonRpcServerFactory
- * @param {Object} [options] optional settings for client
- * @return WSServer
+ * @requires ws
  */
-class WSServer extends JsonRpcServerFactory {
+class WsServerFactory extends JsonRpcServerFactory {
   constructor(options) {
     super(options);
 
@@ -36,14 +33,12 @@ class WSServer extends JsonRpcServerFactory {
     };
   }
 
+  /** @inheritdoc */
   setSever() {
     this.server = new WebSocket.Server(this.options);
   }
 
-  /**
-   * WS server needs to override listen method from parent
-   * since the ws library starts listening on instantiation
-   */
+  /** @inheritdoc */
   listen() {
     return new Promise((resolve, reject) => {
       if (this.listening) {
@@ -65,6 +60,7 @@ class WSServer extends JsonRpcServerFactory {
     });
   }
 
+  /** @inheritdoc */
   buildProtocol() {
     this.server.on("connection", (client) => {
       this.emit("clientConnected", client);
@@ -79,6 +75,13 @@ class WSServer extends JsonRpcServerFactory {
     });
   }
 
+  /**
+   * Send notification to client
+   *
+   * @param {class} client Client instance
+   * @param {string} response Stringified JSON-RPC message to sent to client
+   * @throws Will throw an error if client is not defined
+   */
   sendNotification(client, response) {
     return client.send(
       JSON.stringify(JSON.parse(response)) + this.options.delimiter
@@ -86,4 +89,4 @@ class WSServer extends JsonRpcServerFactory {
   }
 }
 
-module.exports = WSServer;
+module.exports = WsServerFactory;

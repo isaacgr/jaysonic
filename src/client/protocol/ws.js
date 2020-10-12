@@ -9,17 +9,17 @@ const JsonRpcClientProtocol = require("./base");
  */
 class WsClientProtocol extends JsonRpcClientProtocol {
   /** @inheritdoc */
-  /** @property {string} url The websocket URL to connect to, i.e. <code>ws://127.0.0.1:8100</code> */
+  /** @property {string} url The websocket URL to connect to, i.e. `ws://127.0.0.1:8100` */
   constructor(factory, version, delimiter) {
     super(factory, version, delimiter);
     this.url = this.factory.url;
   }
 
   /**
-   * Set the <code>connector</code> attribute for the protocol instance. The connector is essentially the
+   * Set the `connector` attribute for the protocol instance. The connector is essentially the
    * socket instance for the client.
    *
-   * For the [WsClientProtocol]{@link WsClientProtocol} this is <code>WebSocket()</code>
+   * For the [WsClientProtocol]{@link WsClientProtocol} this is `WebSocket()`
    */
   setConnector() {
     const { perMessageDeflate } = this.factory.options;

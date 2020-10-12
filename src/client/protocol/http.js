@@ -3,7 +3,7 @@ const JsonRpcClientProtocol = require("./base");
 
 /**
  * Creates an instance of HttpClientProtocol, which has some tweaks from the base class
- * required to work with the <code>node.http</code> package
+ * required to work with the `node.http` package
  *
  * @extends JsonRpcClientProtocol
  * @requires http
@@ -23,7 +23,7 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
   }
 
   /**
-   * Send a message to the server. Sets the request headers passed into <code>headers</code>
+   * Send a message to the server. Sets the request headers passed into `headers`
    *
    * Calls [listen]{@link JsonRpcClientProtocol#listen} to start listening for recieved data from server.
    *
@@ -31,7 +31,7 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
    *
    * Emits a `serverDisconnected` event when connection is closed.
    *
-   * Throws an error if there was an <code>error</code> event received when sending the request
+   * Throws an error if there was an `error` event received when sending the request
    *
    * @param {string} request Stringified JSON-RPC message object
    * @param {function=} cb Callback function to be called when message has been sent
@@ -64,7 +64,7 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
    *
    * Promise will resolve if the request was sucessfully sent, and reject if
    * there was an error sending the request. For the [HttpClientProtocol]{@link HttpClientProtocol}, the resolved promise
-   * will return the http response object with a <code>204</code> response code per the spec.
+   * will return the http response object with a `204` response code per the spec.
    *
    * @param {string} method Name of the method to use in the notification
    * @param {Array|JSON} params Params to send

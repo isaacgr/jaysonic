@@ -42,7 +42,7 @@ class JsonRpcClientProtocol {
   }
 
   /**
-   * Set the <code>connector</code> attribute for the protocol instance.
+   * Set the `connector` attribute for the protocol instance.
    * The connector is essentially the socket instance for the client.
    *
    * @abstract
@@ -101,7 +101,7 @@ class JsonRpcClientProtocol {
   /**
    * Ends connection to the server.
    *
-   * Sets <code>JsonRpcClientFactory.pcolInstance</code> to <code>undefined</code>
+   * Sets `JsonRpcClientFactory.pcolInstance` to `undefined`
    *
    * @param {function} cb Called when connection is sucessfully closed
    */
@@ -113,7 +113,8 @@ class JsonRpcClientProtocol {
   /**
    * Setup "data" event to listen for data coming into the client.
    *
-   * Pushes received data into <code>messageBuffer</code>
+   * Pushes received data into `messageBuffer` and calls
+   * [_waitForData]{@link JsonRpcClientProtocol#_waitForData}
    */
   listen() {
     this.listener.on("data", (data) => {
@@ -190,9 +191,9 @@ class JsonRpcClientProtocol {
   }
 
   /**
-   * Called when the received <code>message</code> is a notification.
-   * Emits an event using <code>message.method</code> as the name.
-   * The data passed to the event handler is the <code>message</code>.
+   * Called when the received `message` is a notification.
+   * Emits an event using `message.method` as the name.
+   * The data passed to the event handler is the `message`.
    *
    * @param {JSON} message A valid JSON-RPC message object
    */
@@ -262,7 +263,7 @@ class JsonRpcClientProtocol {
    *
    * @param {string} method Name of the method to use in the request
    * @param {Array|JSON} params Params to send
-   * @param {boolean=} id If true it will use instances <code>message_id</code> for the request id, if false will generate a notification request
+   * @param {boolean=} id If true it will use instances `message_id` for the request id, if false will generate a notification request
    * @example
    * client.message("hello", ["world"]) // returns {"jsonrpc": "2.0", "method": "hello", "params": ["world"], "id": 1}
    * client.message("hello", ["world"], false) // returns {"jsonrpc": "2.0", "method": "hello", "params": ["world"]}
@@ -313,7 +314,7 @@ class JsonRpcClientProtocol {
    * Promise will resolve when a response has been received for the request.
    *
    * Promise will reject if the server responds with an error object, or if
-   * the response is not received within the set <code>requestTimeout</code>
+   * the response is not received within the set `requestTimeout`
    *
    * @param {string} method Name of the method to use in the request
    * @param {Array|JSON} params Params to send
@@ -358,7 +359,7 @@ class JsonRpcClientProtocol {
    *
    * Recommend using [message]{@link JsonRpcClientProtocol#message} to construct objects.
    *
-   * Will use the IDs for the requests in the batch in an array as the keys for <code>pendingCalls</code>.
+   * Will use the IDs for the requests in the batch in an array as the keys for `pendingCalls`.
    * How a client should associate batch responses is not in the spec, so this is the solution.
    *
    * @param {Array} requests An array of valid JSON-RPC message objects
@@ -390,7 +391,7 @@ class JsonRpcClientProtocol {
   }
 
   /**
-   * Associate the ids in the batch message to their corresponding <code>pendingCalls</code>.
+   * Associate the ids in the batch message to their corresponding `pendingCalls`.
    *
    * Will call [_resolveOrRejectBatch]{@link JsonRpcClientProtocol#_resolveOrRejectBatch} when object is determined
    * @param {Array} batch Array of valid JSON-RPC message objects
@@ -409,9 +410,7 @@ class JsonRpcClientProtocol {
     // find the resolve and reject objects that match the batch request ids
     for (const ids of Object.keys(this.pendingCalls)) {
       const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
-      const difference = arrays.reduce((a, b) =>
-        a.filter((c) => !b.includes(c))
-      );
+      const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
       if (difference.length === 0) {
         this.factory.cleanUp(ids);
         this._resolveOrRejectBatch(batch, batchResponseIds);
@@ -432,7 +431,7 @@ class JsonRpcClientProtocol {
   /**
    * Will reject the request associated with the given ID with a JSON-RPC formated error object.
    *
-   * Removes the id from <code>pendingCalls</code> and delete outstanding timeouts.
+   * Removes the id from `pendingCalls` and delete outstanding timeouts.
    * @param {string|number} id ID of the request to timeout
    * @private
    */

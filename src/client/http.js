@@ -13,8 +13,8 @@ class HttpClientFactory extends JsonRpcClientFactory {
    * @param {string} [options.method="POST"] Type of request to make
    * @param {object} [options.headers={"Content-Type": "application/json", Accept: "application/json"}] Request headers
    * @param {string}  [options.path="/"] URL path to make request to
-   * @property {object} headers Same as <code>options.headers</code>
-   * @property {string} encoding Same as <code>options.encoding</code>
+   * @property {object} headers Same as `options.headers`
+   * @property {string} encoding Same as `options.encoding`
    */
   constructor(options) {
     super(options);

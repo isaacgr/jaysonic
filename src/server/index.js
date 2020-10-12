@@ -3,16 +3,21 @@ const { formatResponse } = require("../functions");
 
 /**
  * @class JsonRpcServerFactory
- * @extends require('events').EventEmitter
- * @param {Object} [host] host IP to connect with
- * @param {Object} [host] host port to connect with
- * @param {Object} [options]
- * @param {Number} [options.version=2] JSON-RPC version to use (1|2)
- * @param {String} [options.delimiter="\n"] delimiter to use for requests
- * @param {Boolean} [options.exlusive=false] disallow port sharing
- * @return {Client}
+ * @extends events
  */
 class JsonRpcServerFactory extends EventEmitter {
+  /**
+   * @param {object} options
+   * @param {Object} [options.host] Host IP to open server with
+   * @param {Object} [options.port] Host port to open server with
+   * @param {Number} [options.version=2] JSON-RPC version to use (1|2)
+   * @param {String} [options.delimiter="\n"] Delimiter to use for [JsonRpcServerProtocol]{@link JsonRpcServerProtocol}
+   * @param {Boolean} [options.exlusive=false] disallow port sharing
+   * @property {object} methods Key value pairs of server method to function call
+   * @property {array} connectedClients List of connected clients
+   * @property {boolean} listening  Inidicates if the server is currently listening
+   * @property {class} pcolInstance Instance of [JsonRpcServerProtocol]{@link JsonRpcServerProtocol}
+   */
   constructor(options) {
     super();
     if (!(this instanceof JsonRpcServerFactory)) {
@@ -38,6 +43,11 @@ class JsonRpcServerFactory extends EventEmitter {
     this.pcolInstance = undefined;
   }
 
+  /**
+   * Start listening for client connections to server.
+   *
+   * @returns {Promise}
+   */
   listen() {
     return new Promise((resolve, reject) => {
       if (this.listening) {
@@ -59,10 +69,27 @@ class JsonRpcServerFactory extends EventEmitter {
     });
   }
 
+  /**
+   * Set the `pcolInstance` for the server factory
+   * @abstract
+   */
   buildProtocol() {
     throw new Error("function must be overwritten in subclass");
   }
 
+  /**
+   * Set the `server` property for the server factory
+   * @abstract
+   */
+  setServer() {
+    throw new Error("function must be overwritten in subclass");
+  }
+
+  /**
+   * Setup the `error` and `close` events for the factory and server.
+   * Sets `listening` to false if any errors returned or if server stops listening.
+   *
+   */
   setupListeners() {
     this.on("error", (error) => {
       this.listening = false;
@@ -77,6 +104,11 @@ class JsonRpcServerFactory extends EventEmitter {
     });
   }
 
+  /**
+   * Close the server connection. Stops listening.
+   *
+   * @returns {Promise}
+   */
   close() {
     this.listening = false;
     return new Promise((resolve, reject) => {
@@ -89,7 +121,6 @@ class JsonRpcServerFactory extends EventEmitter {
     });
   }
 
-  // add the method and its associated callback to the object
   method(name, cb) {
     this.methods[name] = cb;
   }

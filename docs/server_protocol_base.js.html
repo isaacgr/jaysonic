@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>HttpClientFactory - Documentation</title>
+    <title>server/protocol/base.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -32,1641 +32,355 @@
 
 <div id="main">
     
-    <h1 class="page-title">HttpClientFactory</h1>
-    
-
-    
-
-
-
-
-<section>
-
-<header>
-    
-        <h2>
-        HttpClientFactory
-        </h2>
-        
-            <div class="class-description usertext"><p>Creates instance of HttpClientFactory</p></div>
-        
-    
-</header>
-
-<article>
-    
-        <div class="container-overview">
-        
-            
-
-    
-    <h2>Constructor</h2>
-    
-
-    <h4 class="name" id="HttpClientFactory"><span class="type-signature"></span>new HttpClientFactory<span class="signature">(options)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client_http.js.html">client/http.js</a>, <a href="client_http.js.html#line8">line 8</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>headers</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Same as <code>options.headers</code></p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>encoding</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Same as <code>options.encoding</code></p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<div class="description usertext">
-    <p>Additional parameters ontop of those inherited from <a href="JsonRpcClientFactory.html">JsonRpcClientFactory</a></p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Connection options for the factory class</p>
-                <h6>Properties</h6>
-                
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>encoding</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    <code>"utf-8"</code>
-                
-                </td>
-            
-
-            <td class="description last"><p>Encoding to be used for the request</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>method</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    <code>"POST"</code>
-                
-                </td>
-            
-
-            <td class="description last"><p>Type of request to make</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>headers</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    <code>{"Content-Type": "application/json", Accept: "application/json"}</code>
-                
-                </td>
-            
-
-            <td class="description last"><p>Request headers</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>path</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    <code>"/"</code>
-                
-                </td>
-            
-
-            <td class="description last"><p>URL path to make request to</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-        </div>
-    
-
-    
-        <h3 class="subsection-title">Extends</h3>
-
-        
-
-
-    <ul>
-        <li><a href="JsonRpcClientFactory.html">JsonRpcClientFactory</a></li>
-    </ul>
-
-
-    
-
-    
-
-    
-    
-    
-
-     
-
-    
-
-    
-
-    
-        <h3 class="subsection-title">Methods</h3>
-
-        
-            
-
-    
-
-    <h4 class="name" id="batch"><span class="type-signature"></span>batch<span class="signature">(requests)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client_index.js.html">client/index.js</a>, <a href="client_index.js.html#line119">line 119</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-overrides">Overrides:</dt>
-    <dd class="tag-overrides"><ul class="dummy"><li>
-        <a href="JsonRpcClientFactory.html#batch">JsonRpcClientFactory#batch</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Calls <code>batch()</code> method on protocol instance</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>requests</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;JSON></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Valid JSON-RPC batch request array</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="cleanUp"><span class="type-signature"></span>cleanUp<span class="signature">(ids)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client_index.js.html">client/index.js</a>, <a href="client_index.js.html#line137">line 137</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-overrides">Overrides:</dt>
-    <dd class="tag-overrides"><ul class="dummy"><li>
-        <a href="JsonRpcClientFactory.html#cleanUp">JsonRpcClientFactory#cleanUp</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Clears pending timeouts kept in <code>timeouts</code> for the provided request IDs.</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>ids</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;string></span>
-|
-
-<span class="param-type">Array.&lt;number></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Array of request IDs</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="connect"><span class="type-signature">(abstract) </span>connect<span class="signature">()</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client_index.js.html">client/index.js</a>, <a href="client_index.js.html#line62">line 62</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-overrides">Overrides:</dt>
-    <dd class="tag-overrides"><ul class="dummy"><li>
-        <a href="JsonRpcClientFactory.html#connect">JsonRpcClientFactory#connect</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Calls <code>connect()</code> on protocol instance</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="end"><span class="type-signature">(abstract) </span>end<span class="signature">()</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client_index.js.html">client/index.js</a>, <a href="client_index.js.html#line71">line 71</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-overrides">Overrides:</dt>
-    <dd class="tag-overrides"><ul class="dummy"><li>
-        <a href="JsonRpcClientFactory.html#end">JsonRpcClientFactory#end</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Calls <code>end()</code> on protocol instance</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="request"><span class="type-signature"></span>request<span class="signature">()</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client_index.js.html">client/index.js</a>, <a href="client_index.js.html#line110">line 110</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-overrides">Overrides:</dt>
-    <dd class="tag-overrides"><ul class="dummy"><li>
-        <a href="JsonRpcClientFactory.html#request">JsonRpcClientFactory#request</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Calls <code>request()</code> method on protocol instance</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="serverDisconnected"><span class="type-signature"></span>serverDisconnected<span class="signature">(cb)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client_index.js.html">client/index.js</a>, <a href="client_index.js.html#line128">line 128</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-overrides">Overrides:</dt>
-    <dd class="tag-overrides"><ul class="dummy"><li>
-        <a href="JsonRpcClientFactory.html#serverDisconnected">JsonRpcClientFactory#serverDisconnected</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Emits a <code>serverDisconnected</code> event, passing the callback function</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>cb</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="subscribe"><span class="type-signature">(abstract) </span>subscribe<span class="signature">(method, cb)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client_index.js.html">client/index.js</a>, <a href="client_index.js.html#line82">line 82</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-overrides">Overrides:</dt>
-    <dd class="tag-overrides"><ul class="dummy"><li>
-        <a href="JsonRpcClientFactory.html#subscribe">JsonRpcClientFactory#subscribe</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Subscribe the function to the given event name</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>method</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Method to subscribe to</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>cb</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Name of callback function to invoke on event</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="unsubscribe"><span class="type-signature">(abstract) </span>unsubscribe<span class="signature">(method, cb)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client_index.js.html">client/index.js</a>, <a href="client_index.js.html#line93">line 93</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-overrides">Overrides:</dt>
-    <dd class="tag-overrides"><ul class="dummy"><li>
-        <a href="JsonRpcClientFactory.html#unsubscribe">JsonRpcClientFactory#unsubscribe</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Unsubscribe the function from the given event name</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>method</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Method to unsubscribe from</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>cb</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Name of function to remove</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="unsubscribeAll"><span class="type-signature">(abstract) </span>unsubscribeAll<span class="signature">(method)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="client_index.js.html">client/index.js</a>, <a href="client_index.js.html#line103">line 103</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-overrides">Overrides:</dt>
-    <dd class="tag-overrides"><ul class="dummy"><li>
-        <a href="JsonRpcClientFactory.html#unsubscribeAll">JsonRpcClientFactory#unsubscribeAll</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-<div class="description usertext">
-    <p>Unsubscribe all functions from given event name</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>method</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Method to unsubscribe all listeners from</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-    
-
-    
-
-    
-</article>
-
-</section>
+    <h1 class="page-title">server/protocol/base.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const { MessageBuffer } = require("../../buffer");
+const { formatResponse, formatError } = require("../../functions");
+const { ERR_CODES, ERR_MSGS } = require("../../constants");
+
+/**
+ * Creates an instance of JsonRpcServerProtocol. This is the
+ * base protocol from which all others inherit.
+ *
+ */
+class JsonRpcServerProtocol {
+  /**
+   * @param {class} factory Instance of [JsonRpcServerFactory]{@link JsonRpcServerFactory}
+   * @param {class} client Instance of `net.Socket`
+   * @param {string|number} version JSON-RPC version to use
+   * @param {string} delimiter Delimiter to use for `messageBuffer`
+   * @property {class} messageBuffer Instance of [MessageBuffer]{@link MessageBuffer}
+   * @property {string} event="data" The event name to listen for incoming data
+   */
+  constructor(factory, client, version, delimiter) {
+    this.client = client;
+    this.factory = factory;
+    this.delimiter = delimiter;
+    this.version = version;
+    this.messageBuffer = new MessageBuffer(delimiter);
+    this.event = "data";
+  }
+
+  /**
+   * Registers the `event` listener when client connects.
+   *
+   * Pushes received data into `messageBuffer` and calls
+   * [_waitForData]{@link JsonRpcServerProtocol#_waitForData}.
+   *
+   * Registers `end` event to emit a `clientDisconnected` event
+   * on the factory
+   *
+   */
+  clientConnected() {
+    this.client.on(this.event, (data) => {
+      this.messageBuffer.push(data);
+      this._waitForData();
+    });
+    this.client.on("end", () => {
+      this.factory.emit("clientDisconnected", this.client);
+    });
+  }
+
+  /**
+   * Accumulate data while [MessageBuffer.isFinished]{@link MessageBuffer#isFinished} is returning false.
+   *
+   * If the buffer returns a message it will be passed to [validateRequest]{@link JsonRpcServerProtocol#validateRequest}.
+   * If [validateRequest]{@link JsonRpcServerProtocol#validateRequest} returns a parsed result, then the result
+   * is passed to [_maybeHandleRequest]{@link JsonRpcServerProtocol#_maybeHandleRequest}.
+   * If [_maybeHandleRequest]{@link JsonRpcServerProtocol#_maybeHandleRequest} returns true, then
+   * [handleRequest]{@link JsonRpcServerProtocol#handleRequest} is called.&lt;br/>&lt;br/>
+   *
+   * If any of the above throws an error, [handleError]{@link JsonRpcServerProtocol#handleError} is called.
+   *
+   * @private
+   *
+   */
+  _waitForData() {
+    while (!this.messageBuffer.isFinished()) {
+      const chunk = this.messageBuffer.handleData();
+      try {
+        const result = this.validateRequest(chunk);
+        const isMessage = this._maybeHandleRequest(result);
+        if (isMessage) {
+          this.handleRequest(result);
+        }
+      } catch (e) {
+        this.handleError(e);
+      }
+    }
+  }
+
+  /**
+   * Validate the incoming data returned from `messageBuffer`
+   *
+   * @param {string} chunk
+   * @return {JSON}
+   * @throws Will throw an error with a JSON-RPC error object if chunk cannot be parsed
+   */
+  validateRequest(chunk) {
+    try {
+      return JSON.parse(chunk);
+    } catch (e) {
+      throw new Error(
+        formatError({
+          jsonrpc: this.version,
+          id: null,
+          code: ERR_CODES.parseError,
+          message: ERR_MSGS.parseError,
+          delimiter: this.delimiter
+        })
+      );
+    }
+  }
+
+  /**
+   * Determines the type of request being made (batch, notification, request) and
+   * calls the corresponding function.
+   *
+   * @param {JSON} result Valid JSON-RPC request object
+   * @private
+   */
+  _maybeHandleRequest(result) {
+    if (Array.isArray(result)) {
+      if (result.length === 0) {
+        return this.writeToClient(
+          formatError({
+            code: ERR_CODES.invalidRequest,
+            message: ERR_MSGS.invalidRequest,
+            delimiter: this.delimiter,
+            jsonrpc: this.version,
+            id: null
+          })
+        );
+      }
+      // possible batch request
+      this.handleBatchRequest(result).then((res) => {
+        this.writeToClient(JSON.stringify(res) + this.delimiter);
+      });
+    } else if (result === Object(result) &amp;&amp; !("id" in result)) {
+      // no id, so assume notification
+      this.handleNotification(result);
+    } else {
+      this.validateMessage(result);
+      return true;
+    }
+  }
+
+  /**
+   * Validates if there are any issues with the incoming request&lt;br/>
+   *
+   *
+   * @param {JSON} message Valid JSON-RPC request object
+   * @throws Will throw an error for any of the below reasons
+   *
+   * Reason|Type
+   * ---|---
+   * message is not an object| Invalid Request
+   * the server does not have the required method| Method Not Found
+   * the params are not an array or object| Invalid Params
+   * the "jsonrpc" property was passed for a v1 server| Invalid Request
+   */
+  validateMessage(message) {
+    if (!(message === Object(message))) {
+      this._raiseError(ERR_MSGS.invalidRequest, ERR_CODES.invalidRequest, null);
+    } else if (!(typeof message.method === "string")) {
+      this._raiseError(
+        ERR_MSGS.invalidRequest,
+        ERR_CODES.invalidRequest,
+        message.id
+      );
+    } else if (!(message.method in this.factory.methods)) {
+      this._raiseError(
+        ERR_MSGS.methodNotFound,
+        ERR_CODES.methodNotFound,
+        message.id
+      );
+    } else if (
+      message.params &amp;&amp;
+      !Array.isArray(message.params) &amp;&amp;
+      !(message.params === Object(message.params))
+    ) {
+      this._raiseError(
+        ERR_MSGS.invalidParams,
+        ERR_CODES.invalidParams,
+        message.id
+      );
+    } else if (message.jsonrpc &amp;&amp; this.version !== "2.0") {
+      this._raiseError(
+        ERR_MSGS.invalidRequest,
+        ERR_CODES.invalidRequest,
+        message.id
+      );
+    }
+  }
+
+  /**
+   * Send message to the client
+   *
+   * @param {string} message Stringified JSON-RPC message object
+   */
+  writeToClient(message) {
+    this.client.write(message);
+  }
+
+  /**
+   * Calls `emit` on factory with the event name being `message.method` and
+   * the date being `message`.
+   *
+   * @param {string} message Stringified JSON-RPC message object
+   */
+  handleNotification(message) {
+    this.factory.emit(message.method, message);
+  }
+
+  /**
+   * Attempts to get the result for the request object. Will
+   * send result to client if successful and will send an error
+   * otherwise.
+   *
+   * @param {JSON} message JSON-RPC message object
+   * @returns {Promise}
+   */
+  handleRequest(message) {
+    return this.getResult(message)
+      .then((result) => {
+        this.writeToClient(result);
+      })
+      .catch((error) => {
+        this.handleError(Error(error));
+      });
+  }
+
+  /**
+   * Attempts to get the result for all requests in the batch.
+   * Will send result to client if successful and error otherwise.
+   *
+   * @param {JSON[]} requests Valid JSON-RPC batch request
+   * @returns {Promise[]}
+   */
+  handleBatchRequest(requests) {
+    const batchResponses = requests
+      .map((request) => {
+        try {
+          this._maybeHandleRequest(request);
+          return this.getResult(request)
+            .then((result) => JSON.parse(result))
+            .catch((error) => JSON.parse(error));
+        } catch (e) {
+          // basically reject the whole batch if any one thing fails
+          return JSON.parse(e.message);
+        }
+      })
+      .filter((el) => el != null);
+    return Promise.all(batchResponses);
+  }
+
+  /**
+   * Get the result for the request. Calls the function associated
+   * with the method and returns the result.
+   *
+   * @param {JSON} message Valid JSON-RPC message object
+   * @returns {Promise}
+   */
+  getResult(message) {
+    // function needs to be async since the method can be a promise
+    return new Promise((resolve, reject) => {
+      const { params } = message;
+      const response = {
+        jsonrpc: message.jsonrpc,
+        id: message.id,
+        delimiter: this.delimiter
+      };
+      const error = {
+        jsonrpc: message.jsonrpc,
+        id: message.id,
+        delimiter: this.delimiter
+      };
+      try {
+        const result = params
+          ? this.factory.methods[message.method](params)
+          : this.factory.methods[message.method]();
+        if (result instanceof Promise || typeof result.then === "function") {
+          Promise.all([result])
+            .then((results) => {
+              response.result = results || 0;
+              resolve(formatResponse(response));
+            })
+            .catch((resError) => {
+              error.code = ERR_CODES.internal;
+              error.message = `${JSON.stringify(resError.message || resError)}`;
+              reject(formatError(error));
+            });
+        } else {
+          response.result = result || 0;
+          resolve(formatResponse(response));
+        }
+      } catch (e) {
+        if (e instanceof TypeError) {
+          error.code = ERR_CODES.invalidParams;
+          error.message = ERR_MSGS.invalidParams;
+        } else {
+          error.code = ERR_CODES.unknown;
+          error.message = ERR_MSGS.unknown;
+        }
+        reject(formatError(error));
+      }
+    });
+  }
+  /**
+   *
+   * @param {string} message Error message
+   * @param {number} code Error code
+   * @param {string|number} id Error message ID
+   * @throws Throws a JSON-RPC error object
+   * @private
+   */
+  _raiseError(message, code, id) {
+    const error = formatError({
+      jsonrpc: this.version,
+      delimiter: this.delimiter,
+      id,
+      code,
+      message
+    });
+    throw new Error(error);
+  }
+
+  /**
+   * Writes error to the client. Will send a JSON-RPC error object if the
+   * passed error cannot be parsed.
+   *
+   * @param {string} error Stringified error object
+   */
+  handleError(error) {
+    let err;
+    try {
+      err = JSON.stringify(JSON.parse(error.message));
+    } catch (e) {
+      err = formatError({
+        jsonrpc: this.version,
+        delimiter: this.delimiter,
+        id: null,
+        code: ERR_CODES.unknown,
+        message: JSON.stringify(error, Object.getOwnPropertyNames(error))
+      });
+    }
+    this.writeToClient(err + this.delimiter);
+  }
+}
+
+module.exports = JsonRpcServerProtocol;
+</code></pre>
+        </article>
+    </section>
 
 
 
