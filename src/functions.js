@@ -1,6 +1,16 @@
-const formatRequest = ({
-  method, params, id, options
-}) => {
+/**
+ * Generates a stringified JSON-RPC request object with appended delimiter.
+ *
+ * @function formatRequest
+ *
+ * @param {object} request
+ * @param {string} request.method
+ * @param {array|object} request.params
+ * @param {string|number} request.id
+ * @param {string|number} request.version
+ * @param {string} request.delimiter
+ */
+const formatRequest = ({ method, params, id, version, delimiter }) => {
   if (!(typeof method === "string")) {
     throw new TypeError(`${method} must be a string`);
   }
@@ -10,13 +20,13 @@ const formatRequest = ({
   };
 
   // assume 2.0 request unless otherwise specified
-  if (!options.version || options.version !== 1) {
+  if (!version || version !== 1) {
     request.jsonrpc = "2.0";
   }
 
   if (
-    (params && !(params === Object(params)) && !Array.isArray(params))
-    || typeof params === "function"
+    (params && !(params === Object(params)) && !Array.isArray(params)) ||
+    typeof params === "function"
   ) {
     throw new TypeError(`${params} must be an object or array`);
   } else if (params) {
@@ -28,12 +38,23 @@ const formatRequest = ({
     request.id = id;
   }
 
-  return JSON.stringify(request) + options.delimiter;
+  return JSON.stringify(request) + delimiter;
 };
 
-const formatResponse = ({
-  jsonrpc, id, method, result, params, delimiter
-}) => {
+/**
+ * Generates a stringified JSON-RPC response object with appended delimiter.
+ *
+ * @function formatResponse
+ *
+ * @param {object} response
+ * @param {string} response.method
+ * @param {array|object} response.params
+ * @param {string|number} response.id
+ * @param {string|number} response.jsonrpc
+ * @param {string} response.delimiter
+ * @param response.result
+ */
+const formatResponse = ({ jsonrpc, id, method, result, params, delimiter }) => {
   const response = {};
   if (params && result) {
     throw new Error("Cannot send response with both params and result");
@@ -48,8 +69,8 @@ const formatResponse = ({
   }
 
   if (
-    (params && !(params === Object(params)) && !Array.isArray(params))
-    || typeof params === "function"
+    (params && !(params === Object(params)) && !Array.isArray(params)) ||
+    typeof params === "function"
   ) {
     throw new TypeError(`${params} must be an object or array`);
   } else if (params) {
@@ -82,23 +103,35 @@ const formatResponse = ({
   return JSON.stringify(response) + delimiter;
 };
 
-const formatError = ({
-  jsonrpc, id, code, message, data, delimiter
-}) => {
+/**
+ * Generates a stringified JSON-RPC error object with appended delimiter.
+ *
+ * @function formatError
+ *
+ * @param {object} error
+ * @param {string} error.message
+ * @param {array|object} error.code
+ * @param {string|number} error.id
+ * @param {string|number} error.jsonrpc
+ * @param {string} error.delimiter
+ * @param {string|object|array} error.data
+ */
+const formatError = ({ jsonrpc, id, code, message, data, delimiter }) => {
   if (!message) {
     throw new Error("Must include message in error response");
   }
-  const response = jsonrpc === "2.0"
-    ? {
-      jsonrpc,
-      error: { code, message },
-      id
-    }
-    : {
-      result: null,
-      error: { code, message },
-      id
-    };
+  const response =
+    jsonrpc === "2.0"
+      ? {
+          jsonrpc,
+          error: { code, message },
+          id
+        }
+      : {
+          result: null,
+          error: { code, message },
+          id
+        };
 
   if (data) {
     response.error.data = data;
