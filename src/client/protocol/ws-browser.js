@@ -2,14 +2,15 @@ const WsClientProtocol = require("./ws");
 
 /**
  * Creates an instance of WsBrowserClientProtocol
+ *
  * @extends WsClientProtocol
  */
 class WsBrowserClientProtocol extends WsClientProtocol {
   /**
-   * Set the `connector` attribute for the protocol instance. The connector is essentially the
+   * Set the <code>connector</code> attribute for the protocol instance. The connector is essentially the
    * socket instance for the client.
    *
-   * For the WsBrowserClientProtocol this is `window.WebSocket()`
+   * For the [WsBrowserClientProtocol]{@link WsBrowserClientProtocol} this is <code>window.WebSocket()</code>
    */
   setConnector() {
     const { protocols } = this.factory.options;

@@ -2,7 +2,7 @@ const Jaysonic = module.exports;
 
 /**
  * WS client constructor
- * @type wsclient
+ * @type WsBrowserClientFactory
  * @static
  */
 Jaysonic.wsclient = require("./ws");

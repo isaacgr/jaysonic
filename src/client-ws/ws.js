@@ -1,11 +1,34 @@
 /* eslint no-console: 0 */
 const WsBrowserClientProtocol = require("../client/protocol/ws-browser");
 
-class WSClient extends EventTarget {
+/**
+ * Creates an instance of WsBrowserClientFactory.
+ *
+ * For websocket client use in the browser.
+ *
+ * @extends EventTarget
+ */
+class WsBrowserClientFactory extends EventTarget {
+  /**
+   * @inheritdoc
+   * @param {Object} options Connection options for the factory class
+   * @param {string} [options.url="ws://127.0.0.1:8100"] IP of server to connect to
+   * @param {number} [options.version=2] JSON-RPC version to use (1|2)
+   * @param {string} [options.delimiter="\n"] Delimiter to use for requests
+   * @param {number} [options.timeout=30] Timeout for request response
+   * @param {number} [options.connectionTimeout=5000] Timeout for connection to server
+   * @param {number} [options.retries=2] Number of connection retry attempts
+   * @property {class} pcolInstance The [JsonRpcClientProtocol]{@link JsonRpcClientProtocol} instance
+   * @property {object} timeouts Key value pairs of request IDs to <code>setTimeout</code> instance
+   * @property {number} requestTimeout Same as <code>options.timeout</code>
+   * @property {number} remainingRetries Same as <code>options.retries</code>
+   * @property {number} connectionTimeout Same as <code>options.connectionTimeout</code>
+   * @property {string} url Same as <code>options.url</code>
+   */
   constructor(options) {
     super();
-    if (!(this instanceof WSClient)) {
-      return new WSClient(options);
+    if (!(this instanceof WsBrowserClientFactory)) {
+      return new WsBrowserClientFactory(options);
     }
 
     const defaults = {
@@ -31,6 +54,10 @@ class WSClient extends EventTarget {
     this.connectionTimeout = this.options.connectionTimeout;
   }
 
+  /**
+   * Calls <code>connect()</code> on protocol instance
+   *
+   */
   connect() {
     if (this.pcolInstance) {
       // not having this caused MaxEventListeners error
@@ -44,18 +71,35 @@ class WSClient extends EventTarget {
     return this.pcolInstance.connect();
   }
 
+  /**
+   * Calls <code>end()</code> on protocol instance
+   *
+   */
   end(cb) {
     this.pcolInstance.end(cb);
   }
 
+  /**
+   * Calls <code>request()</code> method on protocol instance
+   */
   request() {
     return this.pcolInstance.request();
   }
 
+  /**
+   * Calls <code>batch()</code> method on protocol instance
+   *
+   * @param {JSON[]} requests Valid JSON-RPC batch request array
+   */
   batch(requests) {
     return this.pcolInstance.batch(requests);
   }
 
+  /**
+   * Clears pending timeouts kept in <code>timeouts</code> for the provided request IDs.
+   *
+   * @param {string[]|number[]} ids Array of request IDs
+   */
   cleanUp(ids) {
     // clear pending timeouts for these request ids
     clearTimeout(this.timeouts[ids]);
@@ -63,8 +107,11 @@ class WSClient extends EventTarget {
   }
 
   /**
-   * @params {String} [method] method to subscribe to
-   * @params {Function} [cb] callback function to invoke on notify
+   * Subscribe the function to the given event name
+   *
+   * @param {string} method Method to subscribe to
+   * @param {function} cb  Name of callback function to invoke on event
+   * @abstract
    */
   subscribe(method, cb) {
     if (!this.eventListenerList) this.eventListenerList = {};
@@ -79,8 +126,11 @@ class WSClient extends EventTarget {
   }
 
   /**
-   * @params {String} [method] method to unsubscribe from
-   * @params {Function} [cb] name of function to remove
+   * Unsubscribe the function from the given event name
+   *
+   * @param {string} method Method to unsubscribe from
+   * @param {function} cb Name of function to remove
+   * @abstract
    */
   unsubscribe(method, cb) {
     // remove listener
@@ -90,9 +140,16 @@ class WSClient extends EventTarget {
     this._removeListener(method, cb);
 
     // if no more events of the removed event method are left,remove the group
-    if (this.eventListenerList[method].length === 0) delete this.eventListenerList[method];
+    if (this.eventListenerList[method].length === 0)
+      delete this.eventListenerList[method];
   }
 
+  /**
+   * Unsubscribe all functions from given event name
+   *
+   * @param {string} method Method to unsubscribe all listeners from
+   * @abstract
+   */
   unsubscribeAll(method) {
     if (!this.eventListenerList) this.eventListenerList = {};
     if (!this.eventListenerList[method]) this.eventListenerList[method] = [];
@@ -127,4 +184,4 @@ class WSClient extends EventTarget {
   }
 }
 
-module.exports = WSClient;
+module.exports = WsBrowserClientFactory;

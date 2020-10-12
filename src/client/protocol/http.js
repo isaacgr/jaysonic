@@ -3,34 +3,35 @@ const JsonRpcClientProtocol = require("./base");
 
 /**
  * Creates an instance of HttpClientProtocol, which has some tweaks from the base class
- * required to work with the `node.http` package
+ * required to work with the <code>node.http</code> package
  *
- * Inherits from JsonRpcClientProtocol
+ * @extends JsonRpcClientProtocol
+ * @requires http
  */
 class HttpClientProtocol extends JsonRpcClientProtocol {
+  /**@inheritdoc */
   /**
-   * HttpClientProtocol contructor
+   * @property {object} headers HTTP headers passed to the factory instance
    *
-   * @param {class} factory Instance of factory class
-   * @param {string|number} version JSON-RPC version to use (1 or '2.0')
-   * @param {string} delimiter Delimiter to use for message buffer
+   * @property {string} encoding Encoding type passed to the factory instance
    */
   constructor(factory, version, delimiter) {
     super(factory, version, delimiter);
+
     this.headers = this.factory.headers;
     this.encoding = this.factory.encoding;
   }
 
   /**
-   * Send a message to the server. Sets the request headers given in `factory.headers`
+   * Send a message to the server. Sets the request headers passed into <code>headers</code>
    *
-   * Calls `listen` to start listening for recieved data from server.
+   * Calls [listen]{@link JsonRpcClientProtocol#listen} to start listening for recieved data from server.
    *
    * Ends connection when all data received from the server.
    *
    * Emits a `serverDisconnected` event when connection is closed.
    *
-   * Throws an error if there was an `error` event received when sending the request
+   * Throws an error if there was an <code>error</code> event received when sending the request
    *
    * @param {string} request Stringified JSON-RPC message object
    * @param {function=} cb Callback function to be called when message has been sent
@@ -62,8 +63,8 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
    * Send a notification to the server.
    *
    * Promise will resolve if the request was sucessfully sent, and reject if
-   * there was an error sending the request. For the HttpClientProtocol, the resolved promise
-   * will return the http response object with a 204 response code per the spec.
+   * there was an error sending the request. For the [HttpClientProtocol]{@link HttpClientProtocol}, the resolved promise
+   * will return the http response object with a <code>204</code> response code per the spec.
    *
    * @param {string} method Name of the method to use in the notification
    * @param {Array|JSON} params Params to send

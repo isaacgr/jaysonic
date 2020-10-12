@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>Home - Documentation</title>
+    <title>client/protocol/tcp.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -32,31 +32,41 @@
 
 <div id="main">
     
+    <h1 class="page-title">client/protocol/tcp.js</h1>
+    
 
     
 
 
 
     
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const net = require("net");
+const JsonRpcClientProtocol = require("./base");
 
+/**
+ * Creates an instance of TcpClientProtocol
+ *
+ * @extends JsonRpcClientProtocol
+ * @requires net
+ */
+class TcpClientProtocol extends JsonRpcClientProtocol {
+  /**
+   * Set the &lt;code>connector&lt;/code> attribute for the [JsonRpcClientProtocol]{@link JsonRpcClientProtocol} instance. The connector is essentially the
+   * socket instance for the client.
+   *
+   * For the [TcpClientProtocol]{@link TcpClientProtocol} this is &lt;code>net.Socket()&lt;/code>
+   */
+  setConnector() {
+    this.connector = new net.Socket();
+  }
+}
 
-    <section class="package">
-        <h3> </h3>		
+module.exports = TcpClientProtocol;
+</code></pre>
+        </article>
     </section>
-
-
-
-
-
-
-
-
-
-    
-
-
-
-
 
 
 
