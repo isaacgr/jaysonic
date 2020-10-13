@@ -21,5 +21,6 @@ Utils.format = require("./format");
 
 /**
  * @static
+ * @namespace Utils.constants
  */
 Utils.constants = require("./constants");

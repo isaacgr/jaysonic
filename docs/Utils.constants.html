@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>Jaysonic Namespace: format</title>
+	<title>Jaysonic Namespace: constants</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -72,7 +72,7 @@
 		<div id="main">
 			
 
-	<h1 class="page-title">Namespace: format</h1>
+	<h1 class="page-title">Namespace: constants</h1>
 <section>
 
 <header>
@@ -80,7 +80,7 @@
         <h2>
             <span class="ancestors"><a href="Utils.html">Utils</a>.</span>
         
-        format
+        constants
         </h2>
         
     
@@ -90,9 +90,6 @@
 <article>
     <div class="container-overview">
     
-        
-            <div class="description"><p>Generate a valid JSON-RPC request, response or error object
-with an appended delimiter.</p></div>
         
 
         
@@ -131,7 +128,7 @@ with an appended delimiter.</p></div>
 		<ul class="dummy">
 			<li>
 				<a href="util_index.js.html">util/index.js</a>,
-				 <a href="util_index.js.html#sunlight-1-line-13">line 13</a>
+				 <a href="util_index.js.html#sunlight-1-line-22">line 22</a>
 			</li>
 		</ul>
 	</dd>
@@ -160,36 +157,30 @@ with an appended delimiter.</p></div>
     
 
     
-
-    
-        <h3 class="subsection-title">Methods</h3>
+        <h3 class="subsection-title">Members</h3>
 
         <dl>
             
 <hr>
-<dt>
-    <h4 class="name" id=".formatError"><span class="type-signature">&lt;static> </span>formatError(error)</h4>
-    
+<dt class="name" id=".ERR_CODES">
+    <h4 id=".ERR_CODES"><span class="type-signature">&lt;static, constant> </span>ERR_CODES<span class="type-signature"></span></h4>
+
     
 </dt>
 <dd>
-
-    
-    <div class="description">
-        <p>Generates a stringified JSON-RPC error object with appended delimiter.</p>
-    </div>
     
 
     
 
     
-
+<dl class="details">
     
-    
-        <h5>Parameters:</h5>
-        
 
-<table class="params table table-striped">
+    <h5 class="subsection-title">Properties:</h5>
+
+    <dl>
+
+<table class="props table table-striped">
     <thead>
     <tr>
         
@@ -211,7 +202,7 @@ with an appended delimiter.</p></div>
 
         <tr>
             
-                <td class="name"><code>error</code></td>
+                <td class="name"><code>ERR_CODES</code></td>
             
 
             <td class="type">
@@ -229,10 +220,9 @@ with an appended delimiter.</p></div>
             
 
             <td class="description last">
-                <h6 class="method-params-label method-subparams-label">Properties</h6>
-                
+                <h6>Properties</h6>
 
-<table class="params table table-striped">
+<table class="props table table-striped">
     <thead>
     <tr>
         
@@ -254,66 +244,12 @@ with an appended delimiter.</p></div>
 
         <tr>
             
-                <td class="name"><code>message</code></td>
+                <td class="name"><code>parseError</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>code</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">array</span>
-|
-
-<span class="param-type">object</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>id</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-|
-
 <span class="param-type">number</span>
 
 
@@ -325,22 +261,19 @@ with an appended delimiter.</p></div>
 
             
 
-            <td class="description last"></td>
+            <td class="description last"><p>32700</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>jsonrpc</code></td>
+                <td class="name"><code>invalidRequest</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
-|
-
 <span class="param-type">number</span>
 
 
@@ -352,20 +285,20 @@ with an appended delimiter.</p></div>
 
             
 
-            <td class="description last"></td>
+            <td class="description last"><p>32600</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>delimiter</code></td>
+                <td class="name"><code>methodNotFound</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type">number</span>
 
 
 
@@ -376,26 +309,20 @@ with an appended delimiter.</p></div>
 
             
 
-            <td class="description last"></td>
+            <td class="description last"><p>32601</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>data</code></td>
+                <td class="name"><code>invalidParams</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
-|
-
-<span class="param-type">object</span>
-|
-
-<span class="param-type">array</span>
+<span class="param-type">number</span>
 
 
 
@@ -406,7 +333,79 @@ with an appended delimiter.</p></div>
 
             
 
-            <td class="description last"></td>
+            <td class="description last"><p>32602</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>internal</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>32603</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>timeout</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>32000</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>unknown</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>32001</p></td>
         </tr>
 
     
@@ -419,11 +418,8 @@ with an appended delimiter.</p></div>
     
     </tbody>
 </table>
+</dl>
 
-    
-
-    
-<dl class="details">
     
 
 	
@@ -457,8 +453,8 @@ with an appended delimiter.</p></div>
 	<dd class="tag-source">
 		<ul class="dummy">
 			<li>
-				<a href="util_format.js.html">util/format.js</a>,
-				 <a href="util_format.js.html#sunlight-1-line-110">line 110</a>
+				<a href="util_constants.js.html">util/constants.js</a>,
+				 <a href="util_constants.js.html#sunlight-1-line-13">line 13</a>
 			</li>
 		</ul>
 	</dd>
@@ -471,18 +467,6 @@ with an appended delimiter.</p></div>
 	
 </dl>
 
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
 
     
 </dd>
@@ -490,233 +474,239 @@ with an appended delimiter.</p></div>
         
             
 <hr>
-<dt>
-    <h4 class="name" id=".formatRequest"><span class="type-signature">&lt;static> </span>formatRequest(request)</h4>
-    
+<dt class="name" id=".ERR_MSGS">
+    <h4 id=".ERR_MSGS"><span class="type-signature">&lt;static, constant> </span>ERR_MSGS<span class="type-signature"></span></h4>
+
     
 </dt>
 <dd>
-
     
-    <div class="description">
-        <p>Generates a stringified JSON-RPC request object with appended delimiter.</p>
-    </div>
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>request</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                <h6 class="method-params-label method-subparams-label">Properties</h6>
-                
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>method</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>params</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">array</span>
-|
-
-<span class="param-type">object</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>id</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-|
-
-<span class="param-type">number</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>version</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-|
-
-<span class="param-type">number</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>delimiter</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
 
     
 
     
 <dl class="details">
+    
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    <dl>
+
+<table class="props table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>ERR_MSGS</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ERR_CODES.parseError</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>&quot;Parse Error&quot;</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ERR_CODES.invalidRequest</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>&quot;Invalid Request&quot;</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ERR_CODES.methodNotFound</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>&quot;Method not found&quot;</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ERR_CODES.invalidParams</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>&quot;Invalid Parameters&quot;</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ERR_CODES.internal</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>&quot;Internal Error&quot;</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ERR_CODES.timeout</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>&quot;Request Timeout&quot;</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ERR_CODES.unknown</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>&quot;Unknown Error&quot;</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+</dl>
+
     
 
 	
@@ -750,8 +740,8 @@ with an appended delimiter.</p></div>
 	<dd class="tag-source">
 		<ul class="dummy">
 			<li>
-				<a href="util_format.js.html">util/format.js</a>,
-				 <a href="util_format.js.html#sunlight-1-line-1">line 1</a>
+				<a href="util_constants.js.html">util/constants.js</a>,
+				 <a href="util_constants.js.html#sunlight-1-line-34">line 34</a>
 			</li>
 		</ul>
 	</dd>
@@ -764,18 +754,6 @@ with an appended delimiter.</p></div>
 	
 </dl>
 
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
 
     
 </dd>
@@ -783,29 +761,29 @@ with an appended delimiter.</p></div>
         
             
 <hr>
-<dt>
-    <h4 class="name" id=".formatResponse"><span class="type-signature">&lt;static> </span>formatResponse(response)</h4>
-    
+<dt class="name" id=".errorToStatus">
+    <h4 id=".errorToStatus"><span class="type-signature">&lt;static, constant> </span>errorToStatus<span class="type-signature"></span></h4>
+
     
 </dt>
 <dd>
-
     
     <div class="description">
-        <p>Generates a stringified JSON-RPC response object with appended delimiter.</p>
+        <p>Returns HTTP status code for a given error code</p>
     </div>
     
 
     
 
     
-
+<dl class="details">
     
-    
-        <h5>Parameters:</h5>
-        
 
-<table class="params table table-striped">
+    <h5 class="subsection-title">Properties:</h5>
+
+    <dl>
+
+<table class="props table table-striped">
     <thead>
     <tr>
         
@@ -827,7 +805,7 @@ with an appended delimiter.</p></div>
 
         <tr>
             
-                <td class="name"><code>response</code></td>
+                <td class="name"><code>errorToStatus</code></td>
             
 
             <td class="type">
@@ -845,10 +823,9 @@ with an appended delimiter.</p></div>
             
 
             <td class="description last">
-                <h6 class="method-params-label method-subparams-label">Properties</h6>
-                
+                <h6>Properties</h6>
 
-<table class="params table table-striped">
+<table class="props table table-striped">
     <thead>
     <tr>
         
@@ -870,66 +847,12 @@ with an appended delimiter.</p></div>
 
         <tr>
             
-                <td class="name"><code>method</code></td>
+                <td class="name"><code>-32700</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>params</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">array</span>
-|
-
-<span class="param-type">object</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>id</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-|
-
 <span class="param-type">number</span>
 
 
@@ -941,22 +864,19 @@ with an appended delimiter.</p></div>
 
             
 
-            <td class="description last"></td>
+            <td class="description last"><p>500</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>jsonrpc</code></td>
+                <td class="name"><code>-32600</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
-|
-
 <span class="param-type">number</span>
 
 
@@ -968,20 +888,20 @@ with an appended delimiter.</p></div>
 
             
 
-            <td class="description last"></td>
+            <td class="description last"><p>400</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>delimiter</code></td>
+                <td class="name"><code>-32601</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type">number</span>
 
 
 
@@ -992,17 +912,23 @@ with an appended delimiter.</p></div>
 
             
 
-            <td class="description last"></td>
+            <td class="description last"><p>404</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>result</code></td>
+                <td class="name"><code>-32602</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
             
             </td>
 
@@ -1010,7 +936,79 @@ with an appended delimiter.</p></div>
 
             
 
-            <td class="description last"></td>
+            <td class="description last"><p>500</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>-32603</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>500</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>-32000</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>408</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>-32001</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>500</p></td>
         </tr>
 
     
@@ -1023,11 +1021,8 @@ with an appended delimiter.</p></div>
     
     </tbody>
 </table>
+</dl>
 
-    
-
-    
-<dl class="details">
     
 
 	
@@ -1061,8 +1056,8 @@ with an appended delimiter.</p></div>
 	<dd class="tag-source">
 		<ul class="dummy">
 			<li>
-				<a href="util_format.js.html">util/format.js</a>,
-				 <a href="util_format.js.html#sunlight-1-line-46">line 46</a>
+				<a href="util_constants.js.html">util/constants.js</a>,
+				 <a href="util_constants.js.html#sunlight-1-line-56">line 56</a>
 			</li>
 		</ul>
 	</dd>
@@ -1075,23 +1070,13 @@ with an appended delimiter.</p></div>
 	
 </dl>
 
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
 
     
 </dd>
 
         </dl>
+    
+
     
 
     

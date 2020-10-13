@@ -33,7 +33,7 @@
 			<li class="dropdown">
 				<a href="namespaces.list.html" class="dropdown-toggle" data-toggle="dropdown">Namespaces<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Jaysonic.html">Jaysonic</a></li><li><a href="Utils.html">Utils</a></li><li><a href="Utils.format.html">Utils.format</a></li>
+					<li><a href="Jaysonic.html">Jaysonic</a></li><li><a href="Utils.html">Utils</a></li><li><a href="Utils.constants.html">Utils.constants</a></li><li><a href="Utils.format.html">Utils.format</a></li>
 				</ul>
 			</li>
 			
@@ -153,10 +153,34 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 <p><img src="logo.png" alt=""></p>
 <h1>Jaysonic - A persistent JSON-RPC client and server</h1>
-<h2><a href="https://travis-ci.com/isaacgr/jaysonic"><img src="https://travis-ci.com/isaacgr/jaysonic.svg?branch=master" alt="Build Status"></a>
-<a href="https://coveralls.io/github/isaacgr/jaysonic?branch=master"><img src="https://coveralls.io/repos/github/isaacgr/jaysonic/badge.svg?branch=master" alt="Coverage Status"></a>
-<a href="https://codeclimate.com/github/isaacgr/jaysonic/maintainability"><img src="https://api.codeclimate.com/v1/badges/b061f4e44fa85d5e8b04/maintainability" alt="Maintainability"></a></h2>
-<p>A TCP, HTTP and WebSocket server and client that implement the JSON-RPC 2.0 Specification.</p>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Travis CI Build</td>
+<td><a href="https://travis-ci.com/isaacgr/jaysonic"><img src="https://travis-ci.com/isaacgr/jaysonic.svg?branch=master" alt="Build Status"></a></td>
+</tr>
+<tr>
+<td>Test Coverage</td>
+<td><a href="https://coveralls.io/github/isaacgr/jaysonic?branch=master"><img src="https://coveralls.io/repos/github/isaacgr/jaysonic/badge.svg?branch=master" alt="Coverage Status"></a></td>
+</tr>
+<tr>
+<td>Code Maintainability</td>
+<td><a href="https://codeclimate.com/github/isaacgr/jaysonic/maintainability"><img src="https://api.codeclimate.com/v1/badges/b061f4e44fa85d5e8b04/maintainability" alt="Maintainability"></a></td>
+</tr>
+<tr>
+<td>Docs Build</td>
+<td><a href="https://app.netlify.com/sites/keen-sammet-556a43/deploys"><img src="https://api.netlify.com/api/v1/badges/34ec9715-e872-4a37-a53b-7a0207fc57a3/deploy-status" alt="Netlify Status"></a></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p>A TCP, HTTP and WebSocket server and client library which implements the <a href="https://www.jsonrpc.org/specification">JSON-RPC 2.0</a> and <a href="https://www.jsonrpc.org/specification_v1">1.0</a> specifications. Written for <a href="https://nodejs.org/en/">nodejs</a>, primarily utilizing ES6 syntax.</p>
 <h3>List of features</h3>
 <ul>
 <li>Promise based</li>
@@ -173,6 +197,9 @@
 <h3>Download &amp; Installation</h3>
 <pre class="prettyprint source lang-shell"><code>$ npm install jaysonic
 </code></pre>
+<h3>Documentation</h3>
+<p>Latest documentation on the methods and classes available in the library</p>
+<p>https://jaysonic.irowell.io/</p>
 <h3>Initialization</h3>
 <p>All clients and servers are instantiated with the same syntax, just change the type</p>
 <pre class="prettyprint source lang-js"><code>// TCP
@@ -192,7 +219,7 @@ const wss = new Jaysonic.server.ws();
 const ws = new Jaysonic.wsclient();
 </code></pre>
 <h4>WS Client for Node</h4>
-<p>The Node ws client is based on the <code>ws</code> library (same as the server).</p>
+<p>The Node ws client is based on the <a href="https://github.com/websockets/ws"><code>ws</code></a> library (same as the server).</p>
 <pre class="prettyprint source lang-js"><code>const Jaysonic = require(&quot;jaysonic&quot;);
 const ws = new Jaysonic.client.ws();
 </code></pre>
@@ -334,11 +361,11 @@ server.method(&quot;add&quot;, add);
 <p><em>Note: The same syntax for all the above methods is used for the HTTP and WS server</em></p>
 <h5>Listening for client connections</h5>
 <p>The <code>clientConnected</code> and <code>clientDisconnected</code> methods return the host and port of the client in the callback. These methods are not available for the HTTP server.</p>
-<pre class="prettyprint source lang-js"><code>server.clientConnected(({ host, port }) => {
+<pre class="prettyprint source lang-js"><code>server.clientConnected((event) => {
   console.log(&quot;client connected&quot;);
 });
 
-server.clientDisconnected(({ host, port }) => {
+server.clientDisconnected((event) => {
   console.log(&quot;client disconnected&quot;);
 });
 </code></pre>
@@ -385,7 +412,6 @@ client.end(() => console.log(&quot;connection ended&quot;));
 
 const add = () => {
   client
-    .request()
     .send(&quot;add&quot;, [1, 2])
     .then((result) => {
       console.log(result);
@@ -431,8 +457,8 @@ const add = () =>
   client
     .batch([
       // access the message object on the request
-      client.request().message(&quot;add&quot;, [1, 2]),
-      client.request().message(&quot;add&quot;, [3, 4])
+      client.message(&quot;add&quot;, [1, 2]),
+      client.message(&quot;add&quot;, [3, 4])
     ])
     .then((result) => {
       // [
@@ -450,7 +476,6 @@ const add = () =>
 <p>The HTTP client response and error are objects with a <code>body</code> property, which contains the json response from the server, as well as the <code>http.IncomingMessage</code> instance. Which contains things like the header and statusCode. All methods can be found <a href="https://www.w3schools.com/nodejs/obj_http_incomingmessage.asp">here</a>.</p>
 <p>Additionally, the <code>error</code> object contains a <code>response</code> property that provides the body of the erroneous response.</p>
 <pre class="prettyprint source lang-js"><code>client
-  .request()
   .send(&quot;add&quot;, [1, 2])
   .then((result) => {
     console.log(result.body);
@@ -468,7 +493,7 @@ const add = () =>
 <p>The server can also listen for all notifications not tied to methods and handle accordingly.</p>
 <p><strong>Note as of v2.0.0 server.onNotify no longer returns an error as the fist parameter to the callback</strong></p>
 <pre class="prettyprint source lang-js"><code>// optionally returns a promise indicating success or failure for sending message
-client.request().notify(&quot;notify&quot;, []);
+client.notify(&quot;notify&quot;, []);
 
 server.onNotify(&quot;notify&quot;, (message) => {
   console.log(message);
@@ -498,7 +523,7 @@ server.notify([
 <p>As of v2.0.0, notifications sent and recieved in batches are now supported</p>
 <h5>Batches</h5>
 <pre class="prettyprint source lang-js"><code>// send from the client by setting the 3rd parameter in the request().message() method to false
-client.batch([client.request().message(&quot;test&quot;, [], false)]);
+client.batch([client.message(&quot;test&quot;, [], false)]);
 
 // send from server by providing a list of arrays containing
 // a method and optional params value
@@ -508,7 +533,6 @@ server.notify([[&quot;notification&quot;, [&quot;a&quot;, 1]], [&quot;browser&qu
 <h4>HTTP Client Notifications</h4>
 <pre class="prettyprint source lang-js"><code>// optionally returns a promise indicating success or failure for sending message
 client
-  .request()
   .notify(&quot;notify&quot;, [])
   .then((response) => {
     console.log(response.statusCode);
@@ -577,7 +601,7 @@ server.onNotify(&quot;notify&quot;, (message) => {
 <span class="jsdoc-message">
 	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.6</a>
 	
-		on 2020-10-12T13:28:18-04:00
+		on 2020-10-12T21:29:17-04:00
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>

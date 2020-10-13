@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>Jaysonic Namespace: Utils</title>
+	<title>Jaysonic Source: util/constants.js</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -67,194 +67,90 @@
 <div class="row">
 
 	
-	<div class="col-md-8">
+	<div class="col-md-12">
 	
 		<div id="main">
 			
 
-	<h1 class="page-title">Namespace: Utils</h1>
+		<h1 class="page-title">Source: util/constants.js</h1>
+    
 <section>
+    <article>
+        <pre
+            class="sunlight-highlight-javascript linenums">/**
+ * @property {object} ERR_CODES
+ * @property {number} ERR_CODES.parseError -32700
+ * @property {number} ERR_CODES.invalidRequest -32600
+ * @property {number} ERR_CODES.methodNotFound -32601
+ * @property {number} ERR_CODES.invalidParams -32602
+ * @property {number} ERR_CODES.internal -32603
+ * @property {number} ERR_CODES.timeout -32000
+ * @property {number} ERR_CODES.unknown -32001
+ * @memberof Utils.constants
+ *
+ */
+const ERR_CODES = {
+  parseError: -32700,
+  invalidRequest: -32600,
+  methodNotFound: -32601,
+  invalidParams: -32602,
+  internal: -32603,
+  timeout: -32000,
+  unknown: -32001
+};
 
-<header>
-    
-        <h2>
-        Utils
-        </h2>
-        
-    
-</header>
+/**
+ * @property {object} ERR_MSGS
+ * @property {string} ERR_CODES.parseError "Parse Error"
+ * @property {string} ERR_CODES.invalidRequest "Invalid Request"
+ * @property {string} ERR_CODES.methodNotFound "Method not found"
+ * @property {string} ERR_CODES.invalidParams "Invalid Parameters"
+ * @property {string} ERR_CODES.internal "Internal Error"
+ * @property {string} ERR_CODES.timeout "Request Timeout"
+ * @property {string} ERR_CODES.unknown "Unknown Error"
+ * @memberof Utils.constants
+ */
+const ERR_MSGS = {
+  parseError: "Parse Error",
+  invalidRequest: "Invalid Request",
+  methodNotFound: "Method not found",
+  invalidParams: "Invalid Parameters",
+  internal: "Internal Error",
+  timeout: "Request Timeout",
+  unknown: "Unknown Error"
+};
 
+/**
+ * Returns HTTP status code for a given error code
+ * @property {object} errorToStatus
+ * @property {number} errorToStatus.-32700 500
+ * @property {number} errorToStatus.-32600 400
+ * @property {number} errorToStatus.-32601 404
+ * @property {number} errorToStatus.-32602 500
+ * @property {number} errorToStatus.-32603 500
+ * @property {number} errorToStatus.-32000 408
+ * @property {number} errorToStatus.-32001 500
+ * @memberof Utils.constants
+ */
+const errorToStatus = {
+  "-32700": 500,
+  "-32600": 400,
+  "-32601": 404,
+  "-32602": 500,
+  "-32603": 500,
+  "-32000": 408,
+  "-32001": 500
+};
 
-<article>
-    <div class="container-overview">
-    
-        
-
-        
-<dl class="details">
-    
-
-	
-
-	
-
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
-	<dd class="tag-source">
-		<ul class="dummy">
-			<li>
-				<a href="util_index.js.html">util/index.js</a>,
-				 <a href="util_index.js.html#sunlight-1-line-1">line 1</a>
-			</li>
-		</ul>
-	</dd>
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-        
-    
-    </div>
-
-    
-
-    
-
-    
-
-    
-
-    
-        <h3 class="subsection-title">Namespaces</h3>
-
-        <dl>
-            <dt><a href="namespaces.html#Utils.constants"><a href="Utils.constants.html">constants</a></a></dt>
-            <dd></dd>
-        
-            <dt><a href="namespaces.html#Utils.format"><a href="Utils.format.html">format</a></a></dt>
-            <dd></dd>
-        </dl>
-    
-
-    
-        <h3 class="subsection-title">Members</h3>
-
-        <dl>
-            
-<hr>
-<dt class="name" id=".MessageBuffer">
-    <h4 id=".MessageBuffer"><span class="type-signature">&lt;static> </span>MessageBuffer<span class="type-signature"> :<a href="MessageBuffer.html">MessageBuffer</a></span></h4>
-
-    
-</dt>
-<dd>
-    
-
-    
-        <h5>Type:</h5>
-        <ul>
-            <li>
-                
-<span class="param-type"><a href="MessageBuffer.html">MessageBuffer</a></span>
-
-
-
-            </li>
-        </ul>
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
-	<dd class="tag-source">
-		<ul class="dummy">
-			<li>
-				<a href="util_index.js.html">util/index.js</a>,
-				 <a href="util_index.js.html#sunlight-1-line-11">line 11</a>
-			</li>
-		</ul>
-	</dd>
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-</dd>
-
-        </dl>
-    
-
-    
-
-    
-
-    
-</article>
-
+module.exports = {
+  ERR_CODES,
+  ERR_MSGS,
+  errorToStatus
+};
+</pre>
+    </article>
 </section>
+
 
 
 
@@ -264,10 +160,6 @@
 
 	<div class="clearfix"></div>
 
-	
-		<div class="col-md-3">
-			<div id="toc" class="col-md-3 hidden-xs hidden-sm hidden-md"></div>
-		</div>
 	
 
 </div>

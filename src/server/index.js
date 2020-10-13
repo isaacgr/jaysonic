@@ -72,6 +72,8 @@ class JsonRpcServerFactory extends EventEmitter {
   /**
    * Set the `pcolInstance` for the server factory
    * @abstract
+   * @example
+   * this.pcolInstance = new JsonRpcClientProtocol()
    */
   buildProtocol() {
     throw new Error("function must be overwritten in subclass");
@@ -80,6 +82,8 @@ class JsonRpcServerFactory extends EventEmitter {
   /**
    * Set the `server` property for the server factory
    * @abstract
+   * @example
+   * this.server = new net.Server()
    */
   setServer() {
     throw new Error("function must be overwritten in subclass");
@@ -88,6 +92,9 @@ class JsonRpcServerFactory extends EventEmitter {
   /**
    * Setup the `error` and `close` events for the factory and server.
    * Sets `listening` to false if any errors returned or if server stops listening.
+   *
+   * Calls the [JsonRpcServerFactory]{@link JsonRpcServerFactory#clientConnected} and
+   * [JsonRpcServerFactory]{@link JsonRpcServerFactory#clientDisconnected} methods
    *
    */
   setupListeners() {
@@ -109,9 +116,11 @@ class JsonRpcServerFactory extends EventEmitter {
       });
     });
     this.on("clientDisconnected", (client) => {
-      const clientIndex = this.connectedClients.findIndex(c => client === c);
+      const clientIndex = this.connectedClients.findIndex((c) => client === c);
       if (clientIndex === -1) {
-        this.clientDisconnected(`Unknown client ${JSON.stringify(client)}`);
+        this.clientDisconnected({
+          error: `Unknown client ${JSON.stringify(client)}`
+        });
       } else {
         const [deletedClient] = this.connectedClients.splice(clientIndex, 1);
         this.clientDisconnected({
@@ -139,22 +148,68 @@ class JsonRpcServerFactory extends EventEmitter {
     });
   }
 
+  /**
+   * Register a method and associated function with the server.
+   *
+   * The function will be called when a client makes a request to this method.
+   *
+   * @param {string} name Name of method
+   * @param {function} cb Function to call when client makes request to method
+   */
   method(name, cb) {
     this.methods[name] = cb;
   }
 
+  /**
+   * Call function when notification with event name comes in.
+   *
+   * @param {string} method Method name to listen for notification
+   * @param {function} cb Name of callback function fired when method event comes in
+   * @example
+   * function world(){
+   *  return 'foo'
+   * }
+   * server.onNotify("hello", world)
+   */
   onNotify(method, cb) {
     this.on(method, cb);
   }
 
+  /**
+   * Remove function name from listening for notifications.
+   *
+   * @param {string} method Method name to remove
+   * @param {function} cb Name of the callback function to remove
+   * @example
+   * function world(){
+   *  return 'foo'
+   * }
+   * server.removeOnNotify("hello", world)
+   */
   removeOnNotify(method, cb) {
     this.removeListener(method, cb);
   }
 
+  /**
+   * Remove all functions listening for event name.
+   *
+   * @param {string} method Method name to remove events for
+   */
   removeAllOnNotify(method) {
     this.removeAllListeners([method]);
   }
 
+  /**
+   * @param {Array.<Array.<string, Array|object>>} notifications Array of notifications
+   * @returns {boolean[]|Error[]} Returns list of error objects if there was an error sending to any client.
+   * Returns true if the entire data was sent successfully
+   * Returns false if all or part of the data was not sent to the client.
+   * @example
+   * server.notify([
+   *    ["hello", ["world"]],
+   *    ["foo", {"bar": "baz"}]
+   * ])
+   */
   notify(notifications) {
     if (notifications.length === 0 || !Array.isArray(notifications)) {
       throw new Error("Invalid arguments");
@@ -178,11 +233,6 @@ class JsonRpcServerFactory extends EventEmitter {
     if (this.connectedClients.length === 0) {
       return [Error("No clients connected")];
     }
-    /**
-     * Returns list of error objects if there was an error sending to any client
-     * Otherwise Returns true if the entire data was sent successfully
-     * Returns false if all or part of the data was not
-     */
     return this.connectedClients.map((client) => {
       try {
         return this.sendNotification(client, response);
@@ -194,6 +244,12 @@ class JsonRpcServerFactory extends EventEmitter {
     });
   }
 
+  /**
+   * Generate objects for notifications to send to client
+   *
+   * @param {Array.<string, Array>} notifications Array of notifications to send to client.
+   * @private
+   */
   _getNotificationResponses(notifications) {
     return notifications.map(([method, params]) => {
       if (!method && !params) {
@@ -211,10 +267,20 @@ class JsonRpcServerFactory extends EventEmitter {
     });
   }
 
+  /**
+   * Called when `clientConnected` event is fired.
+   *
+   * @param {object} event Returns host and port or error object
+   */
   clientConnected(event) {
     return event;
   }
 
+  /**
+   * Called when `clientDisconnected` event is fired.
+   *
+   * @param {object} event Returns host and port or error object
+   */
   clientDisconnected(event) {
     return event;
   }

@@ -40,15 +40,16 @@
 
 # Jaysonic - A persistent JSON-RPC client and server
 
-Check|Status
----|---
-Travis CI Build|[![Build Status](https://travis-ci.com/isaacgr/jaysonic.svg?branch=master)](https://travis-ci.com/isaacgr/jaysonic)
-Test Coverage|[![Coverage Status](https://coveralls.io/repos/github/isaacgr/jaysonic/badge.svg?branch=master)](https://coveralls.io/github/isaacgr/jaysonic?branch=master)
-Maintainability|[![Maintainability](https://api.codeclimate.com/v1/badges/b061f4e44fa85d5e8b04/maintainability)](https://codeclimate.com/github/isaacgr/jaysonic/maintainability)
-Docs Build|[![Netlify Status](https://api.netlify.com/api/v1/badges/34ec9715-e872-4a37-a53b-7a0207fc57a3/deploy-status)](https://app.netlify.com/sites/keen-sammet-556a43/deploys)
+| Check                | Status                                                                                                                                                                  |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Travis CI Build      | [![Build Status](https://travis-ci.com/isaacgr/jaysonic.svg?branch=master)](https://travis-ci.com/isaacgr/jaysonic)                                                     |
+| Test Coverage        | [![Coverage Status](https://coveralls.io/repos/github/isaacgr/jaysonic/badge.svg?branch=master)](https://coveralls.io/github/isaacgr/jaysonic?branch=master)            |
+| Code Maintainability | [![Maintainability](https://api.codeclimate.com/v1/badges/b061f4e44fa85d5e8b04/maintainability)](https://codeclimate.com/github/isaacgr/jaysonic/maintainability)       |
+| Docs Build           | [![Netlify Status](https://api.netlify.com/api/v1/badges/34ec9715-e872-4a37-a53b-7a0207fc57a3/deploy-status)](https://app.netlify.com/sites/keen-sammet-556a43/deploys) |
+
 ---
 
-A TCP, HTTP and WebSocket server and client that implement the JSON-RPC 2.0 Specification.
+A TCP, HTTP and WebSocket server and client library which implements the [JSON-RPC 2.0](https://www.jsonrpc.org/specification) and [1.0](https://www.jsonrpc.org/specification_v1) specifications. Written for [nodejs](https://nodejs.org/en/), primarily utilizing ES6 syntax.
 
 ### List of features
 
@@ -68,6 +69,12 @@ A TCP, HTTP and WebSocket server and client that implement the JSON-RPC 2.0 Spec
 ```shell
 $ npm install jaysonic
 ```
+
+### Documentation
+
+Latest documentation on the methods and classes available in the library
+
+https://jaysonic.irowell.io/
 
 ### Initialization
 
@@ -98,7 +105,7 @@ const ws = new Jaysonic.wsclient();
 
 #### WS Client for Node
 
-The Node ws client is based on the `ws` library (same as the server).
+The Node ws client is based on the [`ws`](https://github.com/websockets/ws) library (same as the server).
 
 ```js
 const Jaysonic = require("jaysonic");
@@ -280,11 +287,11 @@ _Note: The same syntax for all the above methods is used for the HTTP and WS ser
 The `clientConnected` and `clientDisconnected` methods return the host and port of the client in the callback. These methods are not available for the HTTP server.
 
 ```js
-server.clientConnected(({ host, port }) => {
+server.clientConnected((event) => {
   console.log("client connected");
 });
 
-server.clientDisconnected(({ host, port }) => {
+server.clientDisconnected((event) => {
   console.log("client disconnected");
 });
 ```
@@ -351,7 +358,6 @@ client
 
 const add = () => {
   client
-    .request()
     .send("add", [1, 2])
     .then((result) => {
       console.log(result);
@@ -411,8 +417,8 @@ const add = () =>
   client
     .batch([
       // access the message object on the request
-      client.request().message("add", [1, 2]),
-      client.request().message("add", [3, 4])
+      client.message("add", [1, 2]),
+      client.message("add", [3, 4])
     ])
     .then((result) => {
       // [
@@ -437,7 +443,6 @@ Additionally, the `error` object contains a `response` property that provides th
 
 ```js
 client
-  .request()
   .send("add", [1, 2])
   .then((result) => {
     console.log(result.body);
@@ -462,7 +467,7 @@ The server can also listen for all notifications not tied to methods and handle 
 
 ```js
 // optionally returns a promise indicating success or failure for sending message
-client.request().notify("notify", []);
+client.notify("notify", []);
 
 server.onNotify("notify", (message) => {
   console.log(message);
@@ -505,7 +510,7 @@ As of v2.0.0, notifications sent and recieved in batches are now supported
 
 ```js
 // send from the client by setting the 3rd parameter in the request().message() method to false
-client.batch([client.request().message("test", [], false)]);
+client.batch([client.message("test", [], false)]);
 
 // send from server by providing a list of arrays containing
 // a method and optional params value
@@ -519,7 +524,6 @@ As per the JSON-RPC spec for HTTP, a notification response must include a `204` 
 ```js
 // optionally returns a promise indicating success or failure for sending message
 client
-  .request()
   .notify("notify", [])
   .then((response) => {
     console.log(response.statusCode);
