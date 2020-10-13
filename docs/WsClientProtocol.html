@@ -833,7 +833,7 @@ Number of connection retries is based on <code>remainingRetries</code></p>
 		<ul class="dummy">
 			<li>
 				<a href="client_protocol_base.js.html">client/protocol/base.js</a>,
-				 <a href="client_protocol_base.js.html#sunlight-1-line-427">line 427</a>
+				 <a href="client_protocol_base.js.html#sunlight-1-line-429">line 429</a>
 			</li>
 		</ul>
 	</dd>
@@ -1021,6 +1021,158 @@ Number of connection retries is based on <code>remainingRetries</code></p>
             
 <hr>
 <dt>
+    <h4 class="name" id="gotBatch"><span class="type-signature"></span>gotBatch(message)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Called when the received message is a batch</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>message</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;JSON></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>A valid JSON-RPC batch message</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
+	<dd class="inherited-from">
+		<ul class="dummy">
+			<li>
+				<a href="JsonRpcClientProtocol.html#gotBatch">JsonRpcClientProtocol#gotBatch</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
+        <a href="JsonRpcClientProtocol.html#gotBatch">JsonRpcClientProtocol#gotBatch</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="client_protocol_base.js.html">client/protocol/base.js</a>,
+				 <a href="client_protocol_base.js.html#sunlight-1-line-209">line 209</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
     <h4 class="name" id="gotBatchResponse"><span class="type-signature"></span>gotBatchResponse(batch)</h4>
     
     
@@ -1174,159 +1326,7 @@ Number of connection retries is based on <code>remainingRetries</code></p>
             
 <hr>
 <dt>
-    <h4 class="name" id="handleBatch"><span class="type-signature"></span>handleBatch(message)</h4>
-    
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        <p>Called when the received message is a batch</p>
-    </div>
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>message</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;JSON></span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>A valid JSON-RPC batch message</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="JsonRpcClientProtocol.html#handleBatch">JsonRpcClientProtocol#handleBatch</a>
-			</li>
-		</ul>
-	</dd>
-	
-
-    
-    <dt class="tag-overrides">Overrides:</dt>
-    <dd class="tag-overrides"><ul class="dummy"><li>
-        <a href="JsonRpcClientProtocol.html#handleBatch">JsonRpcClientProtocol#handleBatch</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
-	<dd class="tag-source">
-		<ul class="dummy">
-			<li>
-				<a href="client_protocol_base.js.html">client/protocol/base.js</a>,
-				 <a href="client_protocol_base.js.html#sunlight-1-line-209">line 209</a>
-			</li>
-		</ul>
-	</dd>
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dd>
-
-        
-            
-<hr>
-<dt>
-    <h4 class="name" id="handleError"><span class="type-signature"></span>handleError(error)</h4>
+    <h4 class="name" id="gotError"><span class="type-signature"></span>gotError(error)</h4>
     
     
 </dt>
@@ -1409,7 +1409,7 @@ If the object cannot be parsed, then an unkown error code is sent with the error
 	<dd class="inherited-from">
 		<ul class="dummy">
 			<li>
-				<a href="JsonRpcClientProtocol.html#handleError">JsonRpcClientProtocol#handleError</a>
+				<a href="JsonRpcClientProtocol.html#gotError">JsonRpcClientProtocol#gotError</a>
 			</li>
 		</ul>
 	</dd>
@@ -1418,7 +1418,7 @@ If the object cannot be parsed, then an unkown error code is sent with the error
     
     <dt class="tag-overrides">Overrides:</dt>
     <dd class="tag-overrides"><ul class="dummy"><li>
-        <a href="JsonRpcClientProtocol.html#handleError">JsonRpcClientProtocol#handleError</a>
+        <a href="JsonRpcClientProtocol.html#gotError">JsonRpcClientProtocol#gotError</a>
     </li></ul></dd>
     
 
@@ -1446,7 +1446,7 @@ If the object cannot be parsed, then an unkown error code is sent with the error
 		<ul class="dummy">
 			<li>
 				<a href="client_protocol_base.js.html">client/protocol/base.js</a>,
-				 <a href="client_protocol_base.js.html#sunlight-1-line-525">line 525</a>
+				 <a href="client_protocol_base.js.html#sunlight-1-line-527">line 527</a>
 			</li>
 		</ul>
 	</dd>
@@ -1479,7 +1479,7 @@ If the object cannot be parsed, then an unkown error code is sent with the error
             
 <hr>
 <dt>
-    <h4 class="name" id="handleNotification"><span class="type-signature"></span>handleNotification(message)</h4>
+    <h4 class="name" id="gotNotification"><span class="type-signature"></span>gotNotification(message)</h4>
     
     
 </dt>
@@ -1489,7 +1489,7 @@ If the object cannot be parsed, then an unkown error code is sent with the error
     <div class="description">
         <p>Called when the received <code>message</code> is a notification.
 Emits an event using <code>message.method</code> as the name.
-The data passed to the event handler is the <code>message</code>.</p>
+The data passed to the event gotr is the <code>message</code>.</p>
     </div>
     
 
@@ -1563,7 +1563,7 @@ The data passed to the event handler is the <code>message</code>.</p>
 	<dd class="inherited-from">
 		<ul class="dummy">
 			<li>
-				<a href="JsonRpcClientProtocol.html#handleNotification">JsonRpcClientProtocol#handleNotification</a>
+				<a href="JsonRpcClientProtocol.html#gotNotification">JsonRpcClientProtocol#gotNotification</a>
 			</li>
 		</ul>
 	</dd>
@@ -1572,7 +1572,7 @@ The data passed to the event handler is the <code>message</code>.</p>
     
     <dt class="tag-overrides">Overrides:</dt>
     <dd class="tag-overrides"><ul class="dummy"><li>
-        <a href="JsonRpcClientProtocol.html#handleNotification">JsonRpcClientProtocol#handleNotification</a>
+        <a href="JsonRpcClientProtocol.html#gotNotification">JsonRpcClientProtocol#gotNotification</a>
     </li></ul></dd>
     
 
@@ -1633,7 +1633,7 @@ The data passed to the event handler is the <code>message</code>.</p>
             
 <hr>
 <dt>
-    <h4 class="name" id="handleResponse"><span class="type-signature"></span>handleResponse(message)</h4>
+    <h4 class="name" id="gotResponse"><span class="type-signature"></span>gotResponse(message)</h4>
     
     
 </dt>
@@ -1715,7 +1715,7 @@ The data passed to the event handler is the <code>message</code>.</p>
 	<dd class="inherited-from">
 		<ul class="dummy">
 			<li>
-				<a href="JsonRpcClientProtocol.html#handleResponse">JsonRpcClientProtocol#handleResponse</a>
+				<a href="JsonRpcClientProtocol.html#gotResponse">JsonRpcClientProtocol#gotResponse</a>
 			</li>
 		</ul>
 	</dd>
@@ -1724,7 +1724,7 @@ The data passed to the event handler is the <code>message</code>.</p>
     
     <dt class="tag-overrides">Overrides:</dt>
     <dd class="tag-overrides"><ul class="dummy"><li>
-        <a href="JsonRpcClientProtocol.html#handleResponse">JsonRpcClientProtocol#handleResponse</a>
+        <a href="JsonRpcClientProtocol.html#gotResponse">JsonRpcClientProtocol#gotResponse</a>
     </li></ul></dd>
     
 
@@ -2461,7 +2461,7 @@ If the error object has a null id, then log the message to the console.</p>
 		<ul class="dummy">
 			<li>
 				<a href="client_protocol_base.js.html">client/protocol/base.js</a>,
-				 <a href="client_protocol_base.js.html#sunlight-1-line-550">line 550</a>
+				 <a href="client_protocol_base.js.html#sunlight-1-line-552">line 552</a>
 			</li>
 		</ul>
 	</dd>
@@ -2919,8 +2919,8 @@ socket instance for the client.</p>
     <div class="description">
         <p>Verify the incoming data returned from <code>messageBuffer</code></p>
 <p>Throw an error if its not a valid JSON-RPC object.</p>
-<p>Call <a href="JsonRpcClientProtocol.html#handleNotification">handleNotification</a> if the message a notification.</p>
-<p>Call <a href="JsonRpcClientProtocol.html#handleBatch">handleBatch</a> if the message is a batch request.</p>
+<p>Call <a href="JsonRpcClientProtocol.html#gotNotification">gotNotification</a> if the message a notification.</p>
+<p>Call <a href="JsonRpcClientProtocol.html#gotBatch">gotBatch</a> if the message is a batch request.</p>
     </div>
     
 
@@ -3306,7 +3306,7 @@ socket instance for the client.</p>
 <span class="jsdoc-message">
 	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.6</a>
 	
-		on 2020-10-12T21:29:18-04:00
+		on 2020-10-12T21:58:28-04:00
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>
