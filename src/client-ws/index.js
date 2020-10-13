@@ -5,4 +5,4 @@ const Jaysonic = module.exports;
  * @type WsBrowserClientFactory
  * @static
  */
-Jaysonic.wsbroswerclient = require("./ws");
+Jaysonic.wsclient = require("./ws");
