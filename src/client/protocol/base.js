@@ -410,9 +410,7 @@ class JsonRpcClientProtocol {
     // find the resolve and reject objects that match the batch request ids
     for (const ids of Object.keys(this.pendingCalls)) {
       const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
-      const difference = arrays.reduce((a, b) =>
-        a.filter((c) => !b.includes(c))
-      );
+      const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
       if (difference.length === 0) {
         this.factory.cleanUp(ids);
         this._resolveOrRejectBatch(batch, batchResponseIds);

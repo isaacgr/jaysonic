@@ -11,7 +11,7 @@ const baseProtocol = require("../../src/server/protocol/base");
 
 const server = new Jaysonic.server.tcp();
 const wss = new Jaysonic.server.ws();
-const protocol = new baseProtocol(undefined, undefined, "2.0", "\n");
+const protocol = new baseProtocol(undefined, undefined, 2, "\n");
 
 describe("formatRequest", () => {
   describe("methods", () => {
@@ -118,7 +118,7 @@ describe("formatResponse", () => {
   describe("errors", () => {
     it("should throw error if both params and result are given", (done) => {
       const params = {
-        jsonrpc: "2.0",
+        jsonrpc: 2,
         id: 1,
         result: 1,
         params: [],
@@ -133,7 +133,7 @@ describe("formatResponse", () => {
     });
     it("should throw error if method and id are given", (done) => {
       const params = {
-        jsonrpc: "2.0",
+        jsonrpc: 2,
         id: 1,
         method: "test",
         params: [],
@@ -148,7 +148,7 @@ describe("formatResponse", () => {
     });
     it("should throw error if method is not a string", (done) => {
       const params = {
-        jsonrpc: "2.0",
+        jsonrpc: 2,
         method: [],
         params: [],
         delimiter: "\n"
@@ -162,7 +162,7 @@ describe("formatResponse", () => {
     });
     it("should throw error if params is not an object or array", (done) => {
       const params = {
-        jsonrpc: "2.0",
+        jsonrpc: 2,
         method: "test",
         params: 1,
         delimiter: "\n"
@@ -179,7 +179,7 @@ describe("formatResponse", () => {
     describe("2.0 responses", () => {
       it("should return properly formatted 2.0 response", (done) => {
         const params = {
-          jsonrpc: "2.0",
+          jsonrpc: 2,
           id: 1,
           result: 19,
           delimiter: "\n"
@@ -190,7 +190,7 @@ describe("formatResponse", () => {
       });
       it("should return notification with params", (done) => {
         const params = {
-          jsonrpc: "2.0",
+          jsonrpc: 2,
           method: "update",
           params: [1, 2, 3, 4, 5],
           delimiter: "\n"
@@ -236,7 +236,7 @@ describe("formatError", () => {
     it("should return error if no message", (done) => {
       const params = {
         code: -32601,
-        jsonrpc: "2.0",
+        jsonrpc: 2,
         id: 1,
         delimiter: "\n"
       };
@@ -253,7 +253,7 @@ describe("formatError", () => {
       const params = {
         code: -32601,
         message: "Method not found",
-        jsonrpc: "2.0",
+        jsonrpc: 2,
         id: 1,
         delimiter: "\n"
       };
@@ -278,7 +278,7 @@ describe("formatError", () => {
     });
     it("should include data in error object if given", (done) => {
       const params = {
-        jsonrpc: "2.0",
+        jsonrpc: 2,
         code: -32601,
         message: "Method not found",
         id: 1,
@@ -298,7 +298,7 @@ describe("getResult()", () => {
   it("should return 'invalid params' if result is undefined", (done) => {
     protocol
       .getResult({
-        jsonrpc: "2.0",
+        jsonrpc: 2,
         method: "test",
         id: 1,
         params: [1, 2, 3, 4, 5]

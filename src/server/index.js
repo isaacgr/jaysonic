@@ -116,7 +116,7 @@ class JsonRpcServerFactory extends EventEmitter {
       });
     });
     this.on("clientDisconnected", (client) => {
-      const clientIndex = this.connectedClients.findIndex((c) => client === c);
+      const clientIndex = this.connectedClients.findIndex(c => client === c);
       if (clientIndex === -1) {
         this.clientDisconnected({
           error: `Unknown client ${JSON.stringify(client)}`
@@ -237,7 +237,6 @@ class JsonRpcServerFactory extends EventEmitter {
       try {
         return this.sendNotification(client, response);
       } catch (e) {
-        console.log("here");
         // possibly client disconnected
         return e;
       }

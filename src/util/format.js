@@ -10,7 +10,9 @@
  * @param {string|number} request.version
  * @param {string} request.delimiter
  */
-const formatRequest = ({ method, params, id, version, delimiter }) => {
+const formatRequest = ({
+  method, params, id, version, delimiter
+}) => {
   if (!(typeof method === "string")) {
     throw new TypeError(`${method} must be a string`);
   }
@@ -25,8 +27,8 @@ const formatRequest = ({ method, params, id, version, delimiter }) => {
   }
 
   if (
-    (params && !(params === Object(params)) && !Array.isArray(params)) ||
-    typeof params === "function"
+    (params && !(params === Object(params)) && !Array.isArray(params))
+    || typeof params === "function"
   ) {
     throw new TypeError(`${params} must be an object or array`);
   } else if (params) {
@@ -54,7 +56,9 @@ const formatRequest = ({ method, params, id, version, delimiter }) => {
  * @param {string} response.delimiter
  * @param response.result
  */
-const formatResponse = ({ jsonrpc, id, method, result, params, delimiter }) => {
+const formatResponse = ({
+  jsonrpc, id, method, result, params, delimiter
+}) => {
   const response = {};
   if (params && result) {
     throw new Error("Cannot send response with both params and result");
@@ -69,8 +73,8 @@ const formatResponse = ({ jsonrpc, id, method, result, params, delimiter }) => {
   }
 
   if (
-    (params && !(params === Object(params)) && !Array.isArray(params)) ||
-    typeof params === "function"
+    (params && !(params === Object(params)) && !Array.isArray(params))
+    || typeof params === "function"
   ) {
     throw new TypeError(`${params} must be an object or array`);
   } else if (params) {
@@ -116,22 +120,23 @@ const formatResponse = ({ jsonrpc, id, method, result, params, delimiter }) => {
  * @param {string} error.delimiter
  * @param {string|object|array} error.data
  */
-const formatError = ({ jsonrpc, id, code, message, data, delimiter }) => {
+const formatError = ({
+  jsonrpc, id, code, message, data, delimiter
+}) => {
   if (!message) {
     throw new Error("Must include message in error response");
   }
-  const response =
-    jsonrpc === 2
-      ? {
-          jsonrpc: "2.0",
-          error: { code, message },
-          id
-        }
-      : {
-          result: null,
-          error: { code, message },
-          id
-        };
+  const response = jsonrpc === 2
+    ? {
+      jsonrpc: "2.0",
+      error: { code, message },
+      id
+    }
+    : {
+      result: null,
+      error: { code, message },
+      id
+    };
 
   if (data) {
     response.error.data = data;
