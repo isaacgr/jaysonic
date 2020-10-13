@@ -21,7 +21,7 @@ const ERR_CODES = {
 };
 
 /**
- * @property {object} ERR_MSGS
+ * @property {object} ERR_CODES
  * @property {string} ERR_CODES.parseError "Parse Error"
  * @property {string} ERR_CODES.invalidRequest "Invalid Request"
  * @property {string} ERR_CODES.methodNotFound "Method not found"
