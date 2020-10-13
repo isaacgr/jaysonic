@@ -18,7 +18,7 @@ class WsBrowserClientProtocol extends WsClientProtocol {
   }
 
   /** @inheritdoc */
-  handleBatch(message) {
+  gotBatch(message) {
     // check if any requests are notifications
     message.forEach((res) => {
       if (res && res.method && !res.id) {
@@ -31,7 +31,7 @@ class WsBrowserClientProtocol extends WsClientProtocol {
   }
 
   /** @inheritdoc */
-  handleNotification(message) {
+  gotNotification(message) {
     this.factory.dispatchEvent(
       new CustomEvent(message.method, { detail: message })
     );

@@ -52,9 +52,9 @@ class JsonRpcServerProtocol {
    * If [validateRequest]{@link JsonRpcServerProtocol#validateRequest} returns a parsed result, then the result
    * is passed to [_maybeHandleRequest]{@link JsonRpcServerProtocol#_maybeHandleRequest}.
    * If [_maybeHandleRequest]{@link JsonRpcServerProtocol#_maybeHandleRequest} returns true, then
-   * [handleRequest]{@link JsonRpcServerProtocol#handleRequest} is called.<br/><br/>
+   * [gotRequest]{@link JsonRpcServerProtocol#gotRequest} is called.<br/><br/>
    *
-   * If any of the above throws an error, [handleError]{@link JsonRpcServerProtocol#handleError} is called.
+   * If any of the above throws an error, [gotError]{@link JsonRpcServerProtocol#gotError} is called.
    *
    * @private
    *
@@ -66,10 +66,10 @@ class JsonRpcServerProtocol {
         const result = this.validateRequest(chunk);
         const isMessage = this._maybeHandleRequest(result);
         if (isMessage) {
-          this.handleRequest(result);
+          this.gotRequest(result);
         }
       } catch (e) {
-        this.handleError(e);
+        this.gotError(e);
       }
     }
   }
@@ -118,12 +118,12 @@ class JsonRpcServerProtocol {
         );
       }
       // possible batch request
-      this.handleBatchRequest(result).then((res) => {
+      this.gotBatchRequest(result).then((res) => {
         this.writeToClient(JSON.stringify(res) + this.delimiter);
       });
     } else if (result === Object(result) && !("id" in result)) {
       // no id, so assume notification
-      this.handleNotification(result);
+      this.gotNotification(result);
     } else {
       this.validateMessage(result);
       return true;
@@ -193,7 +193,7 @@ class JsonRpcServerProtocol {
    *
    * @param {string} message Stringified JSON-RPC message object
    */
-  handleNotification(message) {
+  gotNotification(message) {
     this.factory.emit(message.method, message);
   }
 
@@ -205,13 +205,13 @@ class JsonRpcServerProtocol {
    * @param {JSON} message JSON-RPC message object
    * @returns {Promise}
    */
-  handleRequest(message) {
+  gotRequest(message) {
     return this.getResult(message)
       .then((result) => {
         this.writeToClient(result);
       })
       .catch((error) => {
-        this.handleError(Error(error));
+        this.gotError(Error(error));
       });
   }
 
@@ -222,7 +222,7 @@ class JsonRpcServerProtocol {
    * @param {JSON[]} requests Valid JSON-RPC batch request
    * @returns {Promise[]}
    */
-  handleBatchRequest(requests) {
+  gotBatchRequest(requests) {
     const batchResponses = requests
       .map((request) => {
         try {
@@ -319,7 +319,7 @@ class JsonRpcServerProtocol {
    *
    * @param {string} error Stringified error object
    */
-  handleError(error) {
+  gotError(error) {
     let err;
     try {
       err = JSON.stringify(JSON.parse(error.message));

@@ -137,7 +137,7 @@ class JsonRpcClientProtocol {
       try {
         this.verifyData(message);
       } catch (e) {
-        this.handleError(e);
+        this.gotError(e);
       }
     }
   }
@@ -147,9 +147,9 @@ class JsonRpcClientProtocol {
    *
    * Throw an error if its not a valid JSON-RPC object.
    *
-   * Call [handleNotification]{@link JsonRpcClientProtocol#handleNotification} if the message a notification.
+   * Call [gotNotification]{@link JsonRpcClientProtocol#gotNotification} if the message a notification.
    *
-   * Call [handleBatch]{@link JsonRpcClientProtocol#handleBatch} if the message is a batch request.
+   * Call [gotBatch]{@link JsonRpcClientProtocol#gotBatch} if the message is a batch request.
    *
    * @param {string} chunk
    */
@@ -158,13 +158,13 @@ class JsonRpcClientProtocol {
       // will throw an error if not valid json
       const message = JSON.parse(chunk);
       if (Array.isArray(message)) {
-        this.handleBatch(message);
+        this.gotBatch(message);
       } else if (!(message === Object(message))) {
         // error out if it cant be parsed
         throw SyntaxError();
       } else if (!("id" in message)) {
         // no id, so assume notification
-        this.handleNotification(message);
+        this.gotNotification(message);
       } else if (message.error) {
         // got an error back so reject the message
         const { id } = message;
@@ -173,7 +173,7 @@ class JsonRpcClientProtocol {
         this._raiseError(errorMessage, code, id);
       } else if (!message.method) {
         // no method, so assume response
-        this.handleResponse(message);
+        this.gotResponse(message);
       } else {
         const code = ERR_CODES.unknown;
         const errorMessage = ERR_MSGS.unknown;
@@ -193,11 +193,11 @@ class JsonRpcClientProtocol {
   /**
    * Called when the received `message` is a notification.
    * Emits an event using `message.method` as the name.
-   * The data passed to the event handler is the `message`.
+   * The data passed to the event gotr is the `message`.
    *
    * @param {JSON} message A valid JSON-RPC message object
    */
-  handleNotification(message) {
+  gotNotification(message) {
     this.factory.emit(message.method, message);
   }
 
@@ -206,7 +206,7 @@ class JsonRpcClientProtocol {
    *
    * @param {JSON[]} message A valid JSON-RPC batch message
    */
-  handleBatch(message) {
+  gotBatch(message) {
     // possible batch request
     message.forEach((res) => {
       if (res && res.method && !res.id) {
@@ -221,7 +221,7 @@ class JsonRpcClientProtocol {
    *
    * @param {JSON} message A valid JSON-RPC message object
    */
-  handleResponse(message) {
+  gotResponse(message) {
     this.serving_message_id = message.id;
     this.responseQueue[message.id] = message;
     try {
@@ -522,7 +522,7 @@ class JsonRpcClientProtocol {
    *
    * @param {string} error Stringified JSON-RPC error object
    */
-  handleError(error) {
+  gotError(error) {
     let err;
     try {
       err = JSON.parse(error.message);

@@ -44,8 +44,8 @@ class HttpServerProtocol extends JsonRpcServerProtocol {
    *
    * @param {string} message Stringified JSON-RPC message object
    */
-  handleNotification(message) {
-    super.handleNotification(message.method, message);
+  gotNotification(message) {
+    super.gotNotification(message.method, message);
     this.writeToClient(message, true);
   }
 

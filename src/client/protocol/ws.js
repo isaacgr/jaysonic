@@ -40,7 +40,7 @@ class WsClientProtocol extends JsonRpcClientProtocol {
           resolve(event);
         };
         this.connector.onerror = (error) => {
-          // let the onclose event handle it otherwise
+          // let the onclose event got it otherwise
           if (error.error.code !== "ECONNREFUSED") {
             reject(error);
           }
