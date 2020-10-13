@@ -1,12 +1,12 @@
 /**
  * @property {object} ERR_CODES
- * @property {number} ERR_CODES.parseError -32700
- * @property {number} ERR_CODES.invalidRequest -32600
- * @property {number} ERR_CODES.methodNotFound -32601
- * @property {number} ERR_CODES.invalidParams -32602
- * @property {number} ERR_CODES.internal -32603
- * @property {number} ERR_CODES.timeout -32000
- * @property {number} ERR_CODES.unknown -32001
+ * @property {number} ERR_CODES.parseError "-32700"
+ * @property {number} ERR_CODES.invalidRequest "-32600"
+ * @property {number} ERR_CODES.methodNotFound "-32601"
+ * @property {number} ERR_CODES.invalidParams "-32602"
+ * @property {number} ERR_CODES.internal "-32603"
+ * @property {number} ERR_CODES.timeout "-32000"
+ * @property {number} ERR_CODES.unknown "-32001"
  * @memberof Utils.constants
  *
  */

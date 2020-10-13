@@ -10,11 +10,11 @@ class JsonRpcClientProtocol {
   /**
    * JsonRpcClientProtocol contructor
    * @param {class} factory Instance of [JsonRpcClientFactory]{@link JsonRpcClientFactory}
-   * @param {string|number} version JSON-RPC version to use (1 or '2.0')
+   * @param {number} version JSON-RPC version to use (1|2)
    * @param {string} delimiter Delimiter to use for message buffer
    * @property {class} factory Instance of [JsonRpcClientFactory]{@link JsonRpcClientFactory}
    * @property {class} connector The socket instance for the client
-   * @property {string|number} version JSON-RPC version to use (1 or '2.0')
+   * @property {number} version JSON-RPC version to use
    * @property {string} delimiter Delimiter to use for message buffer
    * @property {number} message_id Current message ID
    * @property {number} serving_message_id Current message ID. Used for external functions to hook into
@@ -410,7 +410,9 @@ class JsonRpcClientProtocol {
     // find the resolve and reject objects that match the batch request ids
     for (const ids of Object.keys(this.pendingCalls)) {
       const arrays = [JSON.parse(`[${ids}]`), batchResponseIds];
-      const difference = arrays.reduce((a, b) => a.filter(c => !b.includes(c)));
+      const difference = arrays.reduce((a, b) =>
+        a.filter((c) => !b.includes(c))
+      );
       if (difference.length === 0) {
         this.factory.cleanUp(ids);
         this._resolveOrRejectBatch(batch, batchResponseIds);

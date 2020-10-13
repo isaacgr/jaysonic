@@ -28,7 +28,7 @@ class JsonRpcServerFactory extends EventEmitter {
       host: "127.0.0.1",
       port: 8100,
       exclusive: false,
-      version: "2.0",
+      version: 2,
       delimiter: "\n"
     };
 
@@ -116,7 +116,7 @@ class JsonRpcServerFactory extends EventEmitter {
       });
     });
     this.on("clientDisconnected", (client) => {
-      const clientIndex = this.connectedClients.findIndex(c => client === c);
+      const clientIndex = this.connectedClients.findIndex((c) => client === c);
       if (clientIndex === -1) {
         this.clientDisconnected({
           error: `Unknown client ${JSON.stringify(client)}`
@@ -260,7 +260,7 @@ class JsonRpcServerFactory extends EventEmitter {
         params,
         delimiter: this.options.delimiter
       };
-      if (this.options.version === "2.0") {
+      if (this.options.version === 2) {
         response.jsonrpc = "2.0";
       }
       return response;

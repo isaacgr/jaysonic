@@ -1,7 +1,6 @@
 const http = require("http");
 const JsonRpcServerFactory = require(".");
 const HttpServerProtocol = require("./protocol/http");
-const { errorToStatus } = require("../util/constants");
 
 /**
  * Creates instance of HttpServerFactory
@@ -35,27 +34,6 @@ class HttpServerFactory extends JsonRpcServerFactory {
       );
       this.pcolInstance.clientConnected();
     });
-  }
-
-  /**
-   * Set response header and response code
-   * @param {object} options
-   * @param {class} options.response Http response instance
-   * @param {boolean} options.notification Inidicate if setting header for notification
-   * @private
-   */
-  _setResponseHeader({ response, errorCode, notification }) {
-    let statusCode = 200;
-    if (notification) {
-      statusCode = 204;
-    }
-    const header = {
-      "Content-Type": "application/json"
-    };
-    if (errorCode) {
-      statusCode = errorToStatus[String(errorCode)];
-    }
-    response.writeHead(statusCode, header);
   }
 }
 

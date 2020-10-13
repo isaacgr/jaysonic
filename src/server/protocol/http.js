@@ -1,4 +1,5 @@
 const JsonRpcServerProtocol = require("./base");
+const { errorToStatus } = require("../../util/constants");
 
 /**
  * Creates instance of HttpServerProtocol
@@ -25,14 +26,14 @@ class HttpServerProtocol extends JsonRpcServerProtocol {
    */
   writeToClient(message, notification) {
     if (notification) {
-      this.factory._setResponseHeader({
+      this._setResponseHeader({
         response: this.response,
         notification: true
       });
       this.response.end();
       return;
     }
-    this.factory._setResponseHeader({ response: this.response });
+    this._setResponseHeader({ response: this.response });
     this.response.write(message, () => {
       this.response.end();
     });
@@ -57,6 +58,28 @@ class HttpServerProtocol extends JsonRpcServerProtocol {
     this.client.on("end", () => {
       this._waitForData();
     });
+  }
+
+  /**
+   * Set response header and response code
+   * @param {object} options
+   * @param {class} options.response Http response instance
+   * @param {boolean} options.notification Inidicate if setting header for notification
+   * @param {number} options.errorCode The JSON-RPC error code to lookup a corresponding status code for
+   * @private
+   */
+  _setResponseHeader({ response, errorCode, notification }) {
+    let statusCode = 200;
+    if (notification) {
+      statusCode = 204;
+    }
+    const header = {
+      "Content-Type": "application/json"
+    };
+    if (errorCode) {
+      statusCode = errorToStatus[String(errorCode)];
+    }
+    response.writeHead(statusCode, header);
   }
 }
 

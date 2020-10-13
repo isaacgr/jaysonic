@@ -33,7 +33,7 @@ class WsBrowserClientFactory extends EventTarget {
 
     const defaults = {
       url: "ws://127.0.0.1:8100",
-      version: "2.0",
+      version: 2,
       delimiter: "\n",
       timeout: 30,
       connectionTimeout: 5000,

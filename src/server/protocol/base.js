@@ -11,7 +11,7 @@ class JsonRpcServerProtocol {
   /**
    * @param {class} factory Instance of [JsonRpcServerFactory]{@link JsonRpcServerFactory}
    * @param {class} client Instance of `net.Socket`
-   * @param {string|number} version JSON-RPC version to use
+   * @param {string|number} version JSON-RPC version to use (1|2)
    * @param {string} delimiter Delimiter to use for `messageBuffer`
    * @property {class} messageBuffer Instance of [MessageBuffer]{@link MessageBuffer}
    * @property {string} event="data" The event name to listen for incoming data
@@ -160,16 +160,16 @@ class JsonRpcServerProtocol {
         message.id
       );
     } else if (
-      message.params
-      && !Array.isArray(message.params)
-      && !(message.params === Object(message.params))
+      message.params &&
+      !Array.isArray(message.params) &&
+      !(message.params === Object(message.params))
     ) {
       this._raiseError(
         ERR_MSGS.invalidParams,
         ERR_CODES.invalidParams,
         message.id
       );
-    } else if (message.jsonrpc && this.version !== "2.0") {
+    } else if (message.jsonrpc && this.version !== 2) {
       this._raiseError(
         ERR_MSGS.invalidRequest,
         ERR_CODES.invalidRequest,
@@ -228,14 +228,14 @@ class JsonRpcServerProtocol {
         try {
           this._maybeHandleRequest(request);
           return this.getResult(request)
-            .then(result => JSON.parse(result))
-            .catch(error => JSON.parse(error));
+            .then((result) => JSON.parse(result))
+            .catch((error) => JSON.parse(error));
         } catch (e) {
           // basically reject the whole batch if any one thing fails
           return JSON.parse(e.message);
         }
       })
-      .filter(el => el != null);
+      .filter((el) => el != null);
     return Promise.all(batchResponses);
   }
 
