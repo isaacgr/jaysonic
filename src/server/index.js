@@ -283,6 +283,27 @@ class JsonRpcServerFactory extends EventEmitter {
   clientDisconnected(event) {
     return event;
   }
+
+  /**
+   * Returns a list of all server class methods which start with 'handle'.
+   *
+   * @param {object} toCheck The object get prototype function names from
+   * @private
+   */
+  _getAllFuncs(toCheck) {
+    return Object.getOwnPropertyNames(Object.getPrototypeOf(toCheck)).filter(
+      (e, i, arr) => {
+        if (
+          e !== arr[i + 1]
+          && typeof toCheck[e] === "function"
+          && e.startsWith("handle")
+        ) {
+          return true;
+        }
+        return false;
+      }
+    );
+  }
 }
 
 module.exports = JsonRpcServerFactory;
