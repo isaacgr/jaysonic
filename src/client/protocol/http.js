@@ -60,6 +60,22 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
   }
 
   /**
+   * Setup "data" event to listen for data coming into the client.
+   *
+   * Http protocol simply passes data to `verifyData` method
+   * [_waitForData]{@link JsonRpcClientProtocol#_waitForData}
+   */
+  listen() {
+    this.listener.on("data", (data) => {
+      try {
+        this.verifyData(data);
+      } catch (e) {
+        this.gotError(e);
+      }
+    });
+  }
+
+  /**
    * Send a notification to the server.
    *
    * Promise will resolve if the request was sucessfully sent, and reject if
@@ -94,7 +110,9 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
   getResponse(id) {
     return {
       body: this.responseQueue[id],
-      ...this.writer
+      headers: {
+        ...this.listener.headers
+      }
     };
   }
 
@@ -102,7 +120,9 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
   getBatchResponse(batch) {
     return {
       body: batch,
-      ...this.connector
+      headers: {
+        ...this.listener.headers
+      }
     };
   }
 
@@ -110,7 +130,9 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
   rejectPendingCalls(error) {
     const err = {
       body: error,
-      ...this.connector
+      headers: {
+        ...this.listener.headers
+      }
     };
     try {
       this.pendingCalls[err.body.id].reject(err);
