@@ -9,8 +9,12 @@ const zip = (rows) => rows[0].map((_, c) => rows.map((row) => row[c]));
 const commaSeparated = (value) => {
   return value.split(",");
 };
-const formatJson = (value) => {
+const formatParams = (value) => {
   return JSON.parse(`[${value.replace(/'/g, '"')}]`);
+};
+
+const formatJson = (value) => {
+  return JSON.parse(value.replace(/'/g, '"'));
 };
 
 const usageString = `--host 192.168.2.1 --port 8555 --method hello --params '["foo"]'
@@ -27,11 +31,11 @@ Params can also be comma separated, these should be one-to-one lined up with the
 
 --method request1,request2 --params '["params1"],["params2"]'
 
-Request methods cannot be sent with notifications, however subscriptions can be established with either, i.e.
+Request methods cannot be sent with notifications, however subscriptions can be made along side either, i.e.
 
---method hello --subscribe hey
+--method hello --subscribe some.update
 or
---notification bye --subscribe kbye
+--notification bye --subscribe someother.update
 `;
 
 program
@@ -62,11 +66,12 @@ program
   .option(
     "--params <object>",
     "Array or object to use as parameters. Comma separate params list or object to use with multiple request or notification methods.",
-    formatJson
+    formatParams
   )
   .option("-i, --host <string>", "Host IP of the server", "127.0.0.1", String)
   .option("-p, --port <number>", "Port to connect to", Number)
   .option("-u, --path <string>", "Path for ws or http client", "/", String)
+  .option("--headers <string>", "Headers for http request.", formatJson)
   .option(
     "-d, --delimiter <string>",
     "Delimiter to use for the request. For example: Use $'\\n' as cli syntax for escape characters.",
@@ -94,6 +99,7 @@ const getClient = () => {
     host: program.host,
     port: program.port,
     path: program.path,
+    headers: program.headers,
     delimiter: program.delimiter,
     timeout: program.timeout,
     connectionTimeout: program.connectionTimeout,
@@ -131,11 +137,11 @@ const getClient = () => {
 
 const makeRequests = async () => {
   if (program.clientType === "http" && program.subscribe) {
-    console.error("HTTP client does not support subscriptions");
+    console.error("HTTP client does not support subscriptions.");
     process.exit(-1);
   }
   if (!program.method && !program.notify && !program.subscribe) {
-    console.error("No method, notification or subscription request provided");
+    console.error("No method, notification or subscription request provided.");
     process.exit(-1);
   }
   if (program.method) {
@@ -185,23 +191,20 @@ const sendRequest = async (method, params) => {
 
 const sendNotification = async (method, params) => {
   if (program.clientType === "http") {
-    await client
-      .request()
-      .notify(method, params)
-      .then((result) => {
-        if (program.write) {
-          fs.writeFileSync(program.write, JSON.stringify(result));
-        } else {
-          console.log(result);
-        }
-      })
-      .catch((error) => {
-        if (program.write) {
-          fs.writeFileSync(program.write, JSON.stringify(error));
-        } else {
-          console.error(error);
-        }
-      });
+    try {
+      const result = await client.request().notify(method, params);
+      if (program.write) {
+        fs.writeFileSync(program.write, JSON.stringify(result.body));
+      } else {
+        console.log(result.body);
+      }
+    } catch (error) {
+      if (program.write) {
+        fs.writeFileSync(program.write, JSON.stringify(error.body));
+      } else {
+        console.error(error.body);
+      }
+    }
   } else {
     return client.request().notify(method, params);
   }
