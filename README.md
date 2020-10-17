@@ -1,38 +1,43 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
+
 - [Jaysonic - A persistent JSON-RPC client and server](#jaysonic---a-persistent-json-rpc-client-and-server)
-  - [List of features](#list-of-features)
-  - [Download & Installation](#download--installation)
-  - [Initialization](#initialization)
-    - [WS Client for browser](#ws-client-for-browser)
-    - [WS Client for Node](#ws-client-for-node)
-  - [Options](#options)
-  - [Code Demos](#code-demos)
-    - [Initialization](#initialization-1)
-      - [TCP](#tcp)
-      - [HTTP](#http)
-      - [WS](#ws)
-    - [Server side](#server-side)
-      - [Instantiation and Listening](#instantiation-and-listening)
-      - [Closing the connection](#closing-the-connection)
-      - [Adding Methods](#adding-methods)
-      - [Listening for client connections](#listening-for-client-connections)
-    - [Client Side](#client-side)
-      - [Connecting](#connecting)
-      - [Listening for server disconnect](#listening-for-server-disconnect)
-      - [Making requests](#making-requests)
-      - [Subscriptions](#subscriptions)
-      - [Batch Requests](#batch-requests)
-      - [HTTP Client Requests](#http-client-requests)
-    - [Notifications](#notifications)
-      - [Client](#client)
-      - [Server](#server)
-      - [Batches](#batches)
-    - [HTTP Client Notifications](#http-client-notifications)
-  - [Contributing](#contributing)
-  - [Authors or Acknowledgments](#authors-or-acknowledgments)
-  - [License](#license)
+    - [List of features](#list-of-features)
+    - [Download & Installation](#download--installation)
+    - [CLI tool](#cli-tool)
+    - [Initialization](#initialization)
+      - [WS Client for browser](#ws-client-for-browser)
+      - [WS Client for Node](#ws-client-for-node)
+    - [Options](#options)
+    - [Code Demos](#code-demos)
+      - [Initialization](#initialization-1)
+          - [TCP](#tcp)
+          - [HTTP](#http)
+          - [WS](#ws)
+      - [Server side](#server-side)
+        - [Instantiation and Listening](#instantiation-and-listening)
+        - [Closing the connection](#closing-the-connection)
+        - [Adding Methods](#adding-methods)
+        - [Listening for client connections](#listening-for-client-connections)
+      - [Client Side](#client-side)
+        - [Connecting](#connecting)
+        - [Listening for server disconnect](#listening-for-server-disconnect)
+        - [Ending the connection](#ending-the-connection)
+        - [Making requests](#making-requests)
+        - [Subscriptions](#subscriptions)
+        - [Batch Requests](#batch-requests)
+        - [HTTP Client Requests](#http-client-requests)
+      - [Notifications](#notifications)
+        - [Client](#client)
+        - [Server](#server)
+        - [Batches](#batches)
+      - [HTTP Client Notifications](#http-client-notifications)
+    - [Using the cli](#using-the-cli)
+        - [Install](#install)
+    - [Contributing](#contributing)
+    - [Authors or Acknowledgments](#authors-or-acknowledgments)
+    - [License](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -62,12 +67,17 @@ A TCP, HTTP and WebSocket server and client that implement the JSON-RPC 2.0 Spec
 - WebSocket client supported in the browser
 - Automatic increment of request ID
 - Associate response ID with request
+- CLI tool for testing/cross-codebase integration
 
 ### Download & Installation
 
 ```shell
 $ npm install jaysonic
 ```
+
+### CLI tool
+
+Jump to [how to use the cli tool](#using-the-cli)
 
 ### Initialization
 
@@ -533,6 +543,46 @@ server.onNotify("notify", (message) => {
   console.log(message);
   // {jsonrpc: "2.0", method: "notify", params: []}
 });
+```
+
+### Using the cli
+
+##### Install
+
+Optionally install the package globally to access from the cli
+
+```bash
+npm install -g jaysonic
+```
+
+If installed globally
+
+```bash
+jaysonic-client --method hello
+```
+
+or locally through `node_modules`
+
+```bash
+./node_modules/jaysonic/bin/client --method hello
+```
+
+**Available options**
+
+```bash
+  --client-type <string>         Type of client (tcp, ws, http) (default: "tcp")
+  --method <string>              Method name for request
+  --params <object>              Array or object to use as parameters
+  --host <string>                Host IP of the server (default: "127.0.0.1")
+  --port <number>                Port to connect to
+  --subscribe                    Subscribe to notifications for the given method
+  --path <string>                Path for ws or http client (default: "/")
+  --delimiter <string>           Delimiter to use for the request (default: "\n")
+  --timeout <number>             Response timeout in seconds (default: 30)
+  --connection-timeout <number>  Connection timeout in seconds (default: 5)
+  --retries <number>             Number of connection retry attempts (default: 2)
+  --jsonrpc-version <type>       JSON-RPC version (1 or '2.0') (default: "2.0")
+  --write <string>               Write output to file
 ```
 
 ### Contributing
