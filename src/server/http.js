@@ -1,4 +1,5 @@
 const http = require("http");
+const https = require("https");
 const JsonRpcServerFactory = require(".");
 const HttpServerProtocol = require("./protocol/http");
 const { errorToStatus } = require("../constants");
@@ -12,8 +13,18 @@ const { errorToStatus } = require("../constants");
  * @return HTTPServer
  */
 class HTTPServer extends JsonRpcServerFactory {
+  constructor(options) {
+    super(options);
+    this.scheme = this.options.scheme || "http";
+  }
   setServer() {
-    this.server = new http.Server();
+    if (this.scheme === "http") {
+      this.server = new http.Server();
+    } else if (this.scheme === "https") {
+      this.server = new https.Server();
+    } else {
+      throw Error("Invalid scheme");
+    }
   }
 
   buildProtocol() {
