@@ -22,9 +22,7 @@ class WsBrowserClientProtocol extends WsClientProtocol {
     // check if any requests are notifications
     message.forEach((res) => {
       if (res && res.method && !res.id) {
-        this.factory.dispatchEvent(
-          new CustomEvent(res.method, { detail: res })
-        );
+        this.gotNotification(res);
       }
     });
     this.gotBatchResponse(message);

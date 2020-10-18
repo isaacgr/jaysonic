@@ -46,7 +46,13 @@ class JsonRpcServerFactory extends EventEmitter {
   /**
    * Start listening for client connections to server.
    *
-   * @returns {Promise}
+   * Calls [setServer]{@link JsonRpcServerFactory#setServer} and [buildProtocol]{@link JsonRpcServerFactory#buildProtocol}.
+   *
+   * Establishes `error` and `close` listeners.
+   *
+   * Establishes `clientConnected` and `clientDisconnected` listener.
+   *
+   * @returns {Promise} Resolves host and port address for server.
    */
   listen() {
     return new Promise((resolve, reject) => {
@@ -65,12 +71,13 @@ class JsonRpcServerFactory extends EventEmitter {
           port: this.server.address().port
         });
       });
-      this.setupListeners();
+      this._setupListeners();
     });
   }
 
   /**
    * Set the `pcolInstance` for the server factory
+   *
    * @abstract
    * @example
    * this.pcolInstance = new JsonRpcClientProtocol()
@@ -95,9 +102,9 @@ class JsonRpcServerFactory extends EventEmitter {
    *
    * Calls the [JsonRpcServerFactory]{@link JsonRpcServerFactory#clientConnected} and
    * [JsonRpcServerFactory]{@link JsonRpcServerFactory#clientDisconnected} methods
-   *
+   * @private
    */
-  setupListeners() {
+  _setupListeners() {
     this.on("error", (error) => {
       this.listening = false;
       throw error;
@@ -132,9 +139,9 @@ class JsonRpcServerFactory extends EventEmitter {
   }
 
   /**
-   * Close the server connection. Stops listening.
+   * Close the server connection. Sets `listening` property to `false`.
    *
-   * @returns {Promise}
+   * @returns {Promise} Will reject if any error was present
    */
   close() {
     this.listening = false;
@@ -165,6 +172,7 @@ class JsonRpcServerFactory extends EventEmitter {
    *
    * @param {string} method Method name to listen for notification
    * @param {function} cb Name of callback function fired when method event comes in
+   *
    * @example
    * function world(){
    *  return 'foo'
@@ -180,6 +188,7 @@ class JsonRpcServerFactory extends EventEmitter {
    *
    * @param {string} method Method name to remove
    * @param {function} cb Name of the callback function to remove
+   *
    * @example
    * function world(){
    *  return 'foo'
@@ -191,7 +200,7 @@ class JsonRpcServerFactory extends EventEmitter {
   }
 
   /**
-   * Remove all functions listening for event name.
+   * Remove all functions listening for notification.
    *
    * @param {string} method Method name to remove events for
    */
@@ -204,6 +213,7 @@ class JsonRpcServerFactory extends EventEmitter {
    * @returns {boolean[]|Error[]} Returns list of error objects if there was an error sending to any client.
    * Returns true if the entire data was sent successfully
    * Returns false if all or part of the data was not sent to the client.
+   *
    * @example
    * server.notify([
    *    ["hello", ["world"]],

@@ -75,7 +75,7 @@ class JsonRpcClientFactory extends EventEmitter {
   /**
    * Subscribe the function to the given event name
    *
-   * @param {string} method Method to subscribe to
+   * @param {string} method Method name to subscribe to
    * @param {function} cb  Name of callback function to invoke on event
    * @abstract
    */
@@ -105,7 +105,57 @@ class JsonRpcClientFactory extends EventEmitter {
   }
 
   /**
+   * Calls `message()` on the protocol instance
+   *
+   * @param {string} method Name of the method to use in the request
+   * @param {Array|JSON} params Params to send
+   * @param {boolean=} id If true it will use instances `message_id` for the request id, if false will generate a notification request
+   * @example
+   * client.message("hello", ["world"]) // returns {"jsonrpc": "2.0", "method": "hello", "params": ["world"], "id": 1}
+   * client.message("hello", ["world"], false) // returns {"jsonrpc": "2.0", "method": "hello", "params": ["world"]}
+   */
+  message(method, params, id) {
+    return this.pcolInstance.message(method, params, id);
+  }
+
+  /**
+   * Calls `send()` method on protocol instance
+   *
+   * Promise will resolve when a response has been received for the request.
+   *
+   * Promise will reject if the server responds with an error object, or if
+   * the response is not received within the set `requestTimeout`
+   *
+   * @param {string} method Name of the method to use in the request
+   * @param {Array|JSON} params Params to send
+   * @returns Promise
+   * @example
+   * client.send("hello", {"foo": "bar"})
+   */
+  send(method, params) {
+    return this.pcolInstance.send(method, params);
+  }
+
+  /**
+   * Calls `notify()` method on protocol instance
+   *
+   * Promise will resolve if the request was sucessfully sent, and reject if
+   * there was an error sending the request.
+   *
+   * @param {string} method Name of the method to use in the notification
+   * @param {Array|JSON} params Params to send
+   * @return Promise
+   * @example
+   * client.notify("hello", ["world"])
+   */
+  notify(method, params) {
+    return this.pcolInstance.notify(method, params);
+  }
+
+  /**
    * Calls `request()` method on protocol instance
+   *
+   * Plans to deprecate this in future versions.
    */
   request() {
     return this.pcolInstance.request();
@@ -130,7 +180,7 @@ class JsonRpcClientFactory extends EventEmitter {
   }
 
   /**
-   * Clears pending timeouts kept in `timeouts` for the provided request IDs.
+   * Clears pending timeouts kept in `timeouts` property for the provided request IDs.
    *
    * @param {string[]|number[]} ids Array of request IDs
    */

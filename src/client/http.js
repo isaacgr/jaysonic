@@ -7,7 +7,8 @@ const HttpClientProtocol = require("./protocol/http");
  */
 class HttpClientFactory extends JsonRpcClientFactory {
   /**
-   * Additional parameters ontop of those inherited from [JsonRpcClientFactory]{@link JsonRpcClientFactory}
+   * Additional parameters and properties ontop of those inherited from [JsonRpcClientFactory]{@link JsonRpcClientFactory}
+   *
    * @param {Object} options Connection options for the factory class
    * @param {string} [options.encoding="utf-8"] Encoding to be used for the request
    * @param {string} [options.method="POST"] Type of request to make
@@ -15,6 +16,7 @@ class HttpClientFactory extends JsonRpcClientFactory {
    * @param {string}  [options.path="/"] URL path to make request to
    * @property {object} headers Same as `options.headers`
    * @property {string} encoding Same as `options.encoding`
+   * @property {'http'|'https'} scheme Scheme to make connection with
    */
   constructor(options) {
     super(options);

@@ -11,7 +11,7 @@ class JsonRpcServerProtocol {
   /**
    * @param {class} factory Instance of [JsonRpcServerFactory]{@link JsonRpcServerFactory}
    * @param {class} client Instance of `net.Socket`
-   * @param {string|number} version JSON-RPC version to use (1|2)
+   * @param {(1|2)} version JSON-RPC version to use
    * @param {string} delimiter Delimiter to use for `messageBuffer`
    * @property {class} messageBuffer Instance of [MessageBuffer]{@link MessageBuffer}
    * @property {string} event="data" The event name to listen for incoming data
@@ -26,7 +26,7 @@ class JsonRpcServerProtocol {
   }
 
   /**
-   * Registers the `event` listener when client connects.
+   * Registers the `event` data listener when client connects.
    *
    * Pushes received data into `messageBuffer` and calls
    * [_waitForData]{@link JsonRpcServerProtocol#_waitForData}.
@@ -66,6 +66,16 @@ class JsonRpcServerProtocol {
     }
   }
 
+  /**
+   * Validates data returned from `messageBuffer`.
+   *
+   * Will call [gotError]{@link JsonRpcClientProtocol#gotError} if error thrown
+   * during validation.
+   *
+   * @param {string} chunk Data to validate
+   * @private
+   *
+   */
   _validateData(chunk) {
     try {
       const result = this.validateRequest(chunk);
@@ -79,7 +89,7 @@ class JsonRpcServerProtocol {
   }
 
   /**
-   * Validate the incoming data returned from `messageBuffer`
+   * Validate the request message
    *
    * @param {string} chunk
    * @return {JSON}

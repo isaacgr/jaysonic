@@ -8,6 +8,15 @@ const HttpServerProtocol = require("./protocol/http");
  * @extends JsonRpcServerFactory
  */
 class HttpServerFactory extends JsonRpcServerFactory {
+  /**
+   *
+   * In addition to the params and properties for [JsonRpcServerFactory]{@link JsonRpcServerFactory}
+   * the WsServerProtocol has the following properties:
+   *
+   * @property {'http'|'https'} scheme The scheme to allow connections with
+   * @property {file} key The private SSL key file
+   * @property {file} cert The SSL certificate file
+   */
   constructor(options) {
     super(options);
     this.scheme = this.options.scheme || "http";
@@ -37,9 +46,7 @@ class HttpServerFactory extends JsonRpcServerFactory {
       client.on("close", () => {
         this.emit("clientDisconnected");
       });
-      // client.on("end", () => {
-      //   this.emit("clientDisconnected");
-      // });
+      // maybe need .on('end') event listener?
     });
     this.server.on("request", (request, response) => {
       this.pcolInstance = new HttpServerProtocol(

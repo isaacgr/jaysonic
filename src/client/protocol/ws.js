@@ -47,6 +47,7 @@ class WsClientProtocol extends JsonRpcClientProtocol {
         };
         this.connector.onclose = (event) => {
           if (this.connector.__clientClosed) {
+            // we dont want to retry if the client purposefully closed the connection
             console.log(
               `Client closed connection. Code[${event.code}]. Reason [${event.message}]`
             );
@@ -71,7 +72,7 @@ class WsClientProtocol extends JsonRpcClientProtocol {
   /** @inheritdoc */
   end(code, reason) {
     this.factory.pcolInstance = undefined;
-    this.connector.__clientClosed = true;
+    this.connector.__clientClosed = true; // used to determine if client initiated close event
     this.connector.close(code, reason);
   }
 

@@ -55,8 +55,8 @@ class WsBrowserClientFactory extends EventTarget {
   }
 
   /**
-   * Calls `connect()` on protocol instance
-   *
+   * Calls `connect()` on protocol instance.
+   * @returns {function} pcolInstance.connect()
    */
   connect() {
     if (this.pcolInstance) {
@@ -77,6 +77,54 @@ class WsBrowserClientFactory extends EventTarget {
    */
   end(cb) {
     this.pcolInstance.end(cb);
+  }
+
+  /**
+   * Calls `message()` on the protocol instance
+   *
+   * @param {string} method Name of the method to use in the request
+   * @param {Array|JSON} params Params to send
+   * @param {boolean=} id If true it will use instances `message_id` for the request id, if false will generate a notification request
+   * @example
+   * client.message("hello", ["world"]) // returns {"jsonrpc": "2.0", "method": "hello", "params": ["world"], "id": 1}
+   * client.message("hello", ["world"], false) // returns {"jsonrpc": "2.0", "method": "hello", "params": ["world"]}
+   */
+  message(method, params, id) {
+    return this.pcolInstance.message(method, params, id);
+  }
+
+  /**
+   * Calls `send()` method on protocol instance
+   *
+   * Promise will resolve when a response has been received for the request.
+   *
+   * Promise will reject if the server responds with an error object, or if
+   * the response is not received within the set `requestTimeout`
+   *
+   * @param {string} method Name of the method to use in the request
+   * @param {Array|JSON} params Params to send
+   * @returns Promise
+   * @example
+   * client.send("hello", {"foo": "bar"})
+   */
+  send(method, params) {
+    return this.pcolInstance.send(method, params);
+  }
+
+  /**
+   * Calls `notify()` method on protocol instance
+   *
+   * Promise will resolve if the request was sucessfully sent, and reject if
+   * there was an error sending the request.
+   *
+   * @param {string} method Name of the method to use in the notification
+   * @param {Array|JSON} params Params to send
+   * @return Promise
+   * @example
+   * client.notify("hello", ["world"])
+   */
+  notify(method, params) {
+    return this.pcolInstance.notify(method, params);
   }
 
   /**
@@ -111,7 +159,6 @@ class WsBrowserClientFactory extends EventTarget {
    *
    * @param {string} method Method to subscribe to
    * @param {function} cb  Name of callback function to invoke on event
-   * @abstract
    */
   subscribe(method, cb) {
     if (!this.eventListenerList) this.eventListenerList = {};
@@ -130,7 +177,6 @@ class WsBrowserClientFactory extends EventTarget {
    *
    * @param {string} method Method to unsubscribe from
    * @param {function} cb Name of function to remove
-   * @abstract
    */
   unsubscribe(method, cb) {
     // remove listener
@@ -149,7 +195,6 @@ class WsBrowserClientFactory extends EventTarget {
    * Unsubscribe all functions from given event name
    *
    * @param {string} method Method to unsubscribe all listeners from
-   * @abstract
    */
   unsubscribeAll(method) {
     if (!this.eventListenerList) {
@@ -170,6 +215,13 @@ class WsBrowserClientFactory extends EventTarget {
     delete this.eventListenerList[method];
   }
 
+  /**
+   * Remmove the callback function from the given event listener
+   *
+   * @param {method} method Method name to remove listener for
+   * @param {function} cb Function name to remove listener
+   * @private
+   */
   _removeListener(method, cb) {
     if (!this.eventListenerList) {
       this.eventListenerList = {};
@@ -185,15 +237,21 @@ class WsBrowserClientFactory extends EventTarget {
     }
   }
 
-  getEventListeners(type) {
+  /**
+   * Get the list of event listeners attached to the given event name.
+   *
+   * @param {string} name The name of the event to retrieve listeners for
+   * @returns {function|function[]}
+   */
+  getEventListeners(name) {
     if (!this.eventListenerList) {
       this.eventListenerList = {};
     }
-    // return requested listeners type or all them
-    if (type === undefined) {
+    // return requested listeners by name or all them
+    if (name === undefined) {
       return this.eventListenerList;
     }
-    return this.eventListenerList[type];
+    return this.eventListenerList[name];
   }
 }
 

@@ -5,10 +5,12 @@ const JsonRpcServerProtocol = require("./base");
  * @extends JsonRpcServerProtocol
  */
 class WsServerProtocol extends JsonRpcServerProtocol {
-  /** @inheritdoc */
   /**
+   * In addition to the params and properties for [JsonRpcServerProtocol]{@link JsonRpcServerProtocol}
+   * the WsServerProtocol has the following properties:
+   *
    * @property {string} event HTTP response object
-   * @property {object} client.write  Overrides `client.write` to use `client.send` for Websocket
+   * @property {object} client.write  Overrides `client.write` method to use `client.send` for Websocket
    */
   constructor(factory, client, version, delimiter) {
     super(factory, client, version, delimiter);

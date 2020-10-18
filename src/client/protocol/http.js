@@ -8,13 +8,16 @@ const JsonRpcClientProtocol = require("./base");
  *
  * @extends JsonRpcClientProtocol
  * @requires http
+ * @requires https
  */
 class HttpClientProtocol extends JsonRpcClientProtocol {
-  /** @inheritdoc */
   /**
-   * @property {object} headers HTTP headers passed to the factory instance
+   * In addition to the params and properties of [JsonRpcClientProtocol]{@link JsonRpcClientProtocol},
+   * the HttpClientProtocol has the following properties
    *
+   * @property {object} headers HTTP headers passed to the factory instance
    * @property {string} encoding Encoding type passed to the factory instance
+   * @property {('http'|'https')} scheme The scheme to use to connect to the server
    */
   constructor(factory, version, delimiter) {
     super(factory, version, delimiter);
@@ -68,14 +71,26 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
     });
   }
 
-  /** @inheritdoc */
+  /**
+   * Setup `this.listener.on("data")` event to listen for data coming into the client.
+   *
+   * The HTTP client does not use the messageBuffer since each request should
+   * only receive one response at a time.
+   *
+   * Calls [_waitForData]{@link JsonRpcClientProtocol#_waitForData}
+   */
   listen() {
     this.listener.on("data", (data) => {
       this._waitForData(data);
     });
   }
 
-  /** @inheritdoc */
+  /**
+   * Pass incoming data to [verifyData]{@link JsonRpcClientProtocol#verifyData}
+   *
+   * @private
+   *
+   */
   _waitForData(data) {
     try {
       this.verifyData(data);
@@ -95,7 +110,7 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
    * @param {Array|JSON} params Params to send
    * @return Promise
    * @example
-   *    client.notify("hello", ["world"])
+   * client.notify("hello", ["world"])
    */
   notify(method, params) {
     return new Promise((resolve, reject) => {

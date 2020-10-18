@@ -10,11 +10,11 @@ class JsonRpcClientProtocol {
   /**
    * JsonRpcClientProtocol contructor
    * @param {class} factory Instance of [JsonRpcClientFactory]{@link JsonRpcClientFactory}
-   * @param {number} version JSON-RPC version to use (1|2)
+   * @param {(1|2)} version JSON-RPC version to make requests with
    * @param {string} delimiter Delimiter to use for message buffer
    * @property {class} factory Instance of [JsonRpcClientFactory]{@link JsonRpcClientFactory}
    * @property {class} connector The socket instance for the client
-   * @property {number} version JSON-RPC version to use
+   * @property {(1|2)} version JSON-RPC version to use
    * @property {string} delimiter Delimiter to use for message buffer
    * @property {number} message_id Current message ID
    * @property {number} serving_message_id Current message ID. Used for external functions to hook into
@@ -43,7 +43,7 @@ class JsonRpcClientProtocol {
 
   /**
    * Set the `connector` attribute for the protocol instance.
-   * The connector is essentially the socket instance for the client.
+   * The connector is essentially the socket or connection instance for the client.
    *
    * @abstract
    *
@@ -55,7 +55,7 @@ class JsonRpcClientProtocol {
   /**
    * Make the connection to the server.
    *
-   * Calls [setConnector]{@link JsonRpcClientProtocol#setConnector} to establish the node client connection.
+   * Calls [setConnector]{@link JsonRpcClientProtocol#setConnector} to establish the client connection.
    *
    * Calls [listen]{@link JsonRpcClientProtocol#listen} if connection was successful, and will resolve the promise.
    *
@@ -111,7 +111,7 @@ class JsonRpcClientProtocol {
   }
 
   /**
-   * Setup "data" event to listen for data coming into the client.
+   * Setup `this.listner.on("data")` event to listen for data coming into the client.
    *
    * Pushes received data into `messageBuffer` and calls
    * [_waitForData]{@link JsonRpcClientProtocol#_waitForData}
@@ -143,7 +143,7 @@ class JsonRpcClientProtocol {
   }
 
   /**
-   * Verify the incoming data returned from `messageBuffer`
+   * Verify the incoming data returned from the `messageBuffer`
    *
    * Throw an error if its not a valid JSON-RPC object.
    *
@@ -151,7 +151,7 @@ class JsonRpcClientProtocol {
    *
    * Call [gotBatch]{@link JsonRpcClientProtocol#gotBatch} if the message is a batch request.
    *
-   * @param {string} chunk
+   * @param {string} chunk Data to verify
    */
   verifyData(chunk) {
     try {
@@ -193,7 +193,7 @@ class JsonRpcClientProtocol {
   /**
    * Called when the received `message` is a notification.
    * Emits an event using `message.method` as the name.
-   * The data passed to the event gotr is the `message`.
+   * The data passed to the event is the `message`.
    *
    * @param {JSON} message A valid JSON-RPC message object
    */
@@ -202,7 +202,12 @@ class JsonRpcClientProtocol {
   }
 
   /**
-   * Called when the received message is a batch
+   * Called when the received message is a batch.
+   *
+   * Calls [gotNotification]{@link JsonRpcClientProtocol#gotNotification} for every
+   * notification in the batch.
+   *
+   * Calls [gotBatchResponse]{@link JsonRpcClientProtocol#gotBatchResponse} otherwise.
    *
    * @param {JSON[]} message A valid JSON-RPC batch message
    */
@@ -210,14 +215,19 @@ class JsonRpcClientProtocol {
     // possible batch request
     message.forEach((res) => {
       if (res && res.method && !res.id) {
-        this.factory.emit(res.method, res);
+        this.gotNotification(res);
       }
     });
     this.gotBatchResponse(message);
   }
 
   /**
-   * Called when the received message is a response object from the server
+   * Called when the received message is a response object from the server.
+   *
+   * Gets the response using [getResponse]{@link JsonRpcClientProtocol#getResponse}.
+   *
+   * Resolves the message and removes it from the `responseQueue`. Cleans up any
+   * outstanding timers.
    *
    * @param {JSON} message A valid JSON-RPC message object
    */
@@ -240,7 +250,7 @@ class JsonRpcClientProtocol {
   }
 
   /**
-   * Get the outstanding request object for the given ID
+   * Get the outstanding request object for the given ID.
    *
    * @param {string|number} id ID of outstanding request
    */
@@ -259,7 +269,7 @@ class JsonRpcClientProtocol {
   }
 
   /**
-   * Generate a stringified JSON-RPC message object
+   * Generate a stringified JSON-RPC message object.
    *
    * @param {string} method Name of the method to use in the request
    * @param {Array|JSON} params Params to send
@@ -292,7 +302,7 @@ class JsonRpcClientProtocol {
    * @param {Array|JSON} params Params to send
    * @return Promise
    * @example
-   *    client.notify("hello", ["world"])
+   * client.notify("hello", ["world"])
    */
   notify(method, params) {
     return new Promise((resolve, reject) => {
@@ -320,7 +330,7 @@ class JsonRpcClientProtocol {
    * @param {Array|JSON} params Params to send
    * @returns Promise
    * @example
-   *    client.send("hello", {"foo": "bar"})
+   * client.send("hello", {"foo": "bar"})
    */
   send(method, params) {
     return new Promise((resolve, reject) => {
@@ -338,12 +348,12 @@ class JsonRpcClientProtocol {
 
   /**
    * Method used to call [message]{@link JsonRpcClientProtocol#message}, [notify]{@link JsonRpcClientProtocol#notify} and [send]{@link JsonRpcClientProtocol#send}
+   *
    * @returns Object
    * @example
    * client.request().send("hello", ["world"])
    * client.request().notify("foo")
    * client.request().message("foo", ["bar"])
-   *
    */
   request() {
     const self = this;
@@ -357,15 +367,16 @@ class JsonRpcClientProtocol {
   /**
    * Used to send a batch request to the server.
    *
-   * Recommend using [message]{@link JsonRpcClientProtocol#message} to construct objects.
+   * Recommend using [message]{@link JsonRpcClientProtocol#message} to construct the message objects.
    *
    * Will use the IDs for the requests in the batch in an array as the keys for `pendingCalls`.
-   * How a client should associate batch responses is not in the spec, so this is the solution.
+   *
+   * How a client should associate batch responses to their requests is not in the spec, so this is the solution.
    *
    * @param {Array} requests An array of valid JSON-RPC message objects
    * @returns Promise
    * @example
-   *    client.batch([client.message("foo", ["bar"]), client.message("hello", [], false)])
+   * client.batch([client.message("foo", ["bar"]), client.message("hello", [], false)])
    */
   batch(requests) {
     return new Promise((resolve, reject) => {
@@ -393,7 +404,8 @@ class JsonRpcClientProtocol {
   /**
    * Associate the ids in the batch message to their corresponding `pendingCalls`.
    *
-   * Will call [_resolveOrRejectBatch]{@link JsonRpcClientProtocol#_resolveOrRejectBatch} when object is determined
+   * Will call [_resolveOrRejectBatch]{@link JsonRpcClientProtocol#_resolveOrRejectBatch} when object is determined.
+   *
    * @param {Array} batch Array of valid JSON-RPC message objects
    */
   gotBatchResponse(batch) {
@@ -421,7 +433,8 @@ class JsonRpcClientProtocol {
   /**
    * Returns the batch response.
    *
-   * Overwrite if class needs to reformat in anyway (i.e. in [HttpClientProtocol]{@link HttpClientProtocol})
+   * Overwrite if class needs to reformat response in anyway (i.e. in [HttpClientProtocol]{@link HttpClientProtocol})
+   *
    * @param {Array} batch  Array of valid JSON-RPC message objects
    */
   getBatchResponse(batch) {
@@ -431,7 +444,8 @@ class JsonRpcClientProtocol {
   /**
    * Will reject the request associated with the given ID with a JSON-RPC formated error object.
    *
-   * Removes the id from `pendingCalls` and delete outstanding timeouts.
+   * Removes the id from `pendingCalls` and deletes outstanding timeouts.
+   *
    * @param {string|number} id ID of the request to timeout
    * @private
    */
@@ -518,7 +532,8 @@ class JsonRpcClientProtocol {
 
   /**
    * Calls [rejectPendingCalls]{@link JsonRpcClientProtocol#rejectPendingCalls} with error object.
-   * If the object cannot be parsed, then an unkown error code is sent with the error message
+   *
+   * If the object cannot be parsed, then an unkown error code is sent with a `null` id.
    *
    * @param {string} error Stringified JSON-RPC error object
    */
@@ -541,7 +556,8 @@ class JsonRpcClientProtocol {
   }
 
   /**
-   * Reject the pending call for the given ID in the error object.
+   * Reject the pending call for the given ID is in the error object.
+   *
    * If the error object has a null id, then log the message to the console.
    *
    * @param {string} error Stringified JSON-RPC error object

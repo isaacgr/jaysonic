@@ -7,8 +7,10 @@ const { errorToStatus } = require("../../util/constants");
  *
  */
 class HttpServerProtocol extends JsonRpcServerProtocol {
-  /** @inheritdoc */
   /**
+   * As well as all the params and properties in [JsonRpcServerProtocol]{@link JsonRpcServerProtocol}
+   * the following properties are available.
+   *
    * @property {class} response HTTP response object
    *
    */
@@ -33,7 +35,12 @@ class HttpServerProtocol extends JsonRpcServerProtocol {
       this.response.end();
       return;
     }
-    this._setResponseHeader({ response: this.response });
+    const json = JSON.parse(message);
+    const header = { response: this.response };
+    if ("error" in json && json.error !== null) {
+      header.errorCode = json.error.code;
+    }
+    this._setResponseHeader(header);
     this.response.write(message, () => {
       this.response.end();
     });
@@ -61,6 +68,7 @@ class HttpServerProtocol extends JsonRpcServerProtocol {
 
   /**
    * Set response header and response code
+   *
    * @param {object} options
    * @param {class} options.response Http response instance
    * @param {boolean} options.notification Inidicate if setting header for notification
