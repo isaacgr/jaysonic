@@ -29,15 +29,19 @@ class JsonRpcServerProtocol {
   _waitForData() {
     while (!this.messageBuffer.isFinished()) {
       const chunk = this.messageBuffer.handleData();
-      try {
-        const result = this.validateRequest(chunk);
-        const isMessage = this.maybeHandleRequest(result);
-        if (isMessage) {
-          this.handleRequest(result);
-        }
-      } catch (e) {
-        this.handleError(e);
+      this._validateData(chunk);
+    }
+  }
+
+  _validateData(chunk) {
+    try {
+      const result = this.validateRequest(chunk);
+      const isMessage = this.maybeHandleRequest(result);
+      if (isMessage) {
+        this.handleRequest(result);
       }
+    } catch (e) {
+      this.handleError(e);
     }
   }
 

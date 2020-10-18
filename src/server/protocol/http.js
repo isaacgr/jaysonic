@@ -29,21 +29,9 @@ class HttpServerProtocol extends JsonRpcServerProtocol {
   clientConnected() {
     this.client.on(this.event, (data) => {
       this.client.on("end", () => {
-        this._waitForData(data);
+        this._validateData(data);
       });
     });
-  }
-
-  _waitForData(data) {
-    try {
-      const result = this.validateRequest(data);
-      const isMessage = this.maybeHandleRequest(result);
-      if (isMessage) {
-        this.handleRequest(result);
-      }
-    } catch (e) {
-      this.handleError(e);
-    }
   }
 
   sendError(error) {
