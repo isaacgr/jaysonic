@@ -75,21 +75,27 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
   getResponse(id) {
     return {
       body: this.responseQueue[id],
-      ...this.connector
+      headers: {
+        ...this.connector.headers
+      }
     };
   }
 
   getBatchResponse(batch) {
     return {
       body: batch,
-      ...this.connector
+      headers: {
+        ...this.connector.headers
+      }
     };
   }
 
   rejectPendingCalls(error) {
     const err = {
       body: error,
-      ...this.connector
+      headers: {
+        ...this.connector.headers
+      }
     };
     try {
       this.pendingCalls[err.body.id].reject(err);
