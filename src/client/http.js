@@ -22,30 +22,32 @@ class HttpClientFactory extends JsonRpcClientFactory {
     if (!(this instanceof HttpClientFactory)) {
       return new HttpClientFactory(options);
     }
-    // the content length will be calculated on a per request basis
-    // according to the node http docs:
-    // the encoding argument is optional and only applies when chunk is a string.
-    // Defaults to 'utf8'.
     const defaults = {
       encoding: "utf-8",
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json"
-      },
-      path: "/"
+      path: "/",
+      scheme: "http"
     };
+
+    // the Content-Length header will be calculated on a per request basis
     this.options = {
       ...defaults,
-      ...(this.options || {})
+      ...(this.options || {}),
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        ...this.options.headers
+      }
     };
     this.headers = this.options.headers;
     this.encoding = this.options.encoding;
+    this.scheme = this.options.scheme;
 
     this.pcolInstance = new HttpClientProtocol(
       this,
       this.options.version,
-      this.options.delimiter
+      this.options.delimiter,
+      this.options.scheme
     );
   }
 }

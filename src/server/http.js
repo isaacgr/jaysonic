@@ -1,4 +1,5 @@
 const http = require("http");
+const https = require("https");
 const JsonRpcServerFactory = require(".");
 const HttpServerProtocol = require("./protocol/http");
 
@@ -7,9 +8,25 @@ const HttpServerProtocol = require("./protocol/http");
  * @extends JsonRpcServerFactory
  */
 class HttpServerFactory extends JsonRpcServerFactory {
+  constructor(options) {
+    super(options);
+    this.scheme = this.options.scheme || "http";
+    this.key = this.options.key;
+    this.cert = this.options.cert;
+  }
+
   /** @inheritdoc */
   setServer() {
-    this.server = new http.Server();
+    if (this.scheme === "http") {
+      this.server = new http.Server();
+    } else if (this.scheme === "https") {
+      this.server = new https.Server({
+        key: this.key,
+        cert: this.cert
+      });
+    } else {
+      throw Error("Invalid scheme");
+    }
   }
 
   /** @inheritdoc */

@@ -1,0 +1,227 @@
+#!/usr/bin/env node
+
+const package = require("../package.json");
+const Jaysonic = require("../src");
+const program = require("commander");
+const fs = require("fs");
+
+const zip = (rows) => rows[0].map((_, c) => rows.map((row) => row[c]));
+const commaSeparated = (value) => {
+  return value.split(",");
+};
+const formatParams = (value) => {
+  return JSON.parse(`[${value.replace(/'/g, '"')}]`);
+};
+
+const formatJson = (value) => {
+  return JSON.parse(value.replace(/'/g, '"'));
+};
+
+const usageString = `--host 192.168.2.1 --port 8555 --method hello --params '["foo"]'
+
+Making requests with multiple methods is supported with comma separated values, i.e.
+
+--method hello,hi
+or
+--notification goodbye,seeya
+or
+--subscribe update,anotherupdate
+
+Params can also be comma separated, these should be one-to-one lined up with the method or notification, i.e.
+
+--method request1,request2 --params '["params1"],["params2"]'
+
+Request methods cannot be sent with notifications, however subscriptions can be made along side either, i.e.
+
+--method hello --subscribe some.update
+or
+--notification bye --subscribe someother.update
+`;
+
+program
+  .version(package.version)
+  .name("jaysonic-client")
+  .usage(usageString)
+  .option(
+    "-c, --client-type <string>",
+    "Type of client (tcp, ws, http, https)",
+    "tcp",
+    String
+  )
+  .option(
+    "-m, --method <string>",
+    "Method name for request. Comma separate method names to do more than one at a time.",
+    commaSeparated
+  )
+  .option(
+    "-s, --subscribe <string>",
+    "Method name to subscribe to. Comma separate method names to do more than one at a time.",
+    commaSeparated
+  )
+  .option(
+    "-n, --notify <string>",
+    "Method name for notification. Comma separate method names to do more than one at a time.",
+    commaSeparated
+  )
+  .option(
+    "--params <object>",
+    "Array or object to use as parameters. Comma separate params list or object to use with multiple request or notification methods.",
+    formatParams
+  )
+  .option("-i, --host <string>", "Host IP of the server", "127.0.0.1", String)
+  .option("-p, --port <number>", "Port to connect to", Number)
+  .option("-u, --path <string>", "Path for ws or http client", "/", String)
+  .option("--headers <string>", "Headers for http request.", formatJson)
+  .option(
+    "-d, --delimiter <string>",
+    "Delimiter to use for the request. For example: Use $'\\n' as cli syntax for escape characters.",
+    "\n"
+  )
+  .option("-t, --timeout <number>", "Response timeout in seconds", 30, Number)
+  .option(
+    "--connection-timeout <number>",
+    "Connection timeout in milliseconds",
+    5000,
+    Number
+  )
+  .option(
+    "-r, --retries <number>",
+    "Number of connection retry attempts",
+    2,
+    Number
+  )
+  .option("-v, --jsonrpc-version <type>", "JSON-RPC version (1 or 2)", "2.0")
+  .option("-w, --write <string>", "Write output to file", String)
+  .parse(process.argv);
+
+const getClient = () => {
+  const programOptions = {
+    host: program.host,
+    port: program.port,
+    path: program.path,
+    headers: program.headers,
+    delimiter: program.delimiter,
+    timeout: program.timeout,
+    connectionTimeout: program.connectionTimeout,
+    retries: program.retries,
+    version: program.jsonrpcVersion
+  };
+  let client;
+  if (program.clientType === "ws") {
+    const options = {
+      url: `ws://${program.host}:${program.port}${program.path}`
+    };
+    client = new Jaysonic.client.ws({
+      ...programOptions,
+      ...options
+    });
+  } else if (program.clientType === "http" || program.clientType === "https") {
+    const options = {
+      host: program.host,
+      port: program.port,
+      path: program.path,
+      scheme: program.clientType
+    };
+    client = new Jaysonic.client.http({
+      ...programOptions,
+      ...options
+    });
+  } else if (program.clientType === "tcp") {
+    const options = { host: program.host, port: program.port };
+    client = new Jaysonic.client.tcp({
+      ...programOptions,
+      ...options
+    });
+  }
+  return client;
+};
+
+const makeRequests = async () => {
+  if (program.clientType === "http" && program.subscribe) {
+    console.error("HTTP client does not support subscriptions.");
+    process.exit(-1);
+  }
+  if (!program.method && !program.notify && !program.subscribe) {
+    console.error("No method, notification or subscription request provided.");
+    process.exit(-1);
+  }
+  if (program.method) {
+    const requests = zip([program.method, program.params || []]);
+    for (let request of requests) {
+      await sendRequest(request[0], request[1]);
+    }
+  } else if (program.notify) {
+    const requests = zip([program.notify, program.params || []]);
+    for (let request of requests) {
+      await sendNotification(request[0], request[1]);
+    }
+  }
+  if (program.subscribe) {
+    for (let subscription of program.subscribe) {
+      client.subscribe(subscription, handleSubscription);
+    }
+  } else {
+    process.exit(0);
+  }
+};
+
+const handleSubscription = (result) => {
+  if (program.write) {
+    fs.appendFileSync(program.write, JSON.stringify(result) + "\n");
+  } else {
+    console.log(result);
+  }
+};
+
+const sendRequest = async (method, params) => {
+  try {
+    const result = await client.request().send(method, params);
+    if (program.write) {
+      fs.writeFileSync(program.write, JSON.stringify(result));
+    } else {
+      console.log(result);
+    }
+  } catch (error) {
+    if (program.write) {
+      fs.writeFileSync(program.write, JSON.stringify(error));
+    } else {
+      console.error(error);
+    }
+  }
+};
+
+const sendNotification = async (method, params) => {
+  if (program.clientType === "http") {
+    try {
+      const result = await client.request().notify(method, params);
+      if (program.write) {
+        fs.writeFileSync(program.write, JSON.stringify(result.body));
+      } else {
+        console.log(result.body);
+      }
+    } catch (error) {
+      if (program.write) {
+        fs.writeFileSync(program.write, JSON.stringify(error.body));
+      } else {
+        console.error(error.body);
+      }
+    }
+  } else {
+    return client.request().notify(method, params);
+  }
+};
+
+const client = getClient();
+if (program.clientType === "http" || program.clientType === "https") {
+  makeRequests();
+} else {
+  client
+    .connect()
+    .then(() => {
+      makeRequests();
+    })
+    .catch((error) => {
+      console.error(error);
+      process.exit(-1);
+    });
+}

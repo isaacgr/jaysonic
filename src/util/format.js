@@ -81,9 +81,7 @@ const formatResponse = ({
     response.params = params;
   }
 
-  if (result) {
-    response.result = result;
-  }
+  response.result = result;
 
   if (!jsonrpc) {
     // 1.0 response
