@@ -27,9 +27,24 @@ const wsweb = new JaysonicWebClient.wsclient({
   delimiter: "\r\n"
 });
 
-tcpserver.method("timeout", () => setTimeout(() => 0), 1000);
-httpserver.method("timeout", () => setTimeout(() => 0), 1000);
-wss.method("timeout", () => setTimeout(() => 0), 1000);
+tcpserver.method(
+  "timeout",
+  () => new Promise((resolve) => {
+    setTimeout(() => resolve(0), 5000);
+  })
+);
+httpserver.method(
+  "timeout",
+  () => new Promise((resolve) => {
+    setTimeout(() => resolve(0), 5000);
+  })
+);
+wss.method(
+  "timeout",
+  () => new Promise((resolve) => {
+    setTimeout(() => resolve(0), 5000);
+  })
+);
 
 describe("#54 Request timeout", () => {
   before(() => {

@@ -76,7 +76,7 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
     return {
       body: this.responseQueue[id],
       headers: {
-        ...this.connector.headers
+        ...this.listener.headers
       }
     };
   }
@@ -85,7 +85,7 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
     return {
       body: batch,
       headers: {
-        ...this.connector.headers
+        ...this.listener.headers
       }
     };
   }
@@ -94,7 +94,7 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
     const err = {
       body: error,
       headers: {
-        ...this.connector.headers
+        ...this.listener.headers
       }
     };
     try {
