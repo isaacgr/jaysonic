@@ -1,4 +1,6 @@
-const formatRequest = ({ method, params, id, options }) => {
+const formatRequest = ({
+  method, params, id, options
+}) => {
   if (!(typeof method === "string")) {
     throw new TypeError(`${method} must be a string`);
   }
@@ -13,8 +15,8 @@ const formatRequest = ({ method, params, id, options }) => {
   }
 
   if (
-    (params && !(params === Object(params)) && !Array.isArray(params)) ||
-    typeof params === "function"
+    (params && !(params === Object(params)) && !Array.isArray(params))
+    || typeof params === "function"
   ) {
     throw new TypeError(`${params} must be an object or array`);
   } else if (params) {
@@ -29,7 +31,9 @@ const formatRequest = ({ method, params, id, options }) => {
   return JSON.stringify(request) + options.delimiter;
 };
 
-const formatResponse = ({ jsonrpc, id, method, result, params, delimiter }) => {
+const formatResponse = ({
+  jsonrpc, id, method, result, params, delimiter
+}) => {
   const response = {};
   if (params && result) {
     throw new Error("Cannot send response with both params and result");
@@ -44,8 +48,8 @@ const formatResponse = ({ jsonrpc, id, method, result, params, delimiter }) => {
   }
 
   if (
-    (params && !(params === Object(params)) && !Array.isArray(params)) ||
-    typeof params === "function"
+    (params && !(params === Object(params)) && !Array.isArray(params))
+    || typeof params === "function"
   ) {
     throw new TypeError(`${params} must be an object or array`);
   } else if (params) {
@@ -76,22 +80,23 @@ const formatResponse = ({ jsonrpc, id, method, result, params, delimiter }) => {
   return JSON.stringify(response) + delimiter;
 };
 
-const formatError = ({ jsonrpc, id, code, message, data, delimiter }) => {
+const formatError = ({
+  jsonrpc, id, code, message, data, delimiter
+}) => {
   if (!message) {
     throw new Error("Must include message in error response");
   }
-  const response =
-    jsonrpc === "2.0"
-      ? {
-          jsonrpc,
-          error: { code, message },
-          id
-        }
-      : {
-          result: null,
-          error: { code, message },
-          id
-        };
+  const response = jsonrpc === "2.0"
+    ? {
+      jsonrpc,
+      error: { code, message },
+      id
+    }
+    : {
+      result: null,
+      error: { code, message },
+      id
+    };
 
   if (data) {
     response.error.data = data;

@@ -17,6 +17,7 @@ class HTTPServer extends JsonRpcServerFactory {
     super(options);
     this.scheme = this.options.scheme || "http";
   }
+
   setServer() {
     if (this.scheme === "http") {
       this.server = new http.Server();
