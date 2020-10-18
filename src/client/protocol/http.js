@@ -1,4 +1,5 @@
 const http = require("http");
+const https = require("https");
 const JsonRpcClientProtocol = require("./base");
 
 class HttpClientProtocol extends JsonRpcClientProtocol {
@@ -6,6 +7,7 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
     super(factory, version, delimiter);
     this.headers = this.factory.headers;
     this.encoding = this.factory.encoding;
+    this.type = this.factory.type;
   }
 
   write(request, cb) {
@@ -14,13 +16,18 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
       ...this.headers
     };
     this.headers["Content-Length"] = Buffer.byteLength(request, this.encoding);
-    this.connector = http.request(options, (response) => {
+    const responseCallback = (response) => {
       if (cb) {
         response.on("end", cb);
       }
       this.listener = response;
       this.listen();
-    });
+    };
+    if (this.type === "http") {
+      this.connector = http.request(options, responseCallback);
+    } else if (this.type === "https") {
+      this.connector = https.request(options, responseCallback);
+    }
     this.connector.write(request, this.encoding);
     this.connector.end();
     this.connector.on("close", () => {
@@ -29,6 +36,20 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
     this.connector.on("error", (error) => {
       throw error;
     });
+  }
+
+  listen() {
+    this.listener.on("data", (data) => {
+      this._waitForData(data);
+    });
+  }
+
+  _waitForData(data) {
+    try {
+      this.verifyData(data);
+    } catch (e) {
+      this.handleError(e);
+    }
   }
 
   notify(method, params) {

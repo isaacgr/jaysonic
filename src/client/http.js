@@ -22,23 +22,27 @@ class HttpClientFactory extends JsonRpcClientFactory {
     const defaults = {
       encoding: "utf-8",
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json"
-      },
-      path: "/"
+      path: "/",
+      type: "http"
     };
     this.options = {
       ...defaults,
-      ...(this.options || {})
+      ...(this.options || {}),
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        ...this.options.headers
+      }
     };
     this.headers = this.options.headers;
     this.encoding = this.options.encoding;
+    this.type = this.options.type;
 
     this.pcolInstance = new HttpClientProtocol(
       this,
       this.options.version,
-      this.options.delimiter
+      this.options.delimiter,
+      this.options.type
     );
   }
 }
