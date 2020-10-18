@@ -75,7 +75,7 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
   getResponse(id) {
     return {
       body: this.responseQueue[id],
-      ...this.writer
+      ...this.connector
     };
   }
 
