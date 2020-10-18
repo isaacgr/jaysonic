@@ -23,7 +23,7 @@ class HttpClientFactory extends JsonRpcClientFactory {
       encoding: "utf-8",
       method: "POST",
       path: "/",
-      type: "http"
+      scheme: "http"
     };
     this.options = {
       ...defaults,
@@ -36,13 +36,13 @@ class HttpClientFactory extends JsonRpcClientFactory {
     };
     this.headers = this.options.headers;
     this.encoding = this.options.encoding;
-    this.type = this.options.type;
+    this.scheme = this.options.scheme;
 
     this.pcolInstance = new HttpClientProtocol(
       this,
       this.options.version,
       this.options.delimiter,
-      this.options.type
+      this.options.scheme
     );
   }
 }

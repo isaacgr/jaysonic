@@ -115,22 +115,12 @@ const getClient = () => {
       ...programOptions,
       ...options
     });
-  } else if (program.clientType === "http") {
-    const options = {
-      host: program.host,
-      port: program.port,
-      path: program.path
-    };
-    client = new Jaysonic.client.http({
-      ...programOptions,
-      ...options
-    });
-  } else if (program.clientType === "https") {
+  } else if (program.clientType === "http" || program.clientType === "https") {
     const options = {
       host: program.host,
       port: program.port,
       path: program.path,
-      type: "https"
+      scheme: program.clientType
     };
     client = new Jaysonic.client.http({
       ...programOptions,

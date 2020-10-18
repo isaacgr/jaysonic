@@ -7,7 +7,7 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
     super(factory, version, delimiter);
     this.headers = this.factory.headers;
     this.encoding = this.factory.encoding;
-    this.type = this.factory.type;
+    this.scheme = this.factory.scheme;
   }
 
   write(request, cb) {
@@ -23,10 +23,12 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
       this.listener = response;
       this.listen();
     };
-    if (this.type === "http") {
+    if (this.scheme === "http") {
       this.connector = http.request(options, responseCallback);
-    } else if (this.type === "https") {
+    } else if (this.scheme === "https") {
       this.connector = https.request(options, responseCallback);
+    } else {
+      throw Error("Invalid scheme");
     }
     this.connector.write(request, this.encoding);
     this.connector.end();
