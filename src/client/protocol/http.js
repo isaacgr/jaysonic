@@ -1,4 +1,5 @@
 const http = require("http");
+const https = require("https");
 const JsonRpcClientProtocol = require("./base");
 
 class HttpClientProtocol extends JsonRpcClientProtocol {
@@ -6,6 +7,7 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
     super(factory, version, delimiter);
     this.headers = this.factory.headers;
     this.encoding = this.factory.encoding;
+    this.scheme = this.factory.scheme;
   }
 
   write(request, cb) {
@@ -14,13 +16,20 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
       ...this.headers
     };
     this.headers["Content-Length"] = Buffer.byteLength(request, this.encoding);
-    this.connector = http.request(options, (response) => {
+    const responseCallback = (response) => {
       if (cb) {
         response.on("end", cb);
       }
       this.listener = response;
       this.listen();
-    });
+    };
+    if (this.scheme === "http") {
+      this.connector = http.request(options, responseCallback);
+    } else if (this.scheme === "https") {
+      this.connector = https.request(options, responseCallback);
+    } else {
+      throw Error("Invalid scheme");
+    }
     this.connector.write(request, this.encoding);
     this.connector.end();
     this.connector.on("close", () => {
@@ -29,6 +38,20 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
     this.connector.on("error", (error) => {
       throw error;
     });
+  }
+
+  listen() {
+    this.listener.on("data", (data) => {
+      this._waitForData(data);
+    });
+  }
+
+  _waitForData(data) {
+    try {
+      this.verifyData(data);
+    } catch (e) {
+      this.handleError(e);
+    }
   }
 
   notify(method, params) {
@@ -52,21 +75,27 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
   getResponse(id) {
     return {
       body: this.responseQueue[id],
-      ...this.writer
+      headers: {
+        ...this.listener.headers
+      }
     };
   }
 
   getBatchResponse(batch) {
     return {
       body: batch,
-      ...this.connector
+      headers: {
+        ...this.listener.headers
+      }
     };
   }
 
   rejectPendingCalls(error) {
     const err = {
       body: error,
-      ...this.connector
+      headers: {
+        ...this.listener.headers
+      }
     };
     try {
       this.pendingCalls[err.body.id].reject(err);

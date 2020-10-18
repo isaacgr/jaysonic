@@ -1,3 +1,4 @@
+const fs = require("fs");
 const Jaysonic = require("../src");
 const data = require("./large-data.json");
 
@@ -10,6 +11,14 @@ const serverV1 = new Jaysonic.server.tcp({
 const serverHttp = new Jaysonic.server.http({
   host: "127.0.0.1",
   port: 8800
+});
+const serverHttps = new Jaysonic.server.http({
+  host: "127.0.0.1",
+  port: 8801,
+  scheme: "https",
+  key: fs.readFileSync("tests/key.pem"),
+  cert: fs.readFileSync("tests/server.crt"),
+  ca: "selfSignedRootCaPemCrtBuffer"
 });
 const wss = new Jaysonic.server.ws({ port: 8900 });
 
@@ -44,6 +53,21 @@ serverHttp.method("unknownerror", ([a]) => {
   }
 });
 
+// HTTPS Server
+serverHttps.method("large.data", () => data);
+serverHttps.method("add", ([a, b]) => a + b);
+serverHttps.method("greeting", ({ name }) => `Hello ${name}`);
+serverHttps.method("typeerror", ([a]) => {
+  if (typeof a === "number") {
+    throw new TypeError();
+  }
+});
+serverHttps.method("unknownerror", ([a]) => {
+  if (typeof a === "number") {
+    throw new Error();
+  }
+});
+
 // Websocket server
 wss.method("add", ([a, b]) => a + b);
 wss.method("greeting", ({ name }) => `Hello ${name}`);
@@ -66,6 +90,7 @@ serverV1.method("add", ([a, b]) => a + b);
 module.exports = {
   server,
   serverHttp,
+  serverHttps,
   serverV1,
   wss
 };

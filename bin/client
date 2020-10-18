@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const package = require("../package.json");
-const Jaysonic = require("..");
+const Jaysonic = require("../src");
 const program = require("commander");
 const fs = require("fs");
 
@@ -44,7 +44,7 @@ program
   .usage(usageString)
   .option(
     "-c, --client-type <string>",
-    "Type of client (tcp, ws, http)",
+    "Type of client (tcp, ws, http, https)",
     "tcp",
     String
   )
@@ -115,11 +115,12 @@ const getClient = () => {
       ...programOptions,
       ...options
     });
-  } else if (program.clientType === "http") {
+  } else if (program.clientType === "http" || program.clientType === "https") {
     const options = {
       host: program.host,
       port: program.port,
-      path: program.path
+      path: program.path,
+      scheme: program.clientType
     };
     client = new Jaysonic.client.http({
       ...programOptions,
@@ -211,7 +212,7 @@ const sendNotification = async (method, params) => {
 };
 
 const client = getClient();
-if (program.clientType === "http") {
+if (program.clientType === "http" || program.clientType === "https") {
   makeRequests();
 } else {
   client
