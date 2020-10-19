@@ -106,11 +106,9 @@ class JsonRpcServerFactory extends EventEmitter {
    */
   _setupListeners() {
     this.on("error", (error) => {
-      this.listening = false;
       throw error;
     });
     this.server.on("error", (error) => {
-      this.listening = false;
       throw error;
     });
     this.server.on("close", () => {
