@@ -90,7 +90,7 @@ program
     2,
     Number
   )
-  .option("-v, --jsonrpc-version <type>", "JSON-RPC version (1 or 2)", "2.0")
+  .option("-v, --jsonrpc-version <number>", "JSON-RPC version (1 or 2)", 2)
   .option("-w, --write <string>", "Write output to file", String)
   .parse(process.argv);
 
