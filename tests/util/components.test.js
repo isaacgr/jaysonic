@@ -223,7 +223,7 @@ describe("formatResponse", () => {
         };
         const response = formatResponse(params);
         expect(response).to.eql(
-          "{\"params\":[1,2,3,4,5],\"error\":null,\"method\":\"update\",\"id\":null}\n"
+          "{\"params\":[1,2,3,4,5],\"error\":null,\"id\":null,\"method\":\"update\"}\n"
         );
         done();
       });

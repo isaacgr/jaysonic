@@ -13,7 +13,7 @@
 const formatRequest = ({
   method, params, id, version, delimiter
 }) => {
-  if (!(typeof method === "string")) {
+  if (typeof method !== "string") {
     throw new TypeError(`${method} must be a string`);
   }
 
@@ -26,17 +26,14 @@ const formatRequest = ({
     request.jsonrpc = "2.0";
   }
 
-  if (
-    (params && !(params === Object(params)) && !Array.isArray(params))
-    || typeof params === "function"
-  ) {
+  if (params && typeof params !== "object" && !Array.isArray(params)) {
     throw new TypeError(`${params} must be an object or array`);
   } else if (params) {
     request.params = params;
   }
 
   // assume notification otherwise
-  if (!(typeof id === "undefined")) {
+  if (typeof id !== "undefined") {
     request.id = id;
   }
 
@@ -50,7 +47,6 @@ const formatRequest = ({
  * @memberof Utils.format
  * @param {object} response
  * @param {string} response.method
- * @param {array|object} response.params
  * @param {string|number} response.id
  * @param {string|number} response.jsonrpc
  * @param {string} response.delimiter
@@ -59,7 +55,6 @@ const formatRequest = ({
 const formatResponse = ({
   jsonrpc, id, method, result, params, delimiter
 }) => {
-  const response = {};
   if (params && result) {
     throw new Error("Cannot send response with both params and result");
   }
@@ -68,37 +63,41 @@ const formatResponse = ({
     throw new Error("Cannot send response with both a method and non-null id");
   }
 
-  if (method && !(typeof method === "string")) {
-    throw new TypeError(`${method} must be a string`);
+  if (method && typeof method !== "string") {
+    throw new TypeError("Method must be a string");
   }
 
-  if (
-    (params && !(params === Object(params)) && !Array.isArray(params))
-    || typeof params === "function"
-  ) {
-    throw new TypeError(`${params} must be an object or array`);
-  } else if (params) {
+  if (params && typeof params !== "object" && !Array.isArray(params)) {
+    throw new TypeError("Params must be an object or array");
+  }
+
+  const response = {};
+
+  if (result) {
+    response.result = result;
+  }
+
+  if (params) {
     response.params = params;
   }
-
-  response.result = result;
 
   if (!jsonrpc) {
     // 1.0 response
     response.error = null;
+    // 1.0 notification
+    if (!id) {
+      response.id = null;
+    }
   } else {
     // assume 2.0 response, dont include null error and include jsonrpc version
     response.jsonrpc = "2.0";
   }
 
-  if (!id) {
-    if (method) {
-      response.method = method;
-    }
-    if (!jsonrpc) {
-      response.id = null;
-    }
-  } else {
+  if (method) {
+    response.method = method;
+  }
+
+  if (id) {
     response.id = id;
   }
 
