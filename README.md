@@ -1,47 +1,46 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [Jaysonic - A persistent JSON-RPC client and server](#jaysonic---a-persistent-json-rpc-client-and-server)
-    - [List of features](#list-of-features)
-    - [Download & Installation](#download--installation)
-    - [Documentation](#documentation)
-    - [CLI tool](#cli-tool)
-    - [Initialization](#initialization)
-      - [WS Client for browser](#ws-client-for-browser)
-      - [WS Client for Node](#ws-client-for-node)
-    - [Options](#options)
-      - [Client and server options](#client-and-server-options)
-      - [Client only options](#client-only-options)
-      - [Other client and server options](#other-client-and-server-options)
-    - [Code Demos](#code-demos)
-      - [Initialization](#initialization-1)
-          - [TCP](#tcp)
-          - [HTTP](#http)
-          - [WS](#ws)
-      - [Server side](#server-side)
-        - [Instantiation and Listening](#instantiation-and-listening)
-        - [Closing the connection](#closing-the-connection)
-        - [Adding Methods](#adding-methods)
-        - [Listening for client connections](#listening-for-client-connections)
-      - [Client Side](#client-side)
-        - [Connecting](#connecting)
-        - [Listening for server disconnect](#listening-for-server-disconnect)
-        - [Ending the connection](#ending-the-connection)
-        - [Making requests](#making-requests)
-        - [Subscriptions](#subscriptions)
-        - [Batch Requests](#batch-requests)
-        - [HTTP Client Requests](#http-client-requests)
-      - [Notifications](#notifications)
-        - [Client](#client)
-        - [Server](#server)
-        - [Batches](#batches)
-      - [HTTP Client Notifications](#http-client-notifications)
-    - [Using the cli](#using-the-cli)
-        - [Install](#install)
-    - [Contributing](#contributing)
-    - [Authors or Acknowledgments](#authors-or-acknowledgments)
-    - [License](#license)
+  - [List of features](#list-of-features)
+  - [Download & Installation](#download--installation)
+  - [Documentation](#documentation)
+  - [CLI tool](#cli-tool)
+    - [Install](#install)
+    - [Usage](#usage)
+  - [Initialization](#initialization)
+    - [WS Client for browser](#ws-client-for-browser)
+    - [WS Client for Node](#ws-client-for-node)
+  - [Options](#options)
+    - [Client and server options](#client-and-server-options)
+    - [Client only options](#client-only-options)
+    - [Other client and server options](#other-client-and-server-options)
+  - [Code Demos](#code-demos)
+    - [Initialization](#initialization-1)
+      - [TCP](#tcp)
+      - [HTTP](#http)
+      - [WS](#ws)
+    - [Server side](#server-side)
+      - [Instantiation and Listening](#instantiation-and-listening)
+      - [Closing the connection](#closing-the-connection)
+      - [Adding Methods](#adding-methods)
+      - [Listening for client connections](#listening-for-client-connections)
+    - [Client Side](#client-side)
+      - [Connecting](#connecting)
+      - [Listening for server disconnect](#listening-for-server-disconnect)
+      - [Ending the connection](#ending-the-connection)
+      - [Making requests](#making-requests)
+      - [Subscriptions](#subscriptions)
+      - [Batch Requests](#batch-requests)
+      - [HTTP Client Requests](#http-client-requests)
+    - [Notifications](#notifications)
+      - [Client](#client)
+      - [Server](#server)
+      - [Batches](#batches)
+    - [HTTP Client Notifications](#http-client-notifications)
+  - [Contributing](#contributing)
+  - [Authors or Acknowledgments](#authors-or-acknowledgments)
+  - [License](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -60,7 +59,7 @@
 
 A TCP, HTTP and WebSocket server and client library which implements the [JSON-RPC 2.0](https://www.jsonrpc.org/specification) and [1.0](https://www.jsonrpc.org/specification_v1) specifications. Written for [nodejs](https://nodejs.org/en/), primarily utilizing ES6 syntax.
 
-### List of features
+## List of features
 
 - Promise based
 - Persistent connections
@@ -74,21 +73,86 @@ A TCP, HTTP and WebSocket server and client library which implements the [JSON-R
 - Associate response ID with request
 - CLI tool for testing/cross-codebase integration
 
-### Download & Installation
+## Download & Installation
 
 ```shell
 $ npm install jaysonic
 ```
 
-### Documentation
+## Class Documentation
 
 Latest documentation on the methods and classes available in the library
 
 https://jaysonic.irowell.io/
 
+It is recommnded to import and extend these classes if you dont wish to use the library as a standalone module (as described below).
+
 ### CLI tool
 
-Jump to [how to use the cli tool](#using-the-cli)
+#### Install
+
+Optionally install the package globally to access from the cli
+
+```bash
+npm install -g jaysonic
+```
+
+If installed globally
+
+```bash
+jaysonic-client --method hello
+```
+
+or locally through `node_modules`
+
+```bash
+./node_modules/jaysonic/bin/client --method hello
+```
+
+#### Usage
+
+```bash
+Usage: jaysonic-client --host 192.168.2.1 --port 8555 --method hello --params '["foo"]'
+
+Making requests with multiple methods is supported with comma separated values, i.e.
+
+--method hello,hi
+or
+--notification goodbye,seeya
+or
+--subscribe update,anotherupdate
+
+Params can also be comma separated, these should be one-to-one lined up with the method or notification, i.e.
+
+--method request1,request2 --params '["params1"],["params2"]'
+
+Request methods cannot be sent with notifications, however subscriptions can be made along side either, i.e.
+
+--method hello --subscribe some.update
+or
+--notification bye --subscribe someother.update
+
+
+Options:
+  -V, --version                  output the version number
+  -c, --client-type <string>     Type of client (tcp, ws, http, https) (default: "tcp")
+  -m, --method <string>          Method name for request. Comma separate method names to do more than one at a time.
+  -s, --subscribe <string>       Method name to subscribe to. Comma separate method names to do more than one at a time.
+  -n, --notify <string>          Method name for notification. Comma separate method names to do more than one at a time.
+  --params <object>              Array or object to use as parameters. Comma separate params list or object to use with multiple request or notification methods.
+  -i, --host <string>            Host IP of the server (default: "127.0.0.1")
+  -p, --port <number>            Port to connect to
+  -u, --path <string>            Path for ws or http client (default: "/")
+  --headers <string>             Headers for http request.
+  -d, --delimiter <string>       Delimiter to use for the request. For example: Use $'\n' as cli syntax for escape characters. (default: "\n")
+  -t, --timeout <number>         Response timeout in seconds (default: 30)
+  --connection-timeout <number>  Connection timeout in milliseconds (default: 5000)
+  -r, --retries <number>         Number of connection retry attempts (default: 2)
+  -v, --jsonrpc-version <type>   JSON-RPC version (1 or 2) (default: 2)
+  -w, --write <string>           Write output to file
+```
+
+## Use of the library as a standalone module
 
 ### Initialization
 
@@ -149,15 +213,20 @@ The TCP and HTTP server have an additional option specified by the [NodeJS Docs]
 
 `exclusive`: If exclusive is false (default), then cluster workers will use the same underlying handle, allowing connection handling duties to be shared. When exclusive is true, the handle is not shared, and attempted port sharing results in an error.
 
-The HTTP client supports additional options for the HTTP request.
+The HTTP server has an additional option to select the scheme:
+
+`scheme`: Can be `'http'` or `'https'`
+
+The HTTP client supports additional options for the HTTP request:
 
 `method`: The method to make the request with. Default is `POST`.
 `path`: The path to send the request to. Default is `/`.
 `encoding`: How to encode the HTTP request. Will factor into content-length calculation. Default is `utf-8`.
+`scheme`: Can be `'http'` or `'https'`/
 `headers`: Headers to include in the request. Defaults provided by the spec are:
 
 - `"Content-Length"`
-  - calculated by request message, this is not configurable
+  - calculated on a per request basis
 - `"Content-Type"`
   - defaults to `"application/json`
 - `Accept`
@@ -216,9 +285,33 @@ const client = new Jaysonic.client.http({
     path: "/"
   };
 });
+
+// server
+
+const server = new Jaysonic.server.http()
 ```
 
-###### WS
+###### HTTPS
+
+Pass `https` to the `sheme` option to use an https client or server.
+
+The https server requires an SSL key and certificate file.
+
+```js
+const Jaysonic = require("jaysonic");
+
+// https client
+const client = new Jaysonic.client.http({ scheme: "https" });
+
+// https server
+const server = new Jaysonic.server.http({
+  scheme: "http",
+  key: fs.readFileSync("key.pem"),
+  cert: fs.readFileSync("server.crt")
+});
+```
+
+###### Websocket
 
 `wsclient` class can only be used in the browser.
 `client.ws` cannot be used in the browser.
@@ -298,16 +391,16 @@ _Note: The same syntax for all the above methods is used for the HTTP and WS ser
 
 ##### Listening for client connections
 
-The `clientConnected` and `clientDisconnected` methods return the host and port of the client in the callback. These methods are not available for the HTTP server.
+The `clientConnected` and `clientDisconnected` methods return the host and port of the client in the event. These methods are not available for the HTTP server.
 
 ```js
-server.clientConnected((event) => {
+server.clientConnected = (event) => {
   console.log("client connected");
-});
+};
 
-server.clientDisconnected((event) => {
+server.clientDisconnected = (event) => {
   console.log("client disconnected");
-});
+};
 ```
 
 #### Client Side
@@ -388,7 +481,6 @@ const add = () => {
 Clients can subscribe to notifications from the server.
 
 **Note: Subscriptions are not supported by the HTTP server/client**\
-**Notifications no longer return an error as the first parameter in the callback as of v2.0.0**
 
 ```js
 client.subscribe("notification", (message) => {
@@ -398,7 +490,7 @@ client.subscribe("notification", (message) => {
 server.notify([["notification", []]]);
 ```
 
-**The websocket browser client returns an object with a 'detail' key which contains the notification as of v2.0.0**
+**The websocket browser client returns an object with a `detail` key which contains the notification**
 
 ```js
 wsclient.subscribe("notification", ({ detail }) => {
@@ -553,56 +645,16 @@ server.onNotify("notify", (message) => {
 });
 ```
 
-### Using the cli
-
-##### Install
-
-Optionally install the package globally to access from the cli
-
-```bash
-npm install -g jaysonic
-```
-
-If installed globally
-
-```bash
-jaysonic-client --method hello
-```
-
-or locally through `node_modules`
-
-```bash
-./node_modules/jaysonic/bin/client --method hello
-```
-
-**Available options**
-
-```bash
-  --client-type <string>         Type of client (tcp, ws, http) (default: "tcp")
-  --method <string>              Method name for request
-  --params <object>              Array or object to use as parameters
-  --host <string>                Host IP of the server (default: "127.0.0.1")
-  --port <number>                Port to connect to
-  --subscribe                    Subscribe to notifications for the given method
-  --path <string>                Path for ws or http client (default: "/")
-  --delimiter <string>           Delimiter to use for the request (default: "\n")
-  --timeout <number>             Response timeout in seconds (default: 30)
-  --connection-timeout <number>  Connection timeout in seconds (default: 5)
-  --retries <number>             Number of connection retry attempts (default: 2)
-  --jsonrpc-version <type>       JSON-RPC version (1 or '2.0') (default: "2.0")
-  --write <string>               Write output to file
-```
-
-### Contributing
+## Contributing
 
 Definitely welcome. I tried to account for everything in the spec, but issues come up of course.
 
 Keep it simple. Keep it minimal. Make sure all tests pass and no linting errors.
 
-### Authors or Acknowledgments
+## Authors or Acknowledgments
 
 - Isaac Rowell
 
-### License
+## License
 
 This project is licensed under the MIT License
