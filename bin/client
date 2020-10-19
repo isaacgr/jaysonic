@@ -138,11 +138,13 @@ const getClient = () => {
 
 const makeRequests = async () => {
   if (program.clientType === "http" && program.subscribe) {
-    console.error("HTTP client does not support subscriptions.");
+    process.stderr.write("HTTP client does not support subscriptions." + "\n");
     process.exit(-1);
   }
   if (!program.method && !program.notify && !program.subscribe) {
-    console.error("No method, notification or subscription request provided.");
+    process.stderr.write(
+      "No method, notification or subscription request provided." + "\n"
+    );
     process.exit(-1);
   }
   if (program.method) {
@@ -169,7 +171,7 @@ const handleSubscription = (result) => {
   if (program.write) {
     fs.appendFileSync(program.write, JSON.stringify(result) + "\n");
   } else {
-    console.log(result);
+    process.stdout.write(result + "\n");
   }
 };
 
@@ -179,13 +181,13 @@ const sendRequest = async (method, params) => {
     if (program.write) {
       fs.writeFileSync(program.write, JSON.stringify(result));
     } else {
-      console.log(result);
+      process.stdout.write(JSON.stringify(result, null, 2) + "\n");
     }
   } catch (error) {
     if (program.write) {
       fs.writeFileSync(program.write, JSON.stringify(error));
     } else {
-      console.error(error);
+      process.stderr.write(JSON.stringify(error, null, 2) + "\n");
     }
   }
 };
@@ -197,13 +199,13 @@ const sendNotification = async (method, params) => {
       if (program.write) {
         fs.writeFileSync(program.write, JSON.stringify(result.body));
       } else {
-        console.log(result.body);
+        process.stdout.write(JSON.stringify(result.body, null, 2) + "\n");
       }
     } catch (error) {
       if (program.write) {
         fs.writeFileSync(program.write, JSON.stringify(error.body));
       } else {
-        console.error(error.body);
+        process.stderr.write(JSON.stringify(error.body, null, 2) + "\n");
       }
     }
   } else {
@@ -221,7 +223,7 @@ if (program.clientType === "http" || program.clientType === "https") {
       makeRequests();
     })
     .catch((error) => {
-      console.error(error);
+      process.stderr.write(JSON.stringify(error, null, 2) + "\n");
       process.exit(-1);
     });
 }
