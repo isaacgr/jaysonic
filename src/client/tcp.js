@@ -8,17 +8,12 @@ const TcpClientProtocol = require("./protocol/tcp");
  */
 class TcpClientFactory extends JsonRpcClientFactory {
   /** @inheritdoc */
-  connect() {
-    if (this.pcolInstance) {
-      // not having this caused MaxEventListeners error
-      return Promise.reject(Error("client already connected"));
-    }
+  buildProtocol() {
     this.pcolInstance = new TcpClientProtocol(
       this,
       this.options.version,
       this.options.delimiter
     );
-    return this.pcolInstance.connect();
   }
 
   /** @inheritdoc */

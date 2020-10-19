@@ -55,6 +55,20 @@ class WsBrowserClientFactory extends EventTarget {
   }
 
   /**
+   * Set the `pcolInstance` for the client factory
+   *
+   * @example
+   * this.pcolInstance = new WsBrowserClientProtocol()
+   */
+  buildProtocol() {
+    this.pcolInstance = new WsBrowserClientProtocol(
+      this,
+      this.options.version,
+      this.options.delimiter
+    );
+  }
+
+  /**
    * Calls `connect()` on protocol instance.
    * @returns {function} pcolInstance.connect()
    */
@@ -63,11 +77,7 @@ class WsBrowserClientFactory extends EventTarget {
       // not having this caused MaxEventListeners error
       return Promise.reject(Error("client already connected"));
     }
-    this.pcolInstance = new WsBrowserClientProtocol(
-      this,
-      this.options.version,
-      this.options.delimiter
-    );
+    this.buildProtocol();
     return this.pcolInstance.connect();
   }
 

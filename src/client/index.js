@@ -55,12 +55,29 @@ class JsonRpcClientFactory extends EventEmitter {
   }
 
   /**
-   * Calls `connect()` on protocol instance
+   * Set the `pcolInstance` for the client factory
    *
    * @abstract
+   * @example
+   * this.pcolInstance = new JsonRpcClientProtocol()
+   */
+  buildProtocol() {
+    throw new Error("function must be overwritten in subclass");
+  }
+
+  /**
+   * Calls `buildProtocol` method.
+   *
+   * Calls `connect()` on protocol instance
+   *
    */
   connect() {
-    throw new Error("function must be overwritten in subclass");
+    if (this.pcolInstance) {
+      // not having this caused MaxEventListeners error
+      return Promise.reject(Error("client already connected"));
+    }
+    this.buildProtocol();
+    return this.pcolInstance.connect();
   }
 
   /**

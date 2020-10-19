@@ -18,17 +18,6 @@ class WsBrowserClientProtocol extends WsClientProtocol {
   }
 
   /** @inheritdoc */
-  gotBatch(message) {
-    // check if any requests are notifications
-    message.forEach((res) => {
-      if (res && res.method && !res.id) {
-        this.gotNotification(res);
-      }
-    });
-    this.gotBatchResponse(message);
-  }
-
-  /** @inheritdoc */
   gotNotification(message) {
     this.factory.dispatchEvent(
       new CustomEvent(message.method, { detail: message })
