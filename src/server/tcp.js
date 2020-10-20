@@ -26,19 +26,6 @@ class TcpServerFactory extends JsonRpcServerFactory {
       this.pcolInstance.clientConnected();
     });
   }
-
-  /**
-   * Send notification to client
-   *
-   * @param {class} client Client instance
-   * @param {string} response Stringified JSON-RPC message to sent to client
-   * @throws Will throw an error if client is not defined
-   */
-  sendNotification(client, response) {
-    return client.write(
-      JSON.stringify(JSON.parse(response)) + this.options.delimiter
-    );
-  }
 }
 
 module.exports = TcpServerFactory;

@@ -237,6 +237,7 @@ class JsonRpcServerFactory extends EventEmitter {
         response += idx === responses.length - 1 ? "" : ",";
       });
       response += "]";
+      response = JSON.stringify(JSON.parse(response));
     }
     if (this.connectedClients.length === 0) {
       return [Error("No clients connected")];
@@ -249,6 +250,17 @@ class JsonRpcServerFactory extends EventEmitter {
         return e;
       }
     });
+  }
+
+  /**
+   * Send notification to client
+   *
+   * @param {class} client Client instance
+   * @param {string} response Stringified JSON-RPC message to sent to client
+   * @throws Will throw an error if client is not defined
+   */
+  sendNotification(client, response) {
+    return client.write(response + this.options.delimiter);
   }
 
   /**
