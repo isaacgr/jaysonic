@@ -22,6 +22,10 @@ module.exports = {
     "no-underscore-dangle": "off",
     quotes: ["error", "double"],
     "consistent-return": "off",
+    "max-len": [
+      "error",
+      { ignoreComments: true, ignoreTemplateLiterals: true }
+    ],
     "no-console": "off",
     "no-restricted-syntax": [
       "off",
@@ -29,5 +33,13 @@ module.exports = {
         selector: "ForOfStatement"
       }
     ]
-  }
+  },
+  overrides: [
+    {
+      files: ["*.test.js"],
+      rules: {
+        "max-len": ["off"]
+      }
+    }
+  ]
 };

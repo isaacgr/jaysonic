@@ -2,19 +2,23 @@ const JsonRpcClientFactory = require(".");
 const WsClientProtocol = require("./protocol/ws");
 
 /**
- * Constructor for Jsonic TCP client
- * @class WSClient
- * @constructor
+ * Creates instance of WsClientFactory
+ *
  * @extends JsonRpcClientFactory
- * @param {Object} [options] optional settings for client
- * @return WSClient
  */
-class WSClient extends JsonRpcClientFactory {
+class WsClientFactory extends JsonRpcClientFactory {
+  /**
+   * Additional parameters ontop of those inherited from [JsonRpcClientFactory]{@link JsonRpcClientFactory}
+   *
+   * @param {object} options Connection options for factory class
+   * @param {string} [options.url="ws://127.0.0.1:8100"] Websocket URL to connect to
+   * @property {string} url Same as `options.url`
+   */
   constructor(options) {
     super(options);
 
-    if (!(this instanceof WSClient)) {
-      return new WSClient(options);
+    if (!(this instanceof WsClientFactory)) {
+      return new WsClientFactory(options);
     }
 
     const defaults = {
@@ -29,45 +33,34 @@ class WSClient extends JsonRpcClientFactory {
     this.url = this.options.url;
   }
 
-  connect() {
-    if (this.pcolInstance) {
-      // not having this caused MaxEventListeners error
-      return Promise.reject(Error("client already connected"));
-    }
+  /** @inheritdoc */
+  buildProtocol() {
     this.pcolInstance = new WsClientProtocol(
       this,
       this.options.version,
       this.options.delimiter
     );
-    return this.pcolInstance.connect();
   }
 
+  /** @inheritdoc */
   end(cb) {
     this.pcolInstance.end(cb);
   }
 
-  /**
-   * @params {String} [method] method to subscribe to
-   * @params {Function} [cb] callback function to invoke on notify
-   */
+  /** @inheritdoc */
   subscribe(method, cb) {
     this.on(method, cb);
   }
 
-  /**
-   * @params {String} [method] method to unsubscribe from
-   * @params {Function} [cb] name of function to remove
-   */
+  /** @inheritdoc */
   unsubscribe(method, cb) {
     this.removeListener(method, cb);
   }
 
-  /**
-   * @params {String} [method] method to unsubscribe all listeners from
-   */
+  /** @inheritdoc */
   unsubscribeAll(method) {
     this.removeAllListeners([method]);
   }
 }
 
-module.exports = WSClient;
+module.exports = WsClientFactory;

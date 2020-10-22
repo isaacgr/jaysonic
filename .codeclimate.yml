@@ -6,3 +6,10 @@ checks:
   method-complexity:
     config:
       threshold: 7
+plugins:
+  duplication:
+    enabled: true
+    config:
+      languages:
+        javascript:
+          mass_threshold: 50

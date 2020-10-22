@@ -6,12 +6,12 @@ const Jaysonic = module.exports;
 
 /**
  * @static
- * @type Client
+ * @type JsonRpcClientFactory
  */
 Jaysonic.client = require("./client");
 
 /**
  * @static
- * @type Server
+ * @type JsonRpcServerFactory
  */
 Jaysonic.server = require("./server");

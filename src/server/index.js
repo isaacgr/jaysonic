@@ -1,18 +1,23 @@
 const EventEmitter = require("events");
-const { formatResponse } = require("../functions");
+const { formatResponse } = require("../util/format");
 
 /**
- * @class JsonRpcServerFactory
- * @extends require('events').EventEmitter
- * @param {Object} [host] host IP to connect with
- * @param {Object} [host] host port to connect with
- * @param {Object} [options]
- * @param {Number} [options.version=2] JSON-RPC version to use (1|2)
- * @param {String} [options.delimiter="\n"] delimiter to use for requests
- * @param {Boolean} [options.exlusive=false] disallow port sharing
- * @return {Client}
+ * Creates an instance of JsonRpcServerFactory
+ * @extends events
  */
 class JsonRpcServerFactory extends EventEmitter {
+  /**
+   * @param {object} options
+   * @param {Object} [options.host] Host IP to open server with
+   * @param {Object} [options.port] Host port to open server with
+   * @param {Number} [options.version=2] JSON-RPC version to use (1|2)
+   * @param {String} [options.delimiter="\n"] Delimiter to use for [JsonRpcServerProtocol]{@link JsonRpcServerProtocol}
+   * @param {Boolean} [options.exlusive=false] disallow port sharing
+   * @property {object} methods Key value pairs of server method to function call
+   * @property {array} connectedClients List of connected clients
+   * @property {boolean} listening  Inidicates if the server is currently listening
+   * @property {class} pcolInstance Instance of [JsonRpcServerProtocol]{@link JsonRpcServerProtocol}
+   */
   constructor(options) {
     super();
     if (!(this instanceof JsonRpcServerFactory)) {
@@ -23,7 +28,7 @@ class JsonRpcServerFactory extends EventEmitter {
       host: "127.0.0.1",
       port: 8100,
       exclusive: false,
-      version: "2.0",
+      version: 2,
       delimiter: "\n"
     };
 
@@ -38,6 +43,17 @@ class JsonRpcServerFactory extends EventEmitter {
     this.pcolInstance = undefined;
   }
 
+  /**
+   * Start listening for client connections to server.
+   *
+   * Calls [setServer]{@link JsonRpcServerFactory#setServer} and [buildProtocol]{@link JsonRpcServerFactory#buildProtocol}.
+   *
+   * Establishes `error` and `close` listeners.
+   *
+   * Establishes `clientConnected` and `clientDisconnected` listener.
+   *
+   * @returns {Promise} Resolves host and port address for server.
+   */
   listen() {
     return new Promise((resolve, reject) => {
       if (this.listening) {
@@ -55,28 +71,76 @@ class JsonRpcServerFactory extends EventEmitter {
           port: this.server.address().port
         });
       });
-      this.setupListeners();
+      this._setupListeners();
     });
   }
 
+  /**
+   * Set the `pcolInstance` for the server factory
+   *
+   * @abstract
+   * @example
+   * this.pcolInstance = new JsonRpcClientProtocol()
+   */
   buildProtocol() {
     throw new Error("function must be overwritten in subclass");
   }
 
-  setupListeners() {
+  /**
+   * Set the `server` property for the server factory
+   * @abstract
+   * @example
+   * this.server = new net.Server()
+   */
+  setServer() {
+    throw new Error("function must be overwritten in subclass");
+  }
+
+  /**
+   * Setup the `error` and `close` events for the factory and server.
+   * Sets `listening` to false if any errors returned or if server stops listening.
+   *
+   * Calls the [JsonRpcServerFactory]{@link JsonRpcServerFactory#clientConnected} and
+   * [JsonRpcServerFactory]{@link JsonRpcServerFactory#clientDisconnected} methods
+   * @private
+   */
+  _setupListeners() {
     this.on("error", (error) => {
-      this.listening = false;
       throw error;
     });
     this.server.on("error", (error) => {
-      this.listening = false;
       throw error;
     });
     this.server.on("close", () => {
       this.listening = false;
     });
+    this.on("clientConnected", (client) => {
+      this.clientConnected({
+        host: client.remoteAddress,
+        port: client.remotePort
+      });
+    });
+    this.on("clientDisconnected", (client) => {
+      const clientIndex = this.connectedClients.findIndex(c => client === c);
+      if (clientIndex === -1) {
+        this.clientDisconnected({
+          error: `Unknown client ${JSON.stringify(client)}`
+        });
+      } else {
+        const [deletedClient] = this.connectedClients.splice(clientIndex, 1);
+        this.clientDisconnected({
+          host: deletedClient.remoteAddress,
+          port: deletedClient.remotePort
+        });
+      }
+    });
   }
 
+  /**
+   * Close the server connection. Sets `listening` property to `false`.
+   *
+   * @returns {Promise} Will reject if any error was present
+   */
   close() {
     this.listening = false;
     return new Promise((resolve, reject) => {
@@ -89,23 +153,71 @@ class JsonRpcServerFactory extends EventEmitter {
     });
   }
 
-  // add the method and its associated callback to the object
+  /**
+   * Register a method and associated function with the server.
+   *
+   * The function will be called when a client makes a request to this method.
+   *
+   * @param {string} name Name of method
+   * @param {function} cb Function to call when client makes request to method
+   */
   method(name, cb) {
     this.methods[name] = cb;
   }
 
+  /**
+   * Call function when notification with event name comes in.
+   *
+   * @param {string} method Method name to listen for notification
+   * @param {function} cb Name of callback function fired when method event comes in
+   *
+   * @example
+   * function world(){
+   *  return 'foo'
+   * }
+   * server.onNotify("hello", world)
+   */
   onNotify(method, cb) {
     this.on(method, cb);
   }
 
+  /**
+   * Remove function name from listening for notifications.
+   *
+   * @param {string} method Method name to remove
+   * @param {function} cb Name of the callback function to remove
+   *
+   * @example
+   * function world(){
+   *  return 'foo'
+   * }
+   * server.removeOnNotify("hello", world)
+   */
   removeOnNotify(method, cb) {
     this.removeListener(method, cb);
   }
 
+  /**
+   * Remove all functions listening for notification.
+   *
+   * @param {string} method Method name to remove events for
+   */
   removeAllOnNotify(method) {
     this.removeAllListeners([method]);
   }
 
+  /**
+   * @param {Array.<Array.<string, Array|object>>} notifications Array of notifications
+   * @returns {boolean[]|Error[]} Returns list of error objects if there was an error sending to any client.
+   * Returns true if the entire data was sent successfully
+   * Returns false if all or part of the data was not sent to the client.
+   *
+   * @example
+   * server.notify([
+   *    ["hello", ["world"]],
+   *    ["foo", {"bar": "baz"}]
+   * ])
+   */
   notify(notifications) {
     if (notifications.length === 0 || !Array.isArray(notifications)) {
       throw new Error("Invalid arguments");
@@ -125,15 +237,11 @@ class JsonRpcServerFactory extends EventEmitter {
         response += idx === responses.length - 1 ? "" : ",";
       });
       response += "]";
+      response = JSON.stringify(JSON.parse(response));
     }
     if (this.connectedClients.length === 0) {
       return [Error("No clients connected")];
     }
-    /**
-     * Returns list of error objects if there was an error sending to any client
-     * Otherwise Returns true if the entire data was sent successfully
-     * Returns false if all or part of the data was not
-     */
     return this.connectedClients.map((client) => {
       try {
         return this.sendNotification(client, response);
@@ -144,6 +252,23 @@ class JsonRpcServerFactory extends EventEmitter {
     });
   }
 
+  /**
+   * Send notification to client
+   *
+   * @param {class} client Client instance
+   * @param {string} response Stringified JSON-RPC message to sent to client
+   * @throws Will throw an error if client is not defined
+   */
+  sendNotification(client, response) {
+    return client.write(response + this.options.delimiter);
+  }
+
+  /**
+   * Generate objects for notifications to send to client
+   *
+   * @param {Array.<string, Array>} notifications Array of notifications to send to client.
+   * @private
+   */
   _getNotificationResponses(notifications) {
     return notifications.map(([method, params]) => {
       if (!method && !params) {
@@ -154,34 +279,50 @@ class JsonRpcServerFactory extends EventEmitter {
         params,
         delimiter: this.options.delimiter
       };
-      if (this.options.version === "2.0") {
+      if (this.options.version === 2) {
         response.jsonrpc = "2.0";
       }
       return response;
     });
   }
 
-  clientConnected(cb) {
-    this.on("clientConnected", (client) => {
-      cb({
-        host: client.remoteAddress,
-        port: client.remotePort
-      });
-    });
+  /**
+   * Called when `clientConnected` event is fired.
+   *
+   * @param {object} event Returns host and port or error object
+   */
+  clientConnected(event) {
+    return event;
   }
 
-  clientDisconnected(cb) {
-    this.on("clientDisconnected", (client) => {
-      const clientIndex = this.connectedClients.findIndex(c => client === c);
-      if (clientIndex === -1) {
-        return cb(`Unknown client ${JSON.stringify(client)}`);
+  /**
+   * Called when `clientDisconnected` event is fired.
+   *
+   * @param {object} event Returns host and port or error object
+   */
+  clientDisconnected(event) {
+    return event;
+  }
+
+  /**
+   * Returns a list of all server class methods which start with 'handle'.
+   *
+   * @param {object} toCheck The object get prototype function names from
+   * @private
+   */
+  _getAllFuncs(toCheck) {
+    return Object.getOwnPropertyNames(Object.getPrototypeOf(toCheck)).filter(
+      (e, i, arr) => {
+        if (
+          e !== arr[i + 1]
+          && typeof toCheck[e] === "function"
+          && e.startsWith("handle")
+        ) {
+          return true;
+        }
+        return false;
       }
-      const [deletedClient] = this.connectedClients.splice(clientIndex, 1);
-      return cb({
-        host: deletedClient.remoteAddress,
-        port: deletedClient.remotePort
-      });
-    });
+    );
   }
 }
 
@@ -189,21 +330,21 @@ module.exports = JsonRpcServerFactory;
 
 /**
  * HTTP server constructor
- * @type ServerHTTP
+ * @type HttpServerFactory
  * @static
  */
 JsonRpcServerFactory.http = require("./http");
 
 /**
  * TCP server constructor
- * @type ServerTCP
+ * @type TcpServerFactory
  * @static
  */
 JsonRpcServerFactory.tcp = require("./tcp");
 
 /**
  * WS server constructor
- * @type ServerWS
+ * @type WsServerFactory
  * @static
  */
 JsonRpcServerFactory.ws = require("./ws");

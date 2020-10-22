@@ -1,5 +1,9 @@
 const JsonRpcServerProtocol = require("./base");
 
-class TCPServerProtocol extends JsonRpcServerProtocol {}
+/**
+ * Creates instance of TcpServerProtocol
+ * @extends JsonRpcServerProtocol
+ */
+class TcpServerProtocol extends JsonRpcServerProtocol {}
 
-module.exports = TCPServerProtocol;
+module.exports = TcpServerProtocol;

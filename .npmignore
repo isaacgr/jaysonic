@@ -1,6 +1,9 @@
 src/
 tests/
+docs/
 .babelrc
 .eslint*
 .git*
 .travis*
+.codeclimate*
+jsdoc*

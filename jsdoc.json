@@ -1,0 +1,13 @@
+{
+  "opts": {
+    "template": "node_modules/docdash"
+  },
+  "templates": {
+    "systemName": "Jaysonic",
+    "theme": "simplex",
+    "syntaxTheme": "dark",
+    "outputSourceFiles": true,
+    "linenums": true
+  },
+  "plugins": ["plugins/markdown"]
+}

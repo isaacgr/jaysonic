@@ -2,53 +2,39 @@ const JsonRpcClientFactory = require(".");
 const TcpClientProtocol = require("./protocol/tcp");
 
 /**
- * Constructor for Jsonic TCP client
- * @class TCPClient
- * @constructor
+ * Creates instance of TcpClientFactory
+ *
  * @extends JsonRpcClientFactory
- * @param {Object} [options] optional settings for client
- * @return TCPClient
  */
-class TCPClient extends JsonRpcClientFactory {
-  connect() {
-    if (this.pcolInstance) {
-      // not having this caused MaxEventListeners error
-      return Promise.reject(Error("client already connected"));
-    }
+class TcpClientFactory extends JsonRpcClientFactory {
+  /** @inheritdoc */
+  buildProtocol() {
     this.pcolInstance = new TcpClientProtocol(
       this,
       this.options.version,
       this.options.delimiter
     );
-    return this.pcolInstance.connect();
   }
 
+  /** @inheritdoc */
   end(cb) {
     this.pcolInstance.end(cb);
   }
 
-  /**
-   * @params {String} [method] method to subscribe to
-   * @params {Function} [cb] callback function to invoke on notify
-   */
+  /** @inheritdoc */
   subscribe(method, cb) {
     this.on(method, cb);
   }
 
-  /**
-   * @params {String} [method] method to unsubscribe from
-   * @params {Function} [cb] name of function to remove
-   */
+  /** @inheritdoc */
   unsubscribe(method, cb) {
     this.removeListener(method, cb);
   }
 
-  /**
-   * @params {String} [method] method to unsubscribe all listeners from
-   */
+  /** @inheritdoc */
   unsubscribeAll(method) {
     this.removeAllListeners([method]);
   }
 }
 
-module.exports = TCPClient;
+module.exports = TcpClientFactory;
