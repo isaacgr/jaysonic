@@ -5,17 +5,26 @@ const { serverHttps } = require("../test-server");
 
 const clienthttps = new Jaysonic.client.http({
   scheme: "https",
-  port: 8801,
   rejectUnauthorized: false
 });
 
-before((done) => {
-  serverHttps.listen().then(() => {
-    done();
-  });
-});
-
 describe("HTTPS Client", () => {
+  before((done) => {
+    serverHttps
+      .listen()
+      .then(() => {
+        done();
+      })
+      .catch(e => console.log(e));
+  });
+  after((done) => {
+    serverHttps
+      .close()
+      .then(() => {
+        done();
+      })
+      .catch(e => console.log(e));
+  });
   describe("connection", () => {
     // it("should receive error trying to write while disconnected", (done) => {
     //   const badClient = new Jaysonic.client.http({
@@ -35,7 +44,7 @@ describe("HTTPS Client", () => {
   });
   describe("requests", () => {
     it("should get a response for positional params", (done) => {
-      const request = clienthttps.request().send("add", [1, 2]);
+      const request = clienthttps.request().send("params", [1, 2]);
       request.then((response) => {
         expect(response.body).to.be.eql({
           result: 3,
@@ -46,10 +55,12 @@ describe("HTTPS Client", () => {
       });
     });
     it("should get a response for named params", (done) => {
-      const request = clienthttps.request().send("greeting", { name: "Isaac" });
+      const request = clienthttps
+        .request()
+        .send("named.params", { name: "jaysonic" });
       request.then((response) => {
         expect(response.body).to.be.eql({
-          result: "Hello Isaac",
+          result: "Hello jaysonic",
           jsonrpc: "2.0",
           id: 2
         });
@@ -70,7 +81,7 @@ describe("HTTPS Client", () => {
   });
   describe("request errors", () => {
     it("should get an 'invalid params' error", (done) => {
-      const request = clienthttps.request().send("add", {});
+      const request = clienthttps.request().send("params", {});
       request.catch((response) => {
         expect(response.body).to.be.eql({
           jsonrpc: "2.0",
@@ -84,7 +95,7 @@ describe("HTTPS Client", () => {
       });
     });
     it("should get a 'method not found' error", (done) => {
-      const request = clienthttps.request().send("nonexistent", {});
+      const request = clienthttps.request().send("foo", {});
       request.catch((response) => {
         expect(response.body).to.be.eql({
           jsonrpc: "2.0",
@@ -98,7 +109,7 @@ describe("HTTPS Client", () => {
       });
     });
     it("should handle 'unknown' error", (done) => {
-      const request = clienthttps.request().send("unknownerror", [1]);
+      const request = clienthttps.request().send("unknown.error", [1]);
       request.catch((response) => {
         expect(response.body).to.eql({
           jsonrpc: "2.0",
@@ -112,8 +123,8 @@ describe("HTTPS Client", () => {
   describe("batches", () => {
     it("should receive response for batch request", (done) => {
       const request = clienthttps.batch([
-        clienthttps.request().message("add", [1, 2]),
-        clienthttps.request().message("add", [3, 4])
+        clienthttps.request().message("params", [1, 2]),
+        clienthttps.request().message("params", [3, 4])
       ]);
       request.then((response) => {
         expect(response.body).to.eql([
@@ -125,8 +136,8 @@ describe("HTTPS Client", () => {
     });
     it("should receive error in batch response if one batch request is bad", (done) => {
       const request = clienthttps.batch([
-        clienthttps.request().message("nonexistent", [1, 2]),
-        clienthttps.request().message("add", [3, 4])
+        clienthttps.request().message("foo", [1, 2]),
+        clienthttps.request().message("params", [3, 4])
       ]);
       request.catch((response) => {
         expect(response.body).to.eql([
@@ -160,7 +171,7 @@ describe("HTTPS Client", () => {
     //   });
     //   httpclient
     //     .request()
-    //     .send("add", [1, 2])
+    //     .send("params", [1, 2])
     //     .catch((error) => {
     //       expect(error.body).to.be.eql({
     //         jsonrpc: "2.0",
@@ -176,17 +187,17 @@ describe("HTTPS Client", () => {
   });
   describe("multiple requests", () => {
     it("should get responses for multiple requests at once", (done) => {
-      const request = clienthttps.request().send("add", [1, 2]);
+      const request = clienthttps.request().send("params", [1, 2]);
       const request2 = clienthttps
         .request()
-        .send("greeting", { name: "Isaac" });
+        .send("named.params", { name: "jaysonic" });
       const request3 = clienthttps.batch([
-        clienthttps.request().message("add", [1, 2]),
-        clienthttps.request().message("add", [3, 4])
+        clienthttps.request().message("params", [1, 2]),
+        clienthttps.request().message("params", [3, 4])
       ]);
       const request4 = clienthttps.batch([
         clienthttps.request().message("nonexistent", [1, 2]),
-        clienthttps.request().message("add", [3, 4])
+        clienthttps.request().message("params", [3, 4])
       ]);
       try {
         request.then((res1) => {
@@ -195,7 +206,7 @@ describe("HTTPS Client", () => {
         request2.then((res2) => {
           expect(res2.body).to.eql({
             jsonrpc: "2.0",
-            result: "Hello Isaac",
+            result: "Hello jaysonic",
             id: 12
           });
         });
@@ -234,7 +245,7 @@ describe("HTTPS Client", () => {
   //   it("should send headers with content length", (done) => {
   //     const request = clienthttps.request().notify("notify", []);
   //     const length = Buffer.byteLength(
-  //       clienthttps.request().message("add", [1, 2]),
+  //       clienthttps.request().message("params", [1, 2]),
   //       clienthttps.options.encoding
   //     );
   //     request.then((response) => {

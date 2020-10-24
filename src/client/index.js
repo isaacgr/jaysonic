@@ -33,7 +33,7 @@ class JsonRpcClientFactory extends EventEmitter {
 
     const defaults = {
       host: "127.0.0.1",
-      port: "8100",
+      port: 8100,
       version: 2,
       delimiter: "\n",
       timeout: 30,
