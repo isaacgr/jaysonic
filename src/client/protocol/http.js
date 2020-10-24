@@ -118,7 +118,13 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
       try {
         this.write(request, () => {
           if (this.listener.statusCode === 204) {
-            resolve(this.listener);
+            resolve({
+              body: this.listener.body || null,
+              headers: {
+                ...this.listener.headers
+              },
+              statusCode: this.listener.statusCode
+            });
           } else {
             reject(new Error("no response receieved for notification"));
           }
@@ -136,7 +142,8 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
       body: this.responseQueue[id],
       headers: {
         ...this.listener.headers
-      }
+      },
+      statusCode: this.listener.statusCode
     };
   }
 
@@ -146,7 +153,8 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
       body: batch,
       headers: {
         ...this.listener.headers
-      }
+      },
+      statusCode: this.listener.statusCode
     };
   }
 
@@ -156,7 +164,8 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
       body: error,
       headers: {
         ...this.listener.headers
-      }
+      },
+      statusCode: this.listener.statusCode
     };
     try {
       this.pendingCalls[err.body.id].reject(err);
