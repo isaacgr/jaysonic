@@ -75,6 +75,13 @@ class WsServerFactory extends JsonRpcServerFactory {
     });
   }
 
+  /** @inheritdoc */
+  _removeClients() {
+    for (const client of this.connectedClients) {
+      client.close();
+    }
+  }
+
   /**
    * Send notification to client
    *
