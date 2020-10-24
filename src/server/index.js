@@ -137,13 +137,16 @@ class JsonRpcServerFactory extends EventEmitter {
   }
 
   /**
-   * Close the server connection. Sets `listening` property to `false`.
+   * Closes the server connection and kicks all connected clients.
+   *
+   * Sets `listening` property to `false`.
    *
    * @returns {Promise} Will reject if any error was present
    */
   close() {
     this.listening = false;
     return new Promise((resolve, reject) => {
+      this._removeClients();
       this.server.close((error) => {
         if (error) {
           reject(error);
@@ -151,6 +154,17 @@ class JsonRpcServerFactory extends EventEmitter {
         resolve();
       });
     });
+  }
+
+  /**
+   * Kicks all connected clients.
+   *
+   * @private
+   */
+  _removeClients() {
+    for (const client of this.connectedClients) {
+      client.destroy();
+    }
   }
 
   /**
