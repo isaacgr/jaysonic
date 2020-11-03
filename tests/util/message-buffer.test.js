@@ -2,20 +2,9 @@ const { expect } = require("chai");
 const net = require("net");
 const intercept = require("intercept-stdout");
 const Jaysonic = require("../../src");
+const { server } = require("../test-server");
 
-const tcpServer = new Jaysonic.server.tcp({ port: 8989 });
-const tcpclient = new Jaysonic.client.tcp({
-  host: "127.0.0.1",
-  port: 8887
-});
-
-tcpServer.method("add", ([a, b]) => a + b);
-
-before((done) => {
-  tcpServer.listen().then(() => {
-    done();
-  });
-});
+const tcpclient = new Jaysonic.client.tcp();
 
 const message1 = {
   jsonrpc: "2.0",
@@ -44,6 +33,16 @@ const res2 = {
 
 describe("Message Buffer", () => {
   describe("server side", () => {
+    before((done) => {
+      server.listen().then(() => {
+        done();
+      });
+    });
+    after((done) => {
+      server.close().then(() => {
+        done();
+      });
+    });
     it("should return 2 responses when 3rd message has no delimiter", (done) => {
       const socket = new net.Socket();
       const chunk = `${JSON.stringify(message1)}\n${JSON.stringify(
@@ -51,7 +50,7 @@ describe("Message Buffer", () => {
       )}\n`;
       const badChunk = "test";
       let messageBuffer = "";
-      socket.connect(8989, "127.0.0.1", () => {
+      socket.connect(8100, "127.0.0.1", () => {
         socket.write(chunk + badChunk);
         socket.on("data", (data) => {
           messageBuffer += data;
@@ -85,7 +84,7 @@ describe("Message Buffer", () => {
       const chunk = `${JSON.stringify(message1)}\n`;
       let messageBuffer = "";
       const socket = new net.Socket();
-      socket.connect(8989, "127.0.0.1", () => {
+      socket.connect(8100, "127.0.0.1", () => {
         socket.write(chunk);
         socket.on("data", (data) => {
           messageBuffer += data;
@@ -119,7 +118,7 @@ describe("Message Buffer", () => {
         message2
       )}\n`;
       let messageBuffer = "";
-      socket.connect(8989, "127.0.0.1", () => {
+      socket.connect(8100, "127.0.0.1", () => {
         socket.write(chunk);
         socket.on("data", (data) => {
           messageBuffer += data;
@@ -156,9 +155,9 @@ describe("Message Buffer", () => {
       const unhook = intercept((text) => {
         capturedText += text;
       });
-      const server = new net.Server();
-      server.listen({ host: "127.0.0.1", port: 8887 });
-      server.on("connection", (someclient) => {
+      const testServer = new net.Server();
+      testServer.listen({ host: "127.0.0.1", port: 8100 });
+      testServer.on("connection", (someclient) => {
         someclient.write(
           `${JSON.stringify(res1)}\ntest${JSON.stringify(res2)}\n`
         );
@@ -175,6 +174,7 @@ describe("Message Buffer", () => {
             expect(capturedText).to.equal(
               "Message has no outstanding calls: {\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Unable to parse message: 'test{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"method\\\":\\\"notify\\\",\\\"params\\\":1}'\"},\"id\":null}\n"
             );
+            tcpclient.end();
             done();
           }, 100);
         });

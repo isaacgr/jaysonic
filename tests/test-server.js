@@ -53,6 +53,21 @@ serverHttp.method("unknown.error", ([a]) => {
   }
 });
 
+// HTTP V1 Server
+serverHttpV1.method("large.data", () => data);
+serverHttpV1.method("params", ([a, b]) => a + b);
+serverHttpV1.method("named.params", ({ name }) => `Hello ${name}`);
+serverHttpV1.method("type.error", ([a]) => {
+  if (typeof a === "number") {
+    throw new TypeError();
+  }
+});
+serverHttpV1.method("unknown.error", ([a]) => {
+  if (typeof a === "number") {
+    throw new Error();
+  }
+});
+
 // HTTPS Server
 serverHttps.method("large.data", () => data);
 serverHttps.method("params", ([a, b]) => a + b);

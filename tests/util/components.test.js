@@ -1,11 +1,9 @@
 const { expect } = require("chai");
-
 const {
   formatRequest,
   formatResponse,
   formatError
 } = require("../../src/util/format");
-
 const Jaysonic = require("../../src");
 const baseProtocol = require("../../src/server/protocol/base");
 
@@ -31,7 +29,7 @@ describe("formatRequest", () => {
     });
     it("should throw error if method is object", (done) => {
       const params = {
-        method: { test: "ok" },
+        method: { foo: "bar" },
         params: [],
         id: 1,
         options: { delimiter: "\n" }
@@ -61,7 +59,7 @@ describe("formatRequest", () => {
   describe("params", () => {
     it("should throw error if params is number", (done) => {
       const params = {
-        method: "test",
+        method: "foo",
         params: 1,
         id: 1,
         options: { delimiter: "\n" }
@@ -75,8 +73,8 @@ describe("formatRequest", () => {
     });
     it("should throw error if params is string", (done) => {
       const params = {
-        method: "test",
-        params: "test",
+        method: "foo",
+        params: "foo",
         id: 1,
         options: { delimiter: "\n" }
       };
@@ -89,8 +87,8 @@ describe("formatRequest", () => {
     });
     it("should throw error if params is function", (done) => {
       const params = {
-        method: "test",
-        params: () => "test",
+        method: "foo",
+        params: () => "foo",
         id: 1,
         options: { delimiter: "\n" }
       };
@@ -103,12 +101,12 @@ describe("formatRequest", () => {
     });
     it("should generate request with no params if not defined", (done) => {
       const params = {
-        method: "test",
+        method: "foo",
         id: 1,
         delimiter: "\n"
       };
       const message = formatRequest(params);
-      expect(message).to.be.eql("{\"method\":\"test\",\"jsonrpc\":\"2.0\",\"id\":1}\n");
+      expect(message).to.be.eql("{\"method\":\"foo\",\"jsonrpc\":\"2.0\",\"id\":1}\n");
       done();
     });
   });
@@ -135,7 +133,7 @@ describe("formatResponse", () => {
       const params = {
         jsonrpc: 2,
         id: 1,
-        method: "test",
+        method: "foo",
         params: [],
         delimiter: "\n"
       };
@@ -163,7 +161,7 @@ describe("formatResponse", () => {
     it("should throw error if params is not an object or array", (done) => {
       const params = {
         jsonrpc: 2,
-        method: "test",
+        method: "foo",
         params: 1,
         delimiter: "\n"
       };
@@ -299,7 +297,7 @@ describe("getResult()", () => {
     protocol
       .getResult({
         jsonrpc: 2,
-        method: "test",
+        method: "foo",
         id: 1,
         params: [1, 2, 3, 4, 5]
       })
@@ -342,7 +340,7 @@ describe("server.notify()", () => {
       }
     });
     it("should return an error if no clients are connected", (done) => {
-      const res = server.notify([["test", []]]);
+      const res = server.notify([["foo", []]]);
       expect(res).to.be.an("array");
       expect(res[0]).to.be.instanceOf(Error);
       expect(res[0].message).to.be.a("string", "No clients connected");
@@ -350,7 +348,7 @@ describe("server.notify()", () => {
     });
     it("should return a list of error objects if there was an issue sending out to a client", (done) => {
       server.connectedClients.push(1);
-      const res = server.notify([["test", []]]);
+      const res = server.notify([["foo", []]]);
       expect(res).to.be.an("array");
       expect(res[0]).to.be.instanceOf(Error);
       expect(res[0].message).to.be.a("string");
@@ -386,7 +384,7 @@ describe("server.notify()", () => {
       }
     });
     it("should return an error if no clients are connected", (done) => {
-      const res = wss.notify([["test", []]]);
+      const res = wss.notify([["foo", []]]);
       expect(res).to.be.an("array");
       expect(res[0]).to.be.instanceOf(Error);
       expect(res[0].message).to.be.a("string", "No clients connected");
@@ -394,7 +392,7 @@ describe("server.notify()", () => {
     });
     it("should return a list of error objects if there was an issue sending out to a client", (done) => {
       wss.connectedClients.push(1);
-      const res = server.notify([["test", []]]);
+      const res = server.notify([["foo", []]]);
       expect(res).to.be.an("array");
       expect(res[0]).to.be.instanceOf(Error);
       expect(res[0].message).to.be.a("string");
