@@ -123,7 +123,8 @@ const formatError = ({
   if (!message) {
     throw new Error("Must include message in error response");
   }
-  const response = jsonrpc === 2
+  // we're going to assume a 2.0 response if the version isnt explicitly 1
+  const response = jsonrpc && jsonrpc !== 1
     ? {
       jsonrpc: "2.0",
       error: { code, message },
