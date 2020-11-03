@@ -160,18 +160,25 @@ class JsonRpcServerProtocol {
    */
   validateMessage(message) {
     if (!(message === Object(message))) {
-      this._raiseError(ERR_MSGS.invalidRequest, ERR_CODES.invalidRequest, null);
+      this._raiseError(
+        ERR_MSGS.invalidRequest,
+        ERR_CODES.invalidRequest,
+        null,
+        this.version
+      );
     } else if (!(typeof message.method === "string")) {
       this._raiseError(
         ERR_MSGS.invalidRequest,
         ERR_CODES.invalidRequest,
-        message.id
+        message.id,
+        message.jsonrpc
       );
     } else if (!(message.method in this.factory.methods)) {
       this._raiseError(
         ERR_MSGS.methodNotFound,
         ERR_CODES.methodNotFound,
-        message.id
+        message.id,
+        message.jsonrpc
       );
     } else if (
       message.params
@@ -181,13 +188,15 @@ class JsonRpcServerProtocol {
       this._raiseError(
         ERR_MSGS.invalidParams,
         ERR_CODES.invalidParams,
-        message.id
+        message.id,
+        message.jsonrpc
       );
     } else if (message.jsonrpc && this.version !== 2) {
       this._raiseError(
         ERR_MSGS.invalidRequest,
         ERR_CODES.invalidRequest,
-        message.id
+        message.id,
+        message.jsonrpc
       );
     }
   }
@@ -316,9 +325,9 @@ class JsonRpcServerProtocol {
    * @throws Throws a JSON-RPC error object
    * @private
    */
-  _raiseError(message, code, id) {
+  _raiseError(message, code, id, version) {
     const error = formatError({
-      jsonrpc: this.version,
+      jsonrpc: version,
       delimiter: this.delimiter,
       id,
       code,
