@@ -18,21 +18,24 @@ const wsweb = new JaysonicWebClient.wsclient({
 
 server.method(
   "timeout",
-  () => new Promise((resolve) => {
-    setTimeout(() => resolve(0), 5000);
-  })
+  () =>
+    new Promise((resolve) => {
+      setTimeout(() => resolve(0), 5000);
+    })
 );
 serverHttp.method(
   "timeout",
-  () => new Promise((resolve) => {
-    setTimeout(() => resolve(0), 5000);
-  })
+  () =>
+    new Promise((resolve) => {
+      setTimeout(() => resolve(0), 5000);
+    })
 );
 wss.method(
   "timeout",
-  () => new Promise((resolve) => {
-    setTimeout(() => resolve(0), 5000);
-  })
+  () =>
+    new Promise((resolve) => {
+      setTimeout(() => resolve(0), 5000);
+    })
 );
 
 describe("#54 Request timeout", () => {
@@ -117,29 +120,29 @@ describe("#54 Request timeout", () => {
       });
     });
   });
-  describe("http", () => {
-    before((done) => {
-      serverHttp.listen().then(() => {
-        done();
-      });
-    });
-    // after((done) => {
-    //   serverHttp.close().then(() => {
-    //     done();
-    //   });
-    // });
-    it("should return object for request timeout", (done) => {
-      httpclient
-        .request()
-        .send("timeout")
-        .catch((error) => {
-          expect(error).to.be.eql({
-            jsonrpc: "2.0",
-            error: { code: -32000, message: "Request Timeout" },
-            id: 1
-          });
-          done();
-        });
-    });
-  });
+  // describe("http", () => {
+  //   before((done) => {
+  //     serverHttp.listen().then(() => {
+  //       done();
+  //     });
+  //   });
+  //   after((done) => {
+  //     serverHttp.close().then(() => {
+  //       done();
+  //     });
+  //   });
+  //   it("should return object for request timeout", (done) => {
+  //     httpclient
+  //       .request()
+  //       .send("timeout")
+  //       .catch((error) => {
+  //         expect(error).to.be.eql({
+  //           jsonrpc: "2.0",
+  //           error: { code: -32000, message: "Request Timeout" },
+  //           id: 1
+  //         });
+  //         done();
+  //       });
+  //   });
+  // });
 });

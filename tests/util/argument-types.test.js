@@ -12,6 +12,11 @@ describe("request().send()", () => {
       });
     });
   });
+  after((done) => {
+    server.close().then(() => {
+      done();
+    });
+  });
   describe("methods", () => {
     it("should throw error if method is number", (done) => {
       const request = client.request().send(1, []);
