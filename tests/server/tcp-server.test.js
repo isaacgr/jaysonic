@@ -1,25 +1,23 @@
 const { expect } = require("chai");
 const Jaysonic = require("../../src");
-const { server } = require("../test-server");
-const { client, socket } = require("../test-client.js");
+const { server, serverV1 } = require("../test-server");
+const { client, socket, socketV1 } = require("../test-client.js");
 
 server.method(
   "promise.resolve",
-  () =>
-    new Promise((resolve) => {
-      setTimeout(() => {
-        resolve("resolve");
-      }, 10);
-    })
+  () => new Promise((resolve) => {
+    setTimeout(() => {
+      resolve("resolve");
+    }, 10);
+  })
 );
 server.method(
   "promise.reject",
-  () =>
-    new Promise((resolve, reject) => {
-      setTimeout(() => {
-        reject(new Error("reject"));
-      }, 10);
-    })
+  () => new Promise((resolve, reject) => {
+    setTimeout(() => {
+      reject(new Error("reject"));
+    }, 10);
+  })
 );
 
 describe("TCP Server", () => {
@@ -121,7 +119,7 @@ describe("TCP Server", () => {
         done();
       });
     });
-    it("should send 'invalid params' error", (done) => {
+    it("should send 'invalid params' error if server method throws a TypeError", (done) => {
       const req = client.request().send("type.error", [1]);
       req.catch((result) => {
         expect(result).to.eql({
@@ -130,6 +128,35 @@ describe("TCP Server", () => {
           id: 4
         });
         done();
+      });
+    });
+    it("should send 'invalid params' error if params is not an array or object", (done) => {
+      let message = "";
+      let noMore = false;
+      socket.write(
+        "{\"jsonrpc\":\"2.0\",\"method\":\"params\",\"params\":\"foo\",\"id\":88}\n"
+      );
+      socket.on("data", (data) => {
+        message += data;
+        const messages = message.split("\n");
+        messages.forEach((chunk) => {
+          if (chunk === "" || noMore) {
+            return;
+          }
+          try {
+            expect(chunk).to.eql(
+              `${JSON.stringify({
+                jsonrpc: "2.0",
+                error: { code: -32602, message: "Invalid Parameters" },
+                id: 88
+              })}`
+            );
+            noMore = true;
+            done();
+          } catch (e) {
+            done(e);
+          }
+        });
       });
     });
     it("should send 'parse error'", (done) => {
@@ -159,7 +186,7 @@ describe("TCP Server", () => {
         });
       });
     });
-    it("should send 'invalid request' error", (done) => {
+    it("should send 'invalid request' error if method is not a string", (done) => {
       let message = "";
       let noMore = false;
       socket.write(
@@ -239,11 +266,65 @@ describe("TCP Server", () => {
         .catch((result) => {
           expect(result).to.be.eql({
             jsonrpc: "2.0",
-            error: { code: -32603, message: '"reject"' },
+            error: { code: -32603, message: "\"reject\"" },
             id: 6
           });
           done();
         });
+    });
+  });
+});
+
+describe("TCP Server V1", () => {
+  before((done) => {
+    serverV1.listen().then(() => {
+      socketV1.connect(8100, "127.0.0.1", () => {
+        done();
+      });
+    });
+  });
+  after((done) => {
+    serverV1.close().then(() => {
+      socketV1.destroy();
+      socketV1.on("close", () => {
+        done();
+      });
+    });
+  });
+  describe("errors", () => {
+    it("should send 'invalid request' error if 2.0 request sent to a 1.0 server", (done) => {
+      let message = "";
+      let noMore = false;
+      socketV1.write(
+        `${JSON.stringify({
+          jsonrpc: "2.0",
+          method: "params",
+          params: [1, 2],
+          id: 99
+        })}\n`
+      );
+      socketV1.on("data", (data) => {
+        message += data;
+        const messages = message.split("\n");
+        messages.forEach((chunk) => {
+          try {
+            if (chunk === "" || noMore) {
+              return;
+            }
+            expect(chunk).to.eql(
+              `${JSON.stringify({
+                result: null,
+                error: { code: -32600, message: "Invalid Request" },
+                id: 99
+              })}`
+            );
+            noMore = true;
+            done();
+          } catch (e) {
+            done(e);
+          }
+        });
+      });
     });
   });
 });
