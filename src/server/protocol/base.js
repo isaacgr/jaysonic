@@ -196,7 +196,7 @@ class JsonRpcServerProtocol {
         ERR_MSGS.invalidRequest,
         ERR_CODES.invalidRequest,
         message.id,
-        message.jsonrpc
+        this.version
       );
     }
   }
