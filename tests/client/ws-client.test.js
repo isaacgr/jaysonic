@@ -26,6 +26,13 @@ describe("WebSocket Client", () => {
         done();
       });
     });
+    it("should be unable to connect multiple times", (done) => {
+      const conn = ws.connect();
+      conn.catch((error) => {
+        expect(error.message).to.be.a("string");
+        done();
+      });
+    });
   });
   describe("requests", () => {
     it("should receive response for positional params", (done) => {
@@ -97,7 +104,7 @@ describe("WebSocket Client", () => {
         setTimeout(() => {
           unhook();
           expect(capturedText).to.equal(
-            "Message has no outstanding calls: {\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Unable to parse message: 'should get a parse error'\"},\"id\":null}\n"
+            'Message has no outstanding calls: {"jsonrpc":"2.0","error":{"code":-32700,"message":"Unable to parse message: \'should get a parse error\'"},"id":null}\n'
           );
           done();
         }, 100);
@@ -271,13 +278,13 @@ describe("WebSocket Client", () => {
         ["test", []]
       ]);
     });
-    it("should be unable to subscribe, unsub, or unsub all for \"batchResponse\"", (done) => {
+    it('should be unable to subscribe, unsub, or unsub all for "batchResponse"', (done) => {
       try {
         ws.subscribe("batchResponse", () => {});
       } catch (e) {
         expect(e.message).to.be.a(
           "string",
-          "\"batchResponse\" is a reserved event name"
+          '"batchResponse" is a reserved event name'
         );
       }
       try {
@@ -285,7 +292,7 @@ describe("WebSocket Client", () => {
       } catch (e) {
         expect(e.message).to.be.a(
           "string",
-          "\"batchResponse\" is a reserved event name"
+          '"batchResponse" is a reserved event name'
         );
       }
       try {
@@ -293,7 +300,7 @@ describe("WebSocket Client", () => {
       } catch (e) {
         expect(e.message).to.be.a(
           "string",
-          "\"batchResponse\" is a reserved event name"
+          '"batchResponse" is a reserved event name'
         );
       }
       done();
