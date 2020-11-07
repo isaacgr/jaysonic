@@ -2,6 +2,7 @@ const { expect } = require("chai");
 const net = require("net");
 const intercept = require("intercept-stdout");
 const Jaysonic = require("../../src");
+const MessageBuffer = require("../../src/util/buffer");
 const { server } = require("../test-server");
 
 const tcpclient = new Jaysonic.client.tcp();
@@ -32,6 +33,14 @@ const res2 = {
 };
 
 describe("Message Buffer", () => {
+  describe("get.message()", () => {
+    it("should return null if no delimiter found", (done) => {
+      const buffer = new MessageBuffer("\n");
+      buffer.push("foo");
+      expect(buffer.getMessage()).to.equal(null);
+      done();
+    });
+  });
   describe("server side", () => {
     before((done) => {
       server.listen().then(() => {
@@ -172,7 +181,7 @@ describe("Message Buffer", () => {
             });
             unhook();
             expect(capturedText).to.equal(
-              "Message has no outstanding calls: {\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Unable to parse message: 'test{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"method\\\":\\\"notify\\\",\\\"params\\\":1}'\"},\"id\":null}\n"
+              'Message has no outstanding calls: {"jsonrpc":"2.0","error":{"code":-32700,"message":"Unable to parse message: \'test{\\"jsonrpc\\":\\"2.0\\",\\"method\\":\\"notify\\",\\"params\\":1}\'"},"id":null}\n'
             );
             tcpclient.end();
             done();
