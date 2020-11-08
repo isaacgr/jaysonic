@@ -41,7 +41,7 @@ class WsClientProtocol extends JsonRpcClientProtocol {
         };
         this.connector.onerror = (error) => {
           // let the onclose event got it otherwise
-          if (error.error.code !== "ECONNREFUSED") {
+          if (error.error && error.error.code !== "ECONNREFUSED") {
             reject(error);
           }
         };
@@ -53,6 +53,7 @@ class WsClientProtocol extends JsonRpcClientProtocol {
             );
           } else {
             if (this.factory.remainingRetries === 0) {
+              this.factory.pcolInstance = undefined;
               reject(event);
             } else {
               this.factory.remainingRetries -= 1;

@@ -6,10 +6,6 @@ const { wss } = require("../test-server");
 const wsClient = new Jaysonic.client.ws({ retries: 1 });
 
 describe("WS Client Reconnect", () => {
-  after((done) => {
-    wsClient.end();
-    done();
-  });
   it("should attempt to reconnect to the server and reject promise if unable", (done) => {
     const conn = wsClient.connect();
     conn.catch((error) => {

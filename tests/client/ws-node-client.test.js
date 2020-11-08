@@ -16,6 +16,7 @@ describe("WebSocket Node Client", () => {
     });
   });
   after((done) => {
+    ws.end();
     wss.close().then(() => {
       done();
     });
@@ -104,7 +105,7 @@ describe("WebSocket Node Client", () => {
         setTimeout(() => {
           unhook();
           expect(capturedText).to.equal(
-            "Message has no outstanding calls: {\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Unable to parse message: 'should get a parse error\\r'\"},\"id\":null}\n"
+            'Message has no outstanding calls: {"jsonrpc":"2.0","error":{"code":-32700,"message":"Unable to parse message: \'should get a parse error\\r\'"},"id":null}\n'
           );
           done();
         }, 100);
@@ -284,6 +285,7 @@ describe("WS Node Client V1", () => {
     });
   });
   after((done) => {
+    wsV1.end();
     wss.close().then(() => {
       done();
     });
