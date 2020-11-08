@@ -49,16 +49,17 @@ class WsClientProtocol extends JsonRpcClientProtocol {
           if (this.connector.__clientClosed) {
             // we dont want to retry if the client purposefully closed the connection
             console.log(
-              `Client closed connection. Code[${event.code}]. Reason [${event.message}]`
+              `Client closed connection. Code [${event.code}]. Reason [${event.reason}].`
             );
           } else {
             if (this.factory.remainingRetries === 0) {
               reject(event);
+            } else {
+              this.factory.remainingRetries -= 1;
+              console.error(
+                `Connection failed. ${this.factory.remainingRetries} attempts left.`
+              );
             }
-            this.factory.remainingRetries -= 1;
-            console.error(
-              `Connection failed. ${this.factory.remainingRetries} attempts left.`
-            );
             setTimeout(() => {
               retryConnection();
             }, this.factory.connectionTimeout);
