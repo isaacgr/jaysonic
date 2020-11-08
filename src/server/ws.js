@@ -48,15 +48,11 @@ class WsServerFactory extends JsonRpcServerFactory {
       this.setSever();
       this.listening = true;
       this.pcolInstance = this.buildProtocol();
-      try {
-        resolve({
-          host: this.options.host,
-          port: this.options.port,
-          path: this.options.path
-        });
-      } catch (e) {
-        reject(e);
-      }
+      resolve({
+        host: this.options.host,
+        port: this.options.port,
+        path: this.options.path
+      });
     });
   }
 
