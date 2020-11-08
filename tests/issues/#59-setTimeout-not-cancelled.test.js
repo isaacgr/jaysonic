@@ -4,7 +4,7 @@ const WebSocket = require("../../src/client-ws");
 
 describe("#59 setTimeout not cancelled", () => {
   describe("tcp", () => {
-    it("should have no outstanding timeouts'", async () => {
+    it("should have no outstanding timeouts", async () => {
       const server = new Jaysonic.server.tcp({ port: 11111 });
       await server.listen();
       server.method("f", () => 0);

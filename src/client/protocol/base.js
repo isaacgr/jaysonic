@@ -171,8 +171,8 @@ class JsonRpcClientProtocol {
         const { code } = message.error;
         const errorMessage = message.error.message;
         this._raiseError(errorMessage, code, id);
-      } else if (!message.method) {
-        // no method, so assume response
+      } else if ("result" in message) {
+        // Got a result, so must be a response
         this.gotResponse(message);
       } else {
         const code = ERR_CODES.unknown;

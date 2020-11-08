@@ -284,11 +284,14 @@ class JsonRpcServerProtocol {
         delimiter: this.delimiter
       };
       try {
-        const result = params
+        const methodResult = params
           ? this.factory.methods[message.method](params)
           : this.factory.methods[message.method]();
-        if (result instanceof Promise || typeof result.then === "function") {
-          Promise.all([result])
+        if (
+          methodResult instanceof Promise
+          || typeof methodResult.then === "function"
+        ) {
+          Promise.all([methodResult])
             .then((results) => {
               response.result = results || 0;
               resolve(formatResponse(response));
@@ -299,7 +302,7 @@ class JsonRpcServerProtocol {
               reject(formatError(error));
             });
         } else {
-          response.result = result || 0;
+          response.result = methodResult || 0;
           resolve(formatResponse(response));
         }
       } catch (e) {

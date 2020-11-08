@@ -73,7 +73,7 @@ const formatResponse = ({
 
   const response = {};
 
-  if (result) {
+  if (typeof result !== "undefined") {
     response.result = result;
   }
 

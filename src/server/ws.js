@@ -86,7 +86,7 @@ class WsServerFactory extends JsonRpcServerFactory {
    * @throws Will throw an error if client is not defined
    */
   sendNotification(client, response) {
-    return client.send(response + this.options.delimiter);
+    return client.send(response);
   }
 }
 
