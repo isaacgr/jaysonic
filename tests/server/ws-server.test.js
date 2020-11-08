@@ -5,21 +5,19 @@ const { wss } = require("../test-server");
 
 wss.method(
   "promise.resolve",
-  () =>
-    new Promise((resolve) => {
-      setTimeout(() => {
-        resolve("resolve");
-      }, 10);
-    })
+  () => new Promise((resolve) => {
+    setTimeout(() => {
+      resolve("resolve");
+    }, 10);
+  })
 );
 wss.method(
   "promise.reject",
-  () =>
-    new Promise((resolve, reject) => {
-      setTimeout(() => {
-        reject(new Error("reject"));
-      }, 10);
-    })
+  () => new Promise((resolve, reject) => {
+    setTimeout(() => {
+      reject(new Error("reject"));
+    }, 10);
+  })
 );
 
 describe("WebSocket Server", () => {
@@ -209,7 +207,7 @@ describe("WebSocket Server", () => {
         .catch((result) => {
           expect(result).to.be.eql({
             jsonrpc: "2.0",
-            error: { code: -32603, message: '"reject"' },
+            error: { code: -32603, message: "\"reject\"" },
             id: 6
           });
           done();
