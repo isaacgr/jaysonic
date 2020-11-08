@@ -93,6 +93,9 @@ class JsonRpcClientProtocol {
             reject(error);
           }
         });
+        this.connector.on("close", () => {
+          this.factory.emit("serverDisconnected");
+        });
       };
       return retryConnection();
     });

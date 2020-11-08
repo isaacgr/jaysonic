@@ -188,7 +188,7 @@ class JsonRpcClientFactory extends EventEmitter {
   }
 
   /**
-   * Emits a `serverDisconnected` event, passing the callback function
+   * Listens for a `serverDisconnected` event, passing the callback function
    *
    * @param {function} cb
    */
