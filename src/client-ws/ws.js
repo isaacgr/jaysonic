@@ -171,8 +171,9 @@ class WsBrowserClientFactory extends EventTarget {
    * @param {function} cb  Name of callback function to invoke on event
    */
   subscribe(method, cb) {
-    if (!this.eventListenerList) this.eventListenerList = {};
-    if (!this.eventListenerList[method]) this.eventListenerList[method] = [];
+    if (!this.eventListenerList[method]) {
+      this.eventListenerList[method] = [];
+    }
 
     // add listener to  event tracking list
     this.eventListenerList[method].push({
@@ -207,9 +208,6 @@ class WsBrowserClientFactory extends EventTarget {
    * @param {string} method Method to unsubscribe all listeners from
    */
   unsubscribeAll(method) {
-    if (!this.eventListenerList) {
-      this.eventListenerList = {};
-    }
     if (!this.eventListenerList[method]) {
       this.eventListenerList[method] = [];
     }
@@ -233,9 +231,6 @@ class WsBrowserClientFactory extends EventTarget {
    * @private
    */
   _removeListener(method, cb) {
-    if (!this.eventListenerList) {
-      this.eventListenerList = {};
-    }
     if (!this.eventListenerList[method]) {
       this.eventListenerList[method] = [];
     }
@@ -254,9 +249,6 @@ class WsBrowserClientFactory extends EventTarget {
    * @returns {function|function[]}
    */
   getEventListeners(name) {
-    if (!this.eventListenerList) {
-      this.eventListenerList = {};
-    }
     // return requested listeners by name or all them
     if (name === undefined) {
       return this.eventListenerList;
