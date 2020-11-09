@@ -20,6 +20,7 @@ describe("HTTPS Server Instantiation", () => {
     const invalid = new Jaysonic.server.http({ scheme: "foo" });
     invalid.listen().catch((error) => {
       expect(error).to.be.instanceOf(Error);
+      expect(error.message).to.equal("Invalid scheme");
       done();
     });
   });

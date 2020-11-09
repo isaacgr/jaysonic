@@ -217,7 +217,7 @@ class JsonRpcServerFactory extends EventEmitter {
    * @param {string} method Method name to remove events for
    */
   removeAllOnNotify(method) {
-    this.removeAllListeners([method]);
+    this.removeAllListeners(method);
   }
 
   /**

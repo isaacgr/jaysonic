@@ -257,3 +257,15 @@ describe("HTTPS Client", () => {
   //   });
   // });
 });
+
+describe("HTTPS Client Instantiation", () => {
+  it("should throw error for invalid scheme", (done) => {
+    const invalid = new Jaysonic.client.http({ scheme: "foo" });
+    const request = invalid.request().send("params", [1, 2]);
+    request.catch((error) => {
+      expect(error).to.be.instanceOf(Error);
+      expect(error.message).to.equal("Invalid scheme");
+      done();
+    });
+  });
+});
