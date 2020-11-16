@@ -6,9 +6,9 @@ const { server, serverHttp, wss } = require("../test-server");
 const tcpclient = new Jaysonic.client.tcp({
   timeout: 0
 });
-const httpclient = new Jaysonic.client.http({
-  timeout: 0
-});
+// const httpclient = new Jaysonic.client.http({
+//   timeout: 0
+// });
 const wsclient = new Jaysonic.client.ws({
   timeout: 0
 });
@@ -18,21 +18,24 @@ const wsweb = new JaysonicWebClient.wsclient({
 
 server.method(
   "timeout",
-  () => new Promise((resolve) => {
-    setTimeout(() => resolve(0), 5000);
-  })
+  () =>
+    new Promise((resolve) => {
+      setTimeout(() => resolve(0), 5000);
+    })
 );
 serverHttp.method(
   "timeout",
-  () => new Promise((resolve) => {
-    setTimeout(() => resolve(0), 5000);
-  })
+  () =>
+    new Promise((resolve) => {
+      setTimeout(() => resolve(0), 5000);
+    })
 );
 wss.method(
   "timeout",
-  () => new Promise((resolve) => {
-    setTimeout(() => resolve(0), 5000);
-  })
+  () =>
+    new Promise((resolve) => {
+      setTimeout(() => resolve(0), 5000);
+    })
 );
 
 describe("#54 Request timeout", () => {
