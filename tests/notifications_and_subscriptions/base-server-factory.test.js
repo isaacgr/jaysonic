@@ -4,7 +4,7 @@ const JsonRpcServerFactory = require("../../src/server");
 const base = new JsonRpcServerFactory({}, {}, 2, "\n");
 const cb = () => {};
 
-describe("Base Client Factory", () => {
+describe("Base Server Factory Subscriptions", () => {
   it("should remove method from event listeners list", (done) => {
     base.onNotify("foo", cb);
     expect(base.eventNames()).to.have.length(1);
