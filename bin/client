@@ -193,7 +193,7 @@ const sendRequest = async (method, params) => {
 };
 
 const sendNotification = async (method, params) => {
-  if (program.clientType === "http") {
+  if (program.clientType === "http" || program.clientType === "https") {
     try {
       const result = await client.request().notify(method, params);
       if (program.write) {
@@ -203,9 +203,9 @@ const sendNotification = async (method, params) => {
       }
     } catch (error) {
       if (program.write) {
-        fs.writeFileSync(program.write, JSON.stringify(error.body));
+        fs.writeFileSync(program.write, error.message);
       } else {
-        process.stderr.write(JSON.stringify(error.body, null, 2) + "\n");
+        process.stderr.write(error.message + "\n");
       }
     }
   } else {
