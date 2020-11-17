@@ -181,9 +181,9 @@ class JsonRpcServerProtocol {
         message.jsonrpc
       );
     } else if (
-      message.params
-      && !Array.isArray(message.params)
-      && !(message.params === Object(message.params))
+      message.params &&
+      !Array.isArray(message.params) &&
+      !(message.params === Object(message.params))
     ) {
       this._raiseError(
         ERR_MSGS.invalidParams,
@@ -251,14 +251,14 @@ class JsonRpcServerProtocol {
         try {
           this._maybeHandleRequest(request);
           return this.getResult(request)
-            .then(result => JSON.parse(result))
-            .catch(error => JSON.parse(error));
+            .then((result) => JSON.parse(result))
+            .catch((error) => JSON.parse(error));
         } catch (e) {
           // basically reject the whole batch if any one thing fails
           return JSON.parse(e.message);
         }
       })
-      .filter(el => el != null);
+      .filter((el) => el != null);
     return Promise.all(batchResponses);
   }
 
@@ -288,8 +288,8 @@ class JsonRpcServerProtocol {
           ? this.factory.methods[message.method](params)
           : this.factory.methods[message.method]();
         if (
-          methodResult instanceof Promise
-          || typeof methodResult.then === "function"
+          methodResult instanceof Promise ||
+          typeof methodResult.then === "function"
         ) {
           Promise.all([methodResult])
             .then((results) => {
@@ -348,7 +348,7 @@ class JsonRpcServerProtocol {
   gotError(error) {
     let err;
     try {
-      err = JSON.stringify(JSON.parse(error.message));
+      err = JSON.stringify(JSON.parse(error.message)) + this.delimiter;
     } catch (e) {
       err = formatError({
         jsonrpc: this.version,
@@ -358,7 +358,7 @@ class JsonRpcServerProtocol {
         message: JSON.stringify(error, Object.getOwnPropertyNames(error))
       });
     }
-    this.writeToClient(err + this.delimiter);
+    this.writeToClient(err);
   }
 }
 
