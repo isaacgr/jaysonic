@@ -1,5 +1,4 @@
 const { expect } = require("chai");
-const intercept = require("intercept-stdout");
 const net = require("net");
 const Jaysonic = require("../../src");
 
