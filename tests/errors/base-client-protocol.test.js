@@ -4,7 +4,7 @@ const JsonRpcClientProtocol = require("../../src/client/protocol/base");
 const JsonRpcClientFactory = require("../../src/client/");
 
 const factory = new JsonRpcClientFactory({});
-factory.requestTimeout = 1000;
+factory.requestTimeout = 100;
 const client = new JsonRpcClientProtocol(factory, 2, "\n");
 
 describe("Base Client Protocol Errors", () => {
@@ -17,7 +17,7 @@ describe("Base Client Protocol Errors", () => {
     setTimeout(() => {
       unhook();
       expect(capturedText).to.equal(
-        'Message has no outstanding calls: {"id":1}\n'
+        "Message has no outstanding calls: {\"id\":1}\n"
       );
       done();
     }, 100);
@@ -36,20 +36,20 @@ describe("Base Client Protocol Errors", () => {
       done();
     });
   });
-  // it("should log an error if _timeoutPendingCalls gets a TypeError", (done) => {
-  //   let capturedText = "";
-  //   const unhook = intercept((text) => {
-  //     capturedText += text;
-  //   });
-  //   client._timeoutPendingCalls(1);
-  //   setTimeout(() => {
-  //     unhook();
-  //     expect(capturedText).to.equal(
-  //       "Message has no outstanding calls. ID [1]\n"
-  //     );
-  //     done();
-  //   }, 2000);
-  // }).timeout(5000);
+  it("should log an error if _timeoutPendingCalls gets a TypeError", (done) => {
+    let capturedText = "";
+    const unhook = intercept((text) => {
+      capturedText += text;
+    });
+    client._timeoutPendingCalls(69);
+    setTimeout(() => {
+      unhook();
+      expect(capturedText).to.equal(
+        "Message has no outstanding calls. ID [69]\n"
+      );
+      done();
+    }, 1000);
+  }).timeout(5000);
   it("should log an error if _resolveOrRejectBatch gets a TypeError", (done) => {
     let capturedText = "";
     const unhook = intercept((text) => {
