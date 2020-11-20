@@ -9,12 +9,11 @@ const http = new Jaysonic.client.http({
 });
 
 describe("Http Client Protocol Notifications", () => {
-  it("should reject with error if no 204 respnse recieved for notification", (done) => {
+  it("should reject with error if no 204 response recieved for notification", (done) => {
     http
       .request()
       .notify("guru.test", ["isaac"])
       .catch((error) => {
-        console.log(error.message);
         expect(error.message).to.eql("no response receieved for notification");
         done();
       });
