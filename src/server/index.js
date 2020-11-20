@@ -237,9 +237,6 @@ class JsonRpcServerFactory extends EventEmitter {
       throw new Error("Invalid arguments");
     }
     const responses = this._getNotificationResponses(notifications);
-    if (responses.length === 0) {
-      throw new Error("Unable to generate a response object");
-    }
     let response;
     if (responses.length === 1) {
       response = formatResponse(responses[0]);
@@ -285,7 +282,7 @@ class JsonRpcServerFactory extends EventEmitter {
    */
   _getNotificationResponses(notifications) {
     return notifications.map(([method, params]) => {
-      if (!method && !params) {
+      if ((!method && !params) || (!method && params)) {
         throw new Error("Unable to generate a response object");
       }
       const response = {
