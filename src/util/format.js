@@ -81,7 +81,7 @@ const formatResponse = ({
     response.params = params;
   }
 
-  if (!jsonrpc) {
+  if (!jsonrpc || jsonrpc === 1) {
     // 1.0 response
     response.error = null;
     // 1.0 notification
