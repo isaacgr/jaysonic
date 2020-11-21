@@ -1,48 +1,36 @@
 const { expect } = require("chai");
 const Jaysonic = require("../../src");
+const { server, serverV1 } = require("../test-server");
+const { client, socket, socketV1 } = require("../test-client.js");
 
-const server = new Jaysonic.server.tcp({ host: "127.0.0.1", port: 6969 });
-const server2 = new Jaysonic.server.tcp({ host: "127.0.0.1", port: 7070 });
-
-const { client, socket, sock } = require("../test-client.js");
-
-server.method("add", ([a, b]) => a + b);
-server.method("greeting", ({ name }) => `Hello ${name}`);
-server.method("typeerror", ([a]) => {
-  if (typeof a !== "string") {
-    throw new TypeError();
-  }
-});
 server.method(
-  "promiseresolve",
+  "promise.resolve",
   () => new Promise((resolve) => {
     setTimeout(() => {
-      resolve("worked");
+      resolve("resolve");
     }, 10);
   })
 );
 server.method(
-  "promisereject",
+  "promise.reject",
   () => new Promise((resolve, reject) => {
     setTimeout(() => {
-      reject(new Error("broke"));
+      reject(new Error("reject"));
     }, 10);
   })
 );
 
-before((done) => {
-  server.listen().then(() => {
-    socket.connect(6969, "127.0.0.1", () => {
-      server2.listen().then(() => {
-        sock.connect(7070, "127.0.0.1", () => {
-          done();
-        });
-      });
+describe("TCP Server", () => {
+  before((done) => {
+    server.listen().then(() => {
+      done();
     });
   });
-});
-
-describe("TCP Server", () => {
+  after((done) => {
+    server.close().then(() => {
+      done();
+    });
+  });
   describe("connection", () => {
     it("should accept incoming connections", (done) => {
       server.clientConnected((conn) => {
@@ -60,12 +48,14 @@ describe("TCP Server", () => {
       });
     });
     it("should handle requests from multiple clients", (done) => {
-      const client1 = new Jaysonic.client.tcp({ port: 6969 });
-      const client2 = new Jaysonic.client.tcp({ port: 6969 });
+      const client1 = new Jaysonic.client.tcp();
+      const client2 = new Jaysonic.client.tcp();
       client1.connect().then(() => {
         client2.connect().then(() => {
-          const req1 = client1.request().send("add", [1, 2]);
-          const req2 = client2.request().send("greeting", { name: "Isaac" });
+          const req1 = client1.request().send("params", [1, 2]);
+          const req2 = client2
+            .request()
+            .send("named.params", { name: "jaysonic" });
           Promise.all([req1, req2]).then((results) => {
             const [res1, res2] = results;
             expect(res1).to.eql({
@@ -75,7 +65,7 @@ describe("TCP Server", () => {
             });
             expect(res2).to.eql({
               jsonrpc: "2.0",
-              result: "Hello Isaac",
+              result: "Hello jaysonic",
               id: 1
             });
             done();
@@ -85,8 +75,19 @@ describe("TCP Server", () => {
     });
   });
   describe("requests", () => {
+    before((done) => {
+      socket.connect(8100, "127.0.0.1", () => {
+        done();
+      });
+    });
+    after((done) => {
+      socket.destroy();
+      socket.on("close", () => {
+        done();
+      });
+    });
     it("should handle call with positional params", (done) => {
-      const req = client.request().send("add", [1, 2]);
+      const req = client.request().send("params", [1, 2]);
       req.then((result) => {
         expect(result).to.eql({
           jsonrpc: "2.0",
@@ -97,18 +98,18 @@ describe("TCP Server", () => {
       });
     });
     it("should handle call with named params", (done) => {
-      const req = client.request().send("greeting", { name: "Isaac" });
+      const req = client.request().send("named.params", { name: "jaysonic" });
       req.then((result) => {
         expect(result).to.eql({
           jsonrpc: "2.0",
-          result: "Hello Isaac",
+          result: "Hello jaysonic",
           id: 2
         });
         done();
       });
     });
     it("should send 'method not found' error", (done) => {
-      const req = client.request().send("nonexistent", []);
+      const req = client.request().send("foo", []);
       req.catch((result) => {
         expect(result).to.eql({
           jsonrpc: "2.0",
@@ -118,8 +119,8 @@ describe("TCP Server", () => {
         done();
       });
     });
-    it("should send 'invalid params' error", (done) => {
-      const req = client.request().send("typeerror", [1]);
+    it("should send 'invalid params' error if server method throws a TypeError", (done) => {
+      const req = client.request().send("type.error", [1]);
       req.catch((result) => {
         expect(result).to.eql({
           jsonrpc: "2.0",
@@ -129,36 +130,66 @@ describe("TCP Server", () => {
         done();
       });
     });
-    it("should send 'parse error'", (done) => {
+    it("should send 'invalid params' error if params is not an array or object", (done) => {
       let message = "";
-      socket.write("test\n");
+      let noMore = false;
+      socket.write(
+        "{\"jsonrpc\":\"2.0\",\"method\":\"params\",\"params\":\"foo\",\"id\":88}\n"
+      );
       socket.on("data", (data) => {
         message += data;
         const messages = message.split("\n");
         messages.forEach((chunk) => {
+          if (chunk === "" || noMore) {
+            return;
+          }
+          try {
+            expect(chunk).to.eql(
+              `${JSON.stringify({
+                jsonrpc: "2.0",
+                error: { code: -32602, message: "Invalid Parameters" },
+                id: 88
+              })}`
+            );
+            noMore = true;
+            done();
+          } catch (e) {
+            done(e);
+          }
+        });
+      });
+    });
+    it("should send 'parse error'", (done) => {
+      let message = "";
+      let noMore = false;
+      socket.write("foo\n");
+      socket.on("data", (data) => {
+        message += data;
+        const messages = message.split("\n");
+        messages.forEach((chunk) => {
+          if (chunk === "" || noMore) {
+            return;
+          }
           try {
             expect(chunk).to.eql(
               `${JSON.stringify({
                 jsonrpc: "2.0",
                 error: { code: -32700, message: "Parse Error" },
                 id: null
-              })}\n`
+              })}`
             );
+            noMore = true;
+            done();
           } catch (e) {
-            if (messages.indexOf(chunk) === messages.length) {
-              throw e;
-            }
+            done(e);
           }
         });
-        socket.destroy();
-      });
-      socket.on("close", () => {
-        done();
       });
     });
-    it("should send 'invalid request' error", (done) => {
+    it("should send 'invalid request' error if method is not a string", (done) => {
       let message = "";
-      sock.write(
+      let noMore = false;
+      socket.write(
         `${JSON.stringify({
           jsonrpc: "2.0",
           method: 1,
@@ -166,28 +197,27 @@ describe("TCP Server", () => {
           id: 69
         })}\n`
       );
-      sock.on("data", (data) => {
+      socket.on("data", (data) => {
         message += data;
         const messages = message.split("\n");
         messages.forEach((chunk) => {
           try {
+            if (chunk === "" || noMore) {
+              return;
+            }
             expect(chunk).to.eql(
               `${JSON.stringify({
                 jsonrpc: "2.0",
                 error: { code: -32600, message: "Invalid Request" },
                 id: 69
-              })}\n`
+              })}`
             );
+            noMore = true;
+            done();
           } catch (e) {
-            if (messages.indexOf(chunk) === messages.length) {
-              throw e;
-            }
+            done(e);
           }
         });
-        sock.destroy();
-      });
-      sock.on("close", () => {
-        done();
       });
     });
   });
@@ -204,25 +234,25 @@ describe("TCP Server", () => {
       client.request().notify("notification", []);
     });
     it("should handle batch notifications", (done) => {
-      server.onNotify("test", (message) => {
+      server.onNotify("notify", (message) => {
         expect(message).to.be.eql({
           jsonrpc: "2.0",
-          method: "test",
+          method: "notify",
           params: []
         });
         done();
       });
-      client.batch([client.request().message("test", [], false)]);
+      client.batch([client.request().message("notify", [], false)]);
     });
   });
   describe("promise methods", () => {
     it("should resolve promise method", (done) => {
       client
         .request()
-        .send("promiseresolve", [])
+        .send("promise.resolve", [])
         .then((result) => {
           expect(result).to.be.eql({
-            result: ["worked"],
+            result: ["resolve"],
             jsonrpc: "2.0",
             id: 5
           });
@@ -232,15 +262,69 @@ describe("TCP Server", () => {
     it("should reject promise method", (done) => {
       client
         .request()
-        .send("promisereject", [])
+        .send("promise.reject", [])
         .catch((result) => {
           expect(result).to.be.eql({
             jsonrpc: "2.0",
-            error: { code: -32603, message: "\"broke\"" },
+            error: { code: -32603, message: "\"reject\"" },
             id: 6
           });
           done();
         });
+    });
+  });
+});
+
+describe("TCP Server V1", () => {
+  before((done) => {
+    serverV1.listen().then(() => {
+      socketV1.connect(8100, "127.0.0.1", () => {
+        done();
+      });
+    });
+  });
+  after((done) => {
+    serverV1.close().then(() => {
+      socketV1.destroy();
+      socketV1.on("close", () => {
+        done();
+      });
+    });
+  });
+  describe("errors", () => {
+    it("should send 'invalid request' error if 2.0 request sent to a 1.0 server", (done) => {
+      let message = "";
+      let noMore = false;
+      socketV1.write(
+        `${JSON.stringify({
+          jsonrpc: "2.0",
+          method: "params",
+          params: [1, 2],
+          id: 99
+        })}\n`
+      );
+      socketV1.on("data", (data) => {
+        message += data;
+        const messages = message.split("\n");
+        messages.forEach((chunk) => {
+          try {
+            if (chunk === "" || noMore) {
+              return;
+            }
+            expect(chunk).to.eql(
+              `${JSON.stringify({
+                result: null,
+                error: { code: -32600, message: "Invalid Request" },
+                id: 99
+              })}`
+            );
+            noMore = true;
+            done();
+          } catch (e) {
+            done(e);
+          }
+        });
+      });
     });
   });
 });

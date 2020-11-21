@@ -2,16 +2,19 @@ const net = require("net");
 const Jaysonic = require("../src");
 const WebSocket = require("../src/client-ws");
 
-const client = new Jaysonic.client.tcp({ host: "127.0.0.1", port: 6969 });
-const clienthttp = new Jaysonic.client.http({ host: "127.0.0.1", port: 8000 });
+const client = new Jaysonic.client.tcp();
+const clienthttp = new Jaysonic.client.http();
 const socket = new net.Socket();
+const socketV1 = new net.Socket();
+
 const sock = new net.Socket();
-const clientws = new WebSocket.wsclient({ url: "ws://127.0.0.1:9000" });
+const clientws = new WebSocket.wsclient();
 
 module.exports = {
   client,
   clienthttp,
   socket,
+  socketV1,
   sock,
   clientws
 };

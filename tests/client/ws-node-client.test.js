@@ -6,33 +6,49 @@ const data = require("../large-data.json");
 
 const Jaysonic = require("../../src");
 
-const ws = new Jaysonic.client.ws({ url: "ws://127.0.0.1:8900" });
-const wsV1 = new Jaysonic.client.ws({ url: "ws://127.0.0.1:8900", version: 1 });
+const ws = new Jaysonic.client.ws();
+const wsV1 = new Jaysonic.client.ws({ version: 1 });
 
 describe("WebSocket Node Client", () => {
+  before((done) => {
+    wss.listen().then(() => {
+      done();
+    });
+  });
+  after((done) => {
+    ws.end();
+    wss.close().then(() => {
+      done();
+    });
+  });
   describe("connection", () => {
     it("should connect to server", (done) => {
       ws.connect().then(() => {
-        wsV1.connect().then(() => {
-          done();
-        });
+        done();
+      });
+    });
+    it("should be unable to connect multiple times", (done) => {
+      const conn = ws.connect();
+      conn.catch((error) => {
+        expect(error.message).to.be.a("string");
+        done();
       });
     });
   });
   describe("requests", () => {
     it("should receive response for positional params", (done) => {
-      const request = ws.request().send("add", [1, 2]);
+      const request = ws.request().send("params", [1, 2]);
       request.then((response) => {
         expect(response).to.eql({ jsonrpc: "2.0", result: 3, id: 1 });
         done();
       });
     });
     it("should receive response for named params", (done) => {
-      const request = ws.request().send("greeting", { name: "Isaac" });
+      const request = ws.request().send("named.params", { name: "jaysonic" });
       request.then((response) => {
         expect(response).to.eql({
           jsonrpc: "2.0",
-          result: "Hello Isaac",
+          result: "Hello jaysonic",
           id: 2
         });
         done();
@@ -60,7 +76,7 @@ describe("WebSocket Node Client", () => {
     //   client1.connect().then(() => {
     //     client1
     //       .request()
-    //       .send("add", [1, 2])
+    //       .send("params", [1, 2])
     //       .catch((error) => {
     //         expect(error).to.be.eql({
     //           jsonrpc: "2.0",
@@ -99,8 +115,8 @@ describe("WebSocket Node Client", () => {
   describe("batches", () => {
     it("should receive response for batch request", (done) => {
       const request = ws.batch([
-        ws.request().message("add", [1, 2]),
-        ws.request().message("add", [3, 4])
+        ws.request().message("params", [1, 2]),
+        ws.request().message("params", [3, 4])
       ]);
       request.then((response) => {
         expect(response).to.eql([
@@ -113,7 +129,7 @@ describe("WebSocket Node Client", () => {
     it("should receive error in batch response if one batch request is bad", (done) => {
       const request = ws.batch([
         ws.request().message("nonexistent", [1, 2]),
-        ws.request().message("add", [3, 4])
+        ws.request().message("params", [3, 4])
       ]);
       request.catch((response) => {
         expect(response).to.eql([
@@ -143,22 +159,22 @@ describe("WebSocket Node Client", () => {
   });
   describe("multiple requests", () => {
     it("should get responses for multiple requests at once", (done) => {
-      const request = ws.request().send("add", [1, 2]);
-      const request2 = ws.request().send("greeting", { name: "Isaac" });
+      const request = ws.request().send("params", [1, 2]);
+      const request2 = ws.request().send("named.params", { name: "jaysonic" });
       const request3 = ws.batch([
-        ws.request().message("add", [1, 2]),
-        ws.request().message("add", [3, 4])
+        ws.request().message("params", [1, 2]),
+        ws.request().message("params", [3, 4])
       ]);
       const request4 = ws.batch([
         ws.request().message("nonexistent", [1, 2]),
-        ws.request().message("add", [3, 4])
+        ws.request().message("params", [3, 4])
       ]);
       request.then((res1) => {
         expect(res1).to.eql({ jsonrpc: "2.0", result: 3, id: 8 });
         request2.then((res2) => {
           expect(res2).to.eql({
             jsonrpc: "2.0",
-            result: "Hello Isaac",
+            result: "Hello jaysonic",
             id: 9
           });
           request3.then((res3) => {
@@ -184,7 +200,7 @@ describe("WebSocket Node Client", () => {
   });
   describe("request errors", () => {
     it("should handle 'method not found' error", (done) => {
-      const request = ws.request().send("nonexistent method", []);
+      const request = ws.request().send("foo", []);
       request.catch((error) => {
         expect(error).to.eql({
           jsonrpc: "2.0",
@@ -195,7 +211,7 @@ describe("WebSocket Node Client", () => {
       });
     });
     it("should handle 'invalid params' error", (done) => {
-      const request = ws.request().send("typeerror", [1]);
+      const request = ws.request().send("type.error", [1]);
       request.catch((error) => {
         expect(error).to.eql({
           jsonrpc: "2.0",
@@ -206,7 +222,7 @@ describe("WebSocket Node Client", () => {
       });
     });
     it("should handle 'unknown' error", (done) => {
-      const request = ws.request().send("unknownerror", [1]);
+      const request = ws.request().send("unknown.error", [1]);
       request.catch((error) => {
         expect(error).to.eql({
           jsonrpc: "2.0",
@@ -257,37 +273,26 @@ describe("WebSocket Node Client", () => {
         ["browser", []]
       ]);
     });
-    it("should be unable to subscribe, unsub, or unsub all for \"batchResponse\"", (done) => {
-      try {
-        ws.subscribe("batchResponse", () => {});
-      } catch (e) {
-        expect(e.message).to.be.a(
-          "string",
-          "\"batchResponse\" is a reserved event name"
-        );
-      }
-      try {
-        ws.unsubscribe("batchResponse", () => {});
-      } catch (e) {
-        expect(e.message).to.be.a(
-          "string",
-          "\"batchResponse\" is a reserved event name"
-        );
-      }
-      try {
-        ws.unsubscribeAll("batchResponse", () => {});
-      } catch (e) {
-        expect(e.message).to.be.a(
-          "string",
-          "\"batchResponse\" is a reserved event name"
-        );
-      }
+  });
+});
+
+describe("WS Node Client V1", () => {
+  before((done) => {
+    wss.listen().then(() => {
+      wsV1.connect().then(() => {
+        done();
+      });
+    });
+  });
+  after((done) => {
+    wsV1.end();
+    wss.close().then(() => {
       done();
     });
   });
   describe("v1.0 requests", () => {
     it("should receive response for v1.0 request", (done) => {
-      const request = wsV1.request().send("add", [1, 2]);
+      const request = wsV1.request().send("params", [1, 2]);
       request.then((response) => {
         expect(response).to.eql({
           result: 3,
@@ -298,7 +303,7 @@ describe("WebSocket Node Client", () => {
       });
     });
     it("should receive error for v1.0 request", (done) => {
-      const request = wsV1.request().send("test", [1, 2]);
+      const request = wsV1.request().send("foo", [1, 2]);
       request.catch((response) => {
         expect(response).to.eql({
           result: null,

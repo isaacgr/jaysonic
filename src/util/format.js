@@ -73,7 +73,7 @@ const formatResponse = ({
 
   const response = {};
 
-  if (result) {
+  if (typeof result !== "undefined") {
     response.result = result;
   }
 
@@ -81,7 +81,7 @@ const formatResponse = ({
     response.params = params;
   }
 
-  if (!jsonrpc) {
+  if (!jsonrpc || jsonrpc === 1) {
     // 1.0 response
     response.error = null;
     // 1.0 notification
@@ -123,7 +123,8 @@ const formatError = ({
   if (!message) {
     throw new Error("Must include message in error response");
   }
-  const response = jsonrpc === 2
+  // we're going to assume a 2.0 response if the version isnt explicitly 1
+  const response = jsonrpc && jsonrpc !== 1
     ? {
       jsonrpc: "2.0",
       error: { code, message },

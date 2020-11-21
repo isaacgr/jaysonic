@@ -24,6 +24,7 @@ class WsClientProtocol extends JsonRpcClientProtocol {
   setConnector() {
     const { perMessageDeflate } = this.factory.options;
     this.connector = new WebSocket(this.url, perMessageDeflate);
+    this.connector.write = this.connector.send; // tcp uses .write(), ws uses .send()
   }
 
   /**
@@ -34,14 +35,13 @@ class WsClientProtocol extends JsonRpcClientProtocol {
       const retryConnection = () => {
         this.setConnector();
         this.connector.onopen = (event) => {
-          this.connector.write = this.connector.send; // tcp uses .write(), ws uses .send()
           this.listener = this.connector;
           this.listen();
           resolve(event);
         };
         this.connector.onerror = (error) => {
           // let the onclose event got it otherwise
-          if (error.error.code !== "ECONNREFUSED") {
+          if (error.error && error.error.code !== "ECONNREFUSED") {
             reject(error);
           }
         };
@@ -49,16 +49,18 @@ class WsClientProtocol extends JsonRpcClientProtocol {
           if (this.connector.__clientClosed) {
             // we dont want to retry if the client purposefully closed the connection
             console.log(
-              `Client closed connection. Code[${event.code}]. Reason [${event.message}]`
+              `Client closed connection. Code [${event.code}]. Reason [${event.reason}].`
             );
           } else {
             if (this.factory.remainingRetries === 0) {
+              this.factory.pcolInstance = undefined;
               reject(event);
+            } else {
+              this.factory.remainingRetries -= 1;
+              console.error(
+                `Connection failed. ${this.factory.remainingRetries} attempts left.`
+              );
             }
-            this.factory.remainingRetries -= 1;
-            console.error(
-              `Connection failed. ${this.factory.remainingRetries} attempts left.`
-            );
             setTimeout(() => {
               retryConnection();
             }, this.factory.connectionTimeout);

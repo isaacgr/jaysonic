@@ -160,18 +160,25 @@ class JsonRpcServerProtocol {
    */
   validateMessage(message) {
     if (!(message === Object(message))) {
-      this._raiseError(ERR_MSGS.invalidRequest, ERR_CODES.invalidRequest, null);
+      this._raiseError(
+        ERR_MSGS.invalidRequest,
+        ERR_CODES.invalidRequest,
+        null,
+        this.version
+      );
     } else if (!(typeof message.method === "string")) {
       this._raiseError(
         ERR_MSGS.invalidRequest,
         ERR_CODES.invalidRequest,
-        message.id
+        message.id,
+        message.jsonrpc
       );
     } else if (!(message.method in this.factory.methods)) {
       this._raiseError(
         ERR_MSGS.methodNotFound,
         ERR_CODES.methodNotFound,
-        message.id
+        message.id,
+        message.jsonrpc
       );
     } else if (
       message.params
@@ -181,13 +188,15 @@ class JsonRpcServerProtocol {
       this._raiseError(
         ERR_MSGS.invalidParams,
         ERR_CODES.invalidParams,
-        message.id
+        message.id,
+        message.jsonrpc
       );
     } else if (message.jsonrpc && this.version !== 2) {
       this._raiseError(
         ERR_MSGS.invalidRequest,
         ERR_CODES.invalidRequest,
-        message.id
+        message.id,
+        this.version
       );
     }
   }
@@ -275,13 +284,16 @@ class JsonRpcServerProtocol {
         delimiter: this.delimiter
       };
       try {
-        const result = params
+        const methodResult = params
           ? this.factory.methods[message.method](params)
           : this.factory.methods[message.method]();
-        if (result instanceof Promise || typeof result.then === "function") {
-          Promise.all([result])
+        if (
+          methodResult instanceof Promise
+          || typeof methodResult.then === "function"
+        ) {
+          Promise.all([methodResult])
             .then((results) => {
-              response.result = results || 0;
+              response.result = results;
               resolve(formatResponse(response));
             })
             .catch((resError) => {
@@ -290,7 +302,7 @@ class JsonRpcServerProtocol {
               reject(formatError(error));
             });
         } else {
-          response.result = result || 0;
+          response.result = methodResult;
           resolve(formatResponse(response));
         }
       } catch (e) {
@@ -316,9 +328,9 @@ class JsonRpcServerProtocol {
    * @throws Throws a JSON-RPC error object
    * @private
    */
-  _raiseError(message, code, id) {
+  _raiseError(message, code, id, version) {
     const error = formatError({
-      jsonrpc: this.version,
+      jsonrpc: version,
       delimiter: this.delimiter,
       id,
       code,
@@ -336,7 +348,7 @@ class JsonRpcServerProtocol {
   gotError(error) {
     let err;
     try {
-      err = JSON.stringify(JSON.parse(error.message));
+      err = JSON.stringify(JSON.parse(error.message)) + this.delimiter;
     } catch (e) {
       err = formatError({
         jsonrpc: this.version,
@@ -346,7 +358,7 @@ class JsonRpcServerProtocol {
         message: JSON.stringify(error, Object.getOwnPropertyNames(error))
       });
     }
-    this.writeToClient(err + this.delimiter);
+    this.writeToClient(err);
   }
 }
 

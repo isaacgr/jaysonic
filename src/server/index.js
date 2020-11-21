@@ -137,13 +137,16 @@ class JsonRpcServerFactory extends EventEmitter {
   }
 
   /**
-   * Close the server connection. Sets `listening` property to `false`.
+   * Closes the server connection and kicks all connected clients.
+   *
+   * Sets `listening` property to `false`.
    *
    * @returns {Promise} Will reject if any error was present
    */
   close() {
     this.listening = false;
     return new Promise((resolve, reject) => {
+      this._removeClients();
       this.server.close((error) => {
         if (error) {
           reject(error);
@@ -151,6 +154,17 @@ class JsonRpcServerFactory extends EventEmitter {
         resolve();
       });
     });
+  }
+
+  /**
+   * Kicks all connected clients.
+   *
+   * @private
+   */
+  _removeClients() {
+    for (const client of this.connectedClients) {
+      client.destroy();
+    }
   }
 
   /**
@@ -203,7 +217,7 @@ class JsonRpcServerFactory extends EventEmitter {
    * @param {string} method Method name to remove events for
    */
   removeAllOnNotify(method) {
-    this.removeAllListeners([method]);
+    this.removeAllListeners(method);
   }
 
   /**
@@ -223,9 +237,6 @@ class JsonRpcServerFactory extends EventEmitter {
       throw new Error("Invalid arguments");
     }
     const responses = this._getNotificationResponses(notifications);
-    if (responses.length === 0) {
-      throw new Error("Unable to generate a response object");
-    }
     let response;
     if (responses.length === 1) {
       response = formatResponse(responses[0]);
@@ -237,7 +248,7 @@ class JsonRpcServerFactory extends EventEmitter {
         response += idx === responses.length - 1 ? "" : ",";
       });
       response += "]";
-      response = JSON.stringify(JSON.parse(response));
+      response = JSON.stringify(JSON.parse(response)) + this.options.delimiter;
     }
     if (this.connectedClients.length === 0) {
       return [Error("No clients connected")];
@@ -260,7 +271,7 @@ class JsonRpcServerFactory extends EventEmitter {
    * @throws Will throw an error if client is not defined
    */
   sendNotification(client, response) {
-    return client.write(response + this.options.delimiter);
+    return client.write(response);
   }
 
   /**
@@ -271,7 +282,7 @@ class JsonRpcServerFactory extends EventEmitter {
    */
   _getNotificationResponses(notifications) {
     return notifications.map(([method, params]) => {
-      if (!method && !params) {
+      if ((!method && !params) || (!method && params)) {
         throw new Error("Unable to generate a response object");
       }
       const response = {

@@ -1,39 +1,30 @@
 const { expect } = require("chai");
 const intercept = require("intercept-stdout");
 const net = require("net");
-const { server, serverV1 } = require("../test-server.js");
+const { server } = require("../test-server.js");
 const data = require("../large-data.json");
 
 const Jaysonic = require("../../src");
 
 const client = new Jaysonic.client.tcp({
-  host: "127.0.0.1",
-  port: 8100,
   retries: 0
 });
-
 const clientV1 = new Jaysonic.client.tcp({
-  host: "127.0.0.1",
-  port: 8600,
   retries: 0,
   version: 1
 });
 
-before((done) => {
-  server.listen().then(() => {
-    serverV1.listen().then(() => {
-      clientV1.connect();
+describe("TCP Client", () => {
+  before((done) => {
+    server.listen().then(() => {
       done();
     });
   });
-});
-
-after(() => {
-  client.end();
-  server.close();
-});
-
-describe("TCP Client", () => {
+  after((done) => {
+    server.close().then(() => {
+      done();
+    });
+  });
   describe("connection", () => {
     it("should connect to server", (done) => {
       const connection = client.connect();
@@ -69,7 +60,7 @@ describe("TCP Client", () => {
         timeout: 0.5
       });
       try {
-        badClient.request().send("add", [1, 2]);
+        badClient.request().send("params", [1, 2]);
       } catch (e) {
         expect(e).to.be.instanceOf(TypeError);
         done();
@@ -78,25 +69,27 @@ describe("TCP Client", () => {
   });
   describe("requests", () => {
     it("should receive response for positional params", (done) => {
-      const request = client.request().send("add", [1, 2]);
+      const request = client.request().send("params", [1, 2]);
       request.then((response) => {
         expect(response).to.eql({ jsonrpc: "2.0", result: 3, id: 1 });
         done();
       });
     });
     it("should receive response for named params", (done) => {
-      const request = client.request().send("greeting", { name: "Isaac" });
+      const request = client
+        .request()
+        .send("named.params", { name: "jaysonic" });
       request.then((response) => {
         expect(response).to.eql({
           jsonrpc: "2.0",
-          result: "Hello Isaac",
+          result: "Hello jaysonic",
           id: 2
         });
         done();
       });
     });
     it("should send notification to server", (done) => {
-      const request = client.request().notify("greeting", []);
+      const request = client.request().notify("named.params", []);
       request.then((result) => {
         expect(result).to.be.a("string");
         done();
@@ -124,7 +117,7 @@ describe("TCP Client", () => {
     //     port: 9700
     //   });
     //   client1.connect().then(() => {
-    //     client1.request().send("add", [1, 2]);
+    //     client1.request().send("params", [1, 2]);
     //   });
     // });
     it("should print error to stdout when error received with no pending call", (done) => {
@@ -156,8 +149,8 @@ describe("TCP Client", () => {
   describe("batches", () => {
     it("should receive response for batch request", (done) => {
       const request = client.batch([
-        client.request().message("add", [1, 2]),
-        client.request().message("add", [3, 4])
+        client.request().message("params", [1, 2]),
+        client.request().message("params", [3, 4])
       ]);
       request.then((response) => {
         expect(response).to.eql([
@@ -169,8 +162,8 @@ describe("TCP Client", () => {
     });
     it("should receive error in batch response if one batch request is bad", (done) => {
       const request = client.batch([
-        client.request().message("nonexistent", [1, 2]),
-        client.request().message("add", [3, 4])
+        client.request().message("foo", [1, 2]),
+        client.request().message("params", [3, 4])
       ]);
       request.catch((response) => {
         expect(response).to.eql([
@@ -214,15 +207,17 @@ describe("TCP Client", () => {
   });
   describe("multiple requests", () => {
     it("should get responses for multiple requests at once", (done) => {
-      const request = client.request().send("add", [1, 2]);
-      const request2 = client.request().send("greeting", { name: "Isaac" });
+      const request = client.request().send("params", [1, 2]);
+      const request2 = client
+        .request()
+        .send("named.params", { name: "jaysonic" });
       const request3 = client.batch([
-        client.request().message("add", [1, 2]),
-        client.request().message("add", [3, 4])
+        client.request().message("params", [1, 2]),
+        client.request().message("params", [3, 4])
       ]);
       const request4 = client.batch([
         client.request().message("nonexistent", [1, 2]),
-        client.request().message("add", [3, 4])
+        client.request().message("params", [3, 4])
       ]);
       try {
         request.then((res1) => {
@@ -231,7 +226,7 @@ describe("TCP Client", () => {
         request2.then((res2) => {
           expect(res2).to.eql({
             jsonrpc: "2.0",
-            result: "Hello Isaac",
+            result: "Hello jaysonic",
             id: 9
           });
         });
@@ -259,7 +254,7 @@ describe("TCP Client", () => {
   });
   describe("request errors", () => {
     it("should handle 'method not found' error", (done) => {
-      const request = client.request().send("nonexistent method", []);
+      const request = client.request().send("foo", []);
       request.catch((error) => {
         expect(error).to.eql({
           jsonrpc: "2.0",
@@ -270,7 +265,7 @@ describe("TCP Client", () => {
       });
     });
     it("should handle 'invalid params' error", (done) => {
-      const request = client.request().send("typeerror", [1]);
+      const request = client.request().send("type.error", [1]);
       request.catch((error) => {
         expect(error).to.eql({
           jsonrpc: "2.0",
@@ -281,7 +276,7 @@ describe("TCP Client", () => {
       });
     });
     it("should handle 'unknown' error", (done) => {
-      const request = client.request().send("unknownerror", [1]);
+      const request = client.request().send("unknown.error", [1]);
       request.catch((error) => {
         expect(error).to.eql({
           jsonrpc: "2.0",
@@ -361,9 +356,27 @@ describe("TCP Client", () => {
       done();
     });
   });
+});
+
+describe("TCP Client V1", () => {
+  before((done) => {
+    server.listen().then(() => {
+      done();
+    });
+  });
+  after((done) => {
+    server.close().then(() => {
+      done();
+    });
+  });
   describe("v1.0 requests", () => {
+    before((done) => {
+      clientV1.connect().then(() => {
+        done();
+      });
+    });
     it("should receive response for v1.0 request", (done) => {
-      const request = clientV1.request().send("add", [1, 2]);
+      const request = clientV1.request().send("params", [1, 2]);
       request.then((response) => {
         expect(response).to.eql({
           result: 3,
@@ -374,7 +387,7 @@ describe("TCP Client", () => {
       });
     });
     it("should receive error for v1.0 request", (done) => {
-      const request = clientV1.request().send("test", [1, 2]);
+      const request = clientV1.request().send("foo", [1, 2]);
       request.catch((response) => {
         expect(response).to.eql({
           result: null,

@@ -48,15 +48,11 @@ class WsServerFactory extends JsonRpcServerFactory {
       this.setSever();
       this.listening = true;
       this.pcolInstance = this.buildProtocol();
-      try {
-        resolve({
-          host: this.options.host,
-          port: this.options.port,
-          path: this.options.path
-        });
-      } catch (e) {
-        reject(e);
-      }
+      resolve({
+        host: this.options.host,
+        port: this.options.port,
+        path: this.options.path
+      });
     });
   }
 
@@ -75,6 +71,13 @@ class WsServerFactory extends JsonRpcServerFactory {
     });
   }
 
+  /** @inheritdoc */
+  _removeClients() {
+    for (const client of this.connectedClients) {
+      client.close();
+    }
+  }
+
   /**
    * Send notification to client
    *
@@ -83,7 +86,7 @@ class WsServerFactory extends JsonRpcServerFactory {
    * @throws Will throw an error if client is not defined
    */
   sendNotification(client, response) {
-    return client.send(response + this.options.delimiter);
+    return client.send(response);
   }
 }
 

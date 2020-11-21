@@ -93,6 +93,9 @@ class JsonRpcClientProtocol {
             reject(error);
           }
         });
+        this.connector.on("close", () => {
+          this.factory.emit("serverDisconnected");
+        });
       };
       return retryConnection();
     });
@@ -171,8 +174,8 @@ class JsonRpcClientProtocol {
         const { code } = message.error;
         const errorMessage = message.error.message;
         this._raiseError(errorMessage, code, id);
-      } else if (!message.method) {
-        // no method, so assume response
+      } else if ("result" in message) {
+        // Got a result, so must be a response
         this.gotResponse(message);
       } else {
         const code = ERR_CODES.unknown;
@@ -241,9 +244,9 @@ class JsonRpcClientProtocol {
       this.factory.cleanUp(message.id);
     } catch (e) {
       if (e instanceof TypeError) {
-        // probably a parse error, which might not have an id
+        // response id likely not in the queue
         console.error(
-          `Message has no outstanding calls: ${JSON.stringify(e.message)}`
+          `Message has no outstanding calls: ${JSON.stringify(message)}`
         );
       }
     }
@@ -395,7 +398,7 @@ class JsonRpcClientProtocol {
         this.write(request + this.delimiter);
       } catch (e) {
         // this.connector is probably undefined
-        reject(e.message);
+        reject(e);
       }
       this._timeoutPendingCalls(String(batchIds));
     });
@@ -466,9 +469,7 @@ class JsonRpcClientProtocol {
         delete this.pendingCalls[id];
       } catch (e) {
         if (e instanceof TypeError) {
-          console.error(
-            `Message has no outstanding calls: ${JSON.stringify(e)}`
-          );
+          console.error(`Message has no outstanding calls. ID [${id}]`);
         }
       }
     }, this.factory.requestTimeout);
@@ -569,7 +570,7 @@ class JsonRpcClientProtocol {
       this.factory.cleanUp(error.id);
     } catch (e) {
       if (e instanceof TypeError) {
-        // probably a parse error, which might not have an id
+        // error object id probably not a pending response
         console.error(
           `Message has no outstanding calls: ${JSON.stringify(error)}`
         );
