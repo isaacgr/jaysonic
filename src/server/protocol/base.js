@@ -293,7 +293,7 @@ class JsonRpcServerProtocol {
         ) {
           Promise.all([methodResult])
             .then((results) => {
-              response.result = results || 0;
+              response.result = results;
               resolve(formatResponse(response));
             })
             .catch((resError) => {
@@ -302,7 +302,7 @@ class JsonRpcServerProtocol {
               reject(formatError(error));
             });
         } else {
-          response.result = methodResult || 0;
+          response.result = methodResult;
           resolve(formatResponse(response));
         }
       } catch (e) {
