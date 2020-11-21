@@ -24,6 +24,7 @@ class WsClientProtocol extends JsonRpcClientProtocol {
   setConnector() {
     const { perMessageDeflate } = this.factory.options;
     this.connector = new WebSocket(this.url, perMessageDeflate);
+    this.connector.write = this.connector.send; // tcp uses .write(), ws uses .send()
   }
 
   /**
@@ -34,7 +35,6 @@ class WsClientProtocol extends JsonRpcClientProtocol {
       const retryConnection = () => {
         this.setConnector();
         this.connector.onopen = (event) => {
-          this.connector.write = this.connector.send; // tcp uses .write(), ws uses .send()
           this.listener = this.connector;
           this.listen();
           resolve(event);

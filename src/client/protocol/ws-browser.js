@@ -15,6 +15,7 @@ class WsBrowserClientProtocol extends WsClientProtocol {
   setConnector() {
     const { protocols } = this.factory.options;
     this.connector = new window.WebSocket(this.url, protocols);
+    this.connector.write = this.connector.send; // tcp uses .write(), ws uses .send()
   }
 
   /** @inheritdoc */
