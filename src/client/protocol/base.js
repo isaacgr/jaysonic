@@ -65,52 +65,77 @@ class JsonRpcClientProtocol {
    * If `Infinity` (or some number that Javascript defines as non-finite `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isFinite`)
    * is set for number of retries, then connections will attempt indefinitely.
    *
-   * Will reject the promise if connect or re-connect attempts fail.
+   * Will reject the promise if connect or re-connect attempts fail and there are no remaining retries.
    *
    * @returns Promise
    *
    *
    */
   connect() {
-    return new Promise((resolve, reject) => {
-      const retryConnection = () => {
-        this.setConnector();
-        this.connector.connect(this.server);
-        this.connector.setEncoding("utf8");
-        this.connector.on("connect", () => {
-          this.listener = this.connector;
-          this.listen();
-          resolve(this.server);
-        });
-        this.connector.on("error", (error) => {
-          if (
-            error.code === "ECONNREFUSED"
-            && this.factory.remainingRetries > 0
-          ) {
-            if (Number.isFinite(this.factory.remainingRetries)) {
-              this.factory.remainingRetries -= 1;
-              console.error(
-                `Failed to connect. Address [${this.server.host}:${this.server.port}]. Retrying. ${this.factory.remainingRetries} attempts left.`
-              );
-            } else {
-              console.error(
-                `Failed to connect. Address [${this.server.host}:${this.server.port}]. Retrying.`
-              );
-            }
-            this.connectionTimeout = setTimeout(() => {
-              retryConnection();
-            }, this.factory.connectionTimeout);
-          } else {
-            this.factory.pcolInstance = undefined;
-            reject(error);
-          }
-        });
-        this.connector.on("close", () => {
-          this.factory.emit("serverDisconnected");
-        });
-      };
-      return retryConnection();
+    return new Promise(this._retryConnection.bind(this)); // .bind so I dont have to redo linting rules around line length
+  }
+
+  /**
+   *
+   * Manage the connection attempts for the client.
+   *
+   * @param {Promise.resolve} resolve `Promise.resolve` passed from [connect]{@link JsonRpcClientProtocol#connect}
+   * @param {Promise.reject} reject `Promise.reject` passed from [connect]{@link JsonRpcClientProtocol#connect}
+   *
+   * @returns Promise
+   *
+   * @private
+   */
+  _retryConnection(resolve, reject) {
+    this.setConnector();
+    this.connector.connect(this.server);
+    this.connector.setEncoding("utf8");
+    this.connector.on("connect", () => {
+      this.listener = this.connector;
+      this.listen();
+      resolve(this.server);
     });
+    this.connector.on("error", (error) => {
+      this._onConnectionError(error, resolve, reject);
+    });
+    this.connector.on("close", () => {
+      this.factory.emit("serverDisconnected");
+    });
+  }
+
+  /**
+   *
+   * Handle connection attempt errors. Log failures and
+   * retry if required.
+   *
+   *
+   * @param {Error} error `node.net` system error (https://nodejs.org/api/errors.html#errors_common_system_errors)
+   * @param {Promise.resolve} resolve `Promise.resolve` passed from [connect]{@link JsonRpcClientProtocol#connect}
+   * @param {Promise.reject} reject `Promise.reject` passed from [connect]{@link JsonRpcClientProtocol#connect}
+   *
+   * @returns Promise
+   *
+   * @private
+   */
+  _onConnectionError(error, resolve, reject) {
+    if (error.code === "ECONNREFUSED" && this.factory.remainingRetries > 0) {
+      if (Number.isFinite(this.factory.remainingRetries)) {
+        this.factory.remainingRetries -= 1;
+        console.error(
+          `Failed to connect. Address [${this.server.host}:${this.server.port}]. Retrying. ${this.factory.remainingRetries} attempts left.`
+        );
+      } else {
+        console.error(
+          `Failed to connect. Address [${this.server.host}:${this.server.port}]. Retrying.`
+        );
+      }
+      this.connectionTimeout = setTimeout(() => {
+        this._retryConnection(resolve, reject);
+      }, this.factory.connectionTimeout);
+    } else {
+      this.factory.pcolInstance = undefined;
+      reject(error);
+    }
   }
 
   /**
