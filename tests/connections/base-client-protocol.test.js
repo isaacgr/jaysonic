@@ -37,4 +37,21 @@ describe("Base Client Reconnect", () => {
       done();
     }, 100);
   }).timeout(10000);
+  it("should clear the _connectionTimeout of the protocol instance when connection ended", (done) => {
+    infClient.connect();
+    let capturedText = "";
+    const unhook = intercept((text) => {
+      capturedText += text;
+    });
+    setTimeout(() => {
+      unhook();
+      expect(capturedText).to.equal(
+        "Failed to connect. Address [127.0.0.1:8100]. Retrying.\n"
+      );
+      const pcolConnectionTimeout = infClient.pcolInstance._connectionTimeout;
+      infClient.end();
+      expect(pcolConnectionTimeout._destroyed).to.equal(true);
+      done();
+    }, 1000);
+  }).timeout(10000);
 });
