@@ -1,7 +1,6 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [Jaysonic - A persistent JSON-RPC client and server](#jaysonic---a-persistent-json-rpc-client-and-server)
   - [List of features](#list-of-features)
   - [Download & Installation](#download--installation)
@@ -19,10 +18,10 @@
       - [Other client and server options](#other-client-and-server-options)
     - [Code Demos](#code-demos)
       - [Initialization](#initialization-1)
-          - [TCP](#tcp)
-          - [HTTP](#http)
-          - [HTTPS](#https)
-          - [Websocket](#websocket)
+        - [TCP](#tcp)
+        - [HTTP](#http)
+        - [HTTPS](#https)
+        - [Websocket](#websocket)
       - [Server side](#server-side)
         - [Instantiation and Listening](#instantiation-and-listening)
         - [Closing the connection](#closing-the-connection)
@@ -206,7 +205,7 @@ The client and server support changing the JSON-RPC version and the delimiter us
 
 #### Client only options
 
-`retries`: The number of retry attempts for the client to connect to the server. Default is `2`. \
+`retries`: The number of retry attempts for the client to connect to the server. Default is `2`. If set to `Infinity` then the client will retry indefinitely.\
 `timeout`: The amount of time before a request times out. Will return a `-32000` error code. The default value is `30` (in seconds). \
 `connectionTimeout`: The amount of time between connection retry attempts to a server. The default value is `5000` (in milliseconds).
 

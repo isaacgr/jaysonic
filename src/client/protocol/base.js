@@ -61,6 +61,7 @@ class JsonRpcClientProtocol {
    *
    * Will retry connection on the `connectionTimeout` interval.
    * Number of connection retries is based on `remainingRetries`
+   * If `Infinity` is set for number of retries, then connections will attempt indefinitely
    *
    * Will reject the promise if connect or re-connect attempts fail.
    *
