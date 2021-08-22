@@ -116,10 +116,13 @@ class JsonRpcClientProtocol {
    *
    * Sets `JsonRpcClientFactory.pcolInstance` to `undefined`
    *
+   * Clears the connection timeout
+   *
    * @param {function} cb Called when connection is sucessfully closed
    */
   end(cb) {
     this.factory.pcolInstance = undefined;
+    clearTimeout(this.connectionTimeout);
     this.connector.end(cb);
   }
 
