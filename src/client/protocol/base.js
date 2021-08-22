@@ -81,12 +81,21 @@ class JsonRpcClientProtocol {
           resolve(this.server);
         });
         this.connector.on("error", (error) => {
-          if (error.code === "ECONNREFUSED" && this.factory.remainingRetries) {
-            this.factory.remainingRetries -= 1;
-            console.error(
-              `Unable to connect. Retrying. ${this.factory.remainingRetries} attempts left.`
-            );
-            setTimeout(() => {
+          if (
+            error.code === "ECONNREFUSED"
+            && this.factory.remainingRetries > 0
+          ) {
+            if (Number.isFinite(this.factory.remainingRetries)) {
+              this.factory.remainingRetries -= 1;
+              console.error(
+                `Failed to connect. Address [${this.server.host}:${this.server.port}]. Retrying. ${this.factory.remainingRetries} attempts left.`
+              );
+            } else {
+              console.error(
+                `Failed to connect. Address [${this.server.host}:${this.server.port}]. Retrying.`
+              );
+            }
+            this.connectionTimeout = setTimeout(() => {
               retryConnection();
             }, this.factory.connectionTimeout);
           } else {
