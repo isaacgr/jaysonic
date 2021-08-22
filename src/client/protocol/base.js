@@ -38,6 +38,7 @@ class JsonRpcClientProtocol {
     this.pendingCalls = {};
     this.responseQueue = {};
     this.server = this.factory.server;
+    this._connectionTimeout = undefined;
     this.messageBuffer = new MessageBuffer(this.delimiter);
   }
 
@@ -129,7 +130,7 @@ class JsonRpcClientProtocol {
           `Failed to connect. Address [${this.server.host}:${this.server.port}]. Retrying.`
         );
       }
-      this.connectionTimeout = setTimeout(() => {
+      this._connectionTimeout = setTimeout(() => {
         this._retryConnection(resolve, reject);
       }, this.factory.connectionTimeout);
     } else {
@@ -148,8 +149,8 @@ class JsonRpcClientProtocol {
    * @param {function} cb Called when connection is sucessfully closed
    */
   end(cb) {
+    clearTimeout(this._connectionTimeout);
     this.factory.pcolInstance = undefined;
-    clearTimeout(this.connectionTimeout);
     this.connector.end(cb);
   }
 
