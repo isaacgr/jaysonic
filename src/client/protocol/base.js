@@ -60,8 +60,10 @@ class JsonRpcClientProtocol {
    * Calls [listen]{@link JsonRpcClientProtocol#listen} if connection was successful, and will resolve the promise.
    *
    * Will retry connection on the `connectionTimeout` interval.
-   * Number of connection retries is based on `remainingRetries`
-   * If `Infinity` is set for number of retries, then connections will attempt indefinitely
+   * Number of connection retries is based on `remainingRetries`.
+   *
+   * If `Infinity` (or some number that Javascript defines as non-finite `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isFinite`)
+   * is set for number of retries, then connections will attempt indefinitely.
    *
    * Will reject the promise if connect or re-connect attempts fail.
    *

@@ -205,7 +205,7 @@ The client and server support changing the JSON-RPC version and the delimiter us
 
 #### Client only options
 
-`retries`: The number of retry attempts for the client to connect to the server. Default is `2`. If set to `Infinity` then the client will retry indefinitely.\
+`retries`: The number of retry attempts for the client to connect to the server. Default is `2`. If set to `Infinity` (or some number that Javascript defines as non-finite `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isFinite`) then the client will retry indefinitely.\
 `timeout`: The amount of time before a request times out. Will return a `-32000` error code. The default value is `30` (in seconds). \
 `connectionTimeout`: The amount of time between connection retry attempts to a server. The default value is `5000` (in milliseconds).
 
