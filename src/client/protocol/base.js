@@ -97,7 +97,12 @@ class JsonRpcClientProtocol {
       resolve(this.server);
     });
     this.connector.on("error", (error) => {
-      this._onConnectionError(error, resolve, reject);
+      if (error.code === "ECONNREFUSED" && this.factory.remainingRetries > 0) {
+        this._onConnectionFailed(resolve, reject);
+      } else {
+        this.factory.pcolInstance = undefined;
+        reject(error);
+      }
     });
     this.connector.on("close", () => {
       this.factory.emit("serverDisconnected");
@@ -118,25 +123,20 @@ class JsonRpcClientProtocol {
    *
    * @private
    */
-  _onConnectionError(error, resolve, reject) {
-    if (error.code === "ECONNREFUSED" && this.factory.remainingRetries > 0) {
-      if (Number.isFinite(this.factory.remainingRetries)) {
-        this.factory.remainingRetries -= 1;
-        console.error(
-          `Failed to connect. Address [${this.server.host}:${this.server.port}]. Retrying. ${this.factory.remainingRetries} attempts left.`
-        );
-      } else {
-        console.error(
-          `Failed to connect. Address [${this.server.host}:${this.server.port}]. Retrying.`
-        );
-      }
-      this._connectionTimeout = setTimeout(() => {
-        this._retryConnection(resolve, reject);
-      }, this.factory.connectionTimeout);
+  _onConnectionFailed(resolve, reject) {
+    if (Number.isFinite(this.factory.remainingRetries)) {
+      this.factory.remainingRetries -= 1;
+      console.error(
+        `Failed to connect. Address [${this.server.host}:${this.server.port}]. Retrying. ${this.factory.remainingRetries} attempts left.`
+      );
     } else {
-      this.factory.pcolInstance = undefined;
-      reject(error);
+      console.error(
+        `Failed to connect. Address [${this.server.host}:${this.server.port}]. Retrying.`
+      );
     }
+    this._connectionTimeout = setTimeout(() => {
+      this._retryConnection(resolve, reject);
+    }, this.factory.connectionTimeout);
   }
 
   /**
