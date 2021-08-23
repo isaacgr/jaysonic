@@ -24,7 +24,7 @@ module.exports = {
     "consistent-return": "off",
     "max-len": [
       "error",
-      { ignoreComments: true, ignoreTemplateLiterals: true }
+      { ignoreComments: true, ignoreTemplateLiterals: true, code: 90 }
     ],
     "no-console": "off",
     "no-restricted-syntax": [
