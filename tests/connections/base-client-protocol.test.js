@@ -50,7 +50,7 @@ describe("Base Client Reconnect", () => {
       );
       const pcolConnectionTimeout = infClient.pcolInstance._connectionTimeout;
       infClient.end();
-      expect(pcolConnectionTimeout._destroyed).to.equal(true);
+      expect(pcolConnectionTimeout._idleTimeout).to.equal(-1); // test _idleTimeout since _destroyed is not set immediately in v10.x
       done();
     }, 1000);
   }).timeout(10000);
