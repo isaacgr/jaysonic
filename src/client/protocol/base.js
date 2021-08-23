@@ -63,17 +63,15 @@ class JsonRpcClientProtocol {
    * Will retry connection on the `connectionTimeout` interval.
    * Number of connection retries is based on `remainingRetries`.
    *
-   * If `Infinity` (or some number that Javascript defines as non-finite `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isFinite`)
-   * is set for number of retries, then connections will attempt indefinitely.
+   * If `null` is set for number of retries, then connections will attempt indefinitely.
    *
    * Will reject the promise if connect or re-connect attempts fail and there are no remaining retries.
    *
    * @returns Promise
    *
-   *
    */
   connect() {
-    return new Promise(this._retryConnection.bind(this)); // .bind so I dont have to redo linting rules around line length
+    return new Promise((resolve, reject) => this._retryConnection(resolve, reject));
   }
 
   /**
@@ -96,14 +94,7 @@ class JsonRpcClientProtocol {
       this.listen();
       resolve(this.server);
     });
-    this.connector.on("error", (error) => {
-      if (error.code === "ECONNREFUSED" && this.factory.remainingRetries > 0) {
-        this._onConnectionFailed(resolve, reject);
-      } else {
-        this.factory.pcolInstance = undefined;
-        reject(error);
-      }
-    });
+    this.connector.on("error", error => this._onConnectionFailed(error, resolve, reject));
     this.connector.on("close", () => {
       this.factory.emit("serverDisconnected");
     });
@@ -123,12 +114,15 @@ class JsonRpcClientProtocol {
    *
    * @private
    */
-  _onConnectionFailed(resolve, reject) {
-    if (Number.isFinite(this.factory.remainingRetries)) {
+  _onConnectionFailed(error, resolve, reject) {
+    if (this.factory.remainingRetries > 0) {
       this.factory.remainingRetries -= 1;
       console.error(
         `Failed to connect. Address [${this.server.host}:${this.server.port}]. Retrying. ${this.factory.remainingRetries} attempts left.`
       );
+    } else if (this.factory.remainingRetries === 0) {
+      this.factory.pcolInstance = undefined;
+      return reject(error);
     } else {
       console.error(
         `Failed to connect. Address [${this.server.host}:${this.server.port}]. Retrying.`

@@ -49,11 +49,8 @@ class WsClientProtocol extends JsonRpcClientProtocol {
         console.log(
           `Client closed connection. Code [${event.code}]. Reason [${event.reason}].`
         );
-      } else if (this.factory.remainingRetries > 0) {
-        this._onConnectionFailed(resolve, reject);
       } else {
-        this.factory.pcolInstance = undefined;
-        reject(event);
+        return this._onConnectionFailed(event, resolve, reject);
       }
     };
   }
@@ -61,12 +58,15 @@ class WsClientProtocol extends JsonRpcClientProtocol {
   /**
    * @inheritdoc
    */
-  _onConnectionFailed(resolve, reject) {
-    if (Number.isFinite(this.factory.remainingRetries)) {
+  _onConnectionFailed(event, resolve, reject) {
+    if (this.factory.remainingRetries > 0) {
       this.factory.remainingRetries -= 1;
       console.error(
         `Failed to connect. Address [${this.url}]. Retrying. ${this.factory.remainingRetries} attempts left.`
       );
+    } else if (this.factory.remainingRetries === 0) {
+      this.factory.pcolInstance = undefined;
+      return reject(event);
     } else {
       console.error(`Failed to connect. Address [${this.url}]. Retrying.`);
     }

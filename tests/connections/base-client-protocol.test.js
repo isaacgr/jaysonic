@@ -3,7 +3,7 @@ const intercept = require("intercept-stdout");
 const Jaysonic = require("../../src");
 
 const client = new Jaysonic.client.tcp({ retries: 1 });
-const infClient = new Jaysonic.client.tcp({ retries: Infinity });
+const infClient = new Jaysonic.client.tcp({ retries: null });
 
 describe("Base Client Reconnect", () => {
   it("should retry the connection to the server and log the attempts", (done) => {
@@ -22,7 +22,7 @@ describe("Base Client Reconnect", () => {
       done();
     });
   }).timeout(10000);
-  it("should retry the connection to the server indefinitely if retries set to 'Infinity'", (done) => {
+  it("should retry the connection to the server indefinitely if retries set to 'null'", (done) => {
     infClient.connect();
     let capturedText = "";
     const unhook = intercept((text) => {

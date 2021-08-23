@@ -4,7 +4,7 @@ const Jaysonic = require("../../src");
 const { wss } = require("../test-server");
 
 const wsClient = new Jaysonic.client.ws({ retries: 1 });
-const infClient = new Jaysonic.client.ws({ retries: Infinity });
+const infClient = new Jaysonic.client.ws({ retries: null });
 
 describe("WS Client Reconnect", () => {
   it("should attempt to reconnect to the server and reject promise if unable", (done) => {
@@ -14,7 +14,7 @@ describe("WS Client Reconnect", () => {
       done();
     });
   }).timeout(10000);
-  it("should retry the connection to the server indefinitely if retries set to 'Infinity'", (done) => {
+  it("should retry the connection to the server indefinitely if retries set to 'null'", (done) => {
     infClient.connect();
     let capturedText = "";
     const unhook = intercept((text) => {
