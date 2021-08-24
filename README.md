@@ -5,9 +5,9 @@
   - [List of features](#list-of-features)
   - [Download & Installation](#download--installation)
   - [Class Documentation](#class-documentation)
-    - [CLI tool](#cli-tool)
-      - [Install](#install)
-      - [Usage](#usage)
+  - [CLI tool](#cli-tool)
+    - [Install](#install)
+    - [Usage](#usage)
   - [Use of the library as a standalone module](#use-of-the-library-as-a-standalone-module)
     - [Initialization](#initialization)
       - [WS Client for browser](#ws-client-for-browser)
@@ -89,7 +89,7 @@ https://jaysonic.irowell.io/
 
 It is recommnded to import and extend these classes if you dont wish to use the library as a standalone module (as described below).
 
-### CLI tool
+## CLI tool
 
 #### Install
 
