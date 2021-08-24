@@ -39,6 +39,7 @@ describe("#58 batchResponse causing memory leak", () => {
       unhook();
       expect(capturedText).to.equal("");
       expect(Object.keys(client.listeners).length).to.be.equal(0);
+      client.end();
     });
   });
   describe("http", () => {

@@ -29,6 +29,7 @@ describe("WebSocket Server", () => {
   });
   after((done) => {
     wss.close().then(() => {
+      clientws.end();
       done();
     });
   });
@@ -69,6 +70,8 @@ describe("WebSocket Server", () => {
               result: "Hello jaysonic",
               id: 1
             });
+            client1.end();
+            client2.end();
             done();
           });
         });

@@ -71,6 +71,7 @@ describe("#54 Request timeout", () => {
     });
     after((done) => {
       wss.close().then(() => {
+        wsclient.end();
         done();
       });
     });
@@ -98,6 +99,7 @@ describe("#54 Request timeout", () => {
     });
     after((done) => {
       wss.close().then(() => {
+        wsweb.end();
         done();
       });
     });
