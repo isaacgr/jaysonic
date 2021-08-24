@@ -38,6 +38,7 @@ class JsonRpcClientProtocol {
     this.pendingCalls = {};
     this.responseQueue = {};
     this.server = this.factory.server;
+    this._connectionTimeout = undefined;
     this.messageBuffer = new MessageBuffer(this.delimiter);
   }
 
@@ -60,45 +61,76 @@ class JsonRpcClientProtocol {
    * Calls [listen]{@link JsonRpcClientProtocol#listen} if connection was successful, and will resolve the promise.
    *
    * Will retry connection on the `connectionTimeout` interval.
-   * Number of connection retries is based on `remainingRetries`
+   * Number of connection retries is based on `remainingRetries`.
    *
-   * Will reject the promise if connect or re-connect attempts fail.
+   * If `null` is set for number of retries, then connections will attempt indefinitely.
+   *
+   * Will reject the promise if connect or re-connect attempts fail and there are no remaining retries.
    *
    * @returns Promise
    *
-   *
    */
   connect() {
-    return new Promise((resolve, reject) => {
-      const retryConnection = () => {
-        this.setConnector();
-        this.connector.connect(this.server);
-        this.connector.setEncoding("utf8");
-        this.connector.on("connect", () => {
-          this.listener = this.connector;
-          this.listen();
-          resolve(this.server);
-        });
-        this.connector.on("error", (error) => {
-          if (error.code === "ECONNREFUSED" && this.factory.remainingRetries) {
-            this.factory.remainingRetries -= 1;
-            console.error(
-              `Unable to connect. Retrying. ${this.factory.remainingRetries} attempts left.`
-            );
-            setTimeout(() => {
-              retryConnection();
-            }, this.factory.connectionTimeout);
-          } else {
-            this.factory.pcolInstance = undefined;
-            reject(error);
-          }
-        });
-        this.connector.on("close", () => {
-          this.factory.emit("serverDisconnected");
-        });
-      };
-      return retryConnection();
+    return new Promise((resolve, reject) => this._retryConnection(resolve, reject));
+  }
+
+  /**
+   *
+   * Manage the connection attempts for the client.
+   *
+   * @param {Promise.resolve} resolve `Promise.resolve` passed from [connect]{@link JsonRpcClientProtocol#connect}
+   * @param {Promise.reject} reject `Promise.reject` passed from [connect]{@link JsonRpcClientProtocol#connect}
+   *
+   * @returns Promise
+   *
+   * @private
+   */
+  _retryConnection(resolve, reject) {
+    this.setConnector();
+    this.connector.connect(this.server);
+    this.connector.setEncoding("utf8");
+    this.connector.on("connect", () => {
+      this.listener = this.connector;
+      this.listen();
+      resolve(this.server);
     });
+    this.connector.on("error", error => this._onConnectionFailed(error, resolve, reject));
+    this.connector.on("close", () => {
+      this.factory.emit("serverDisconnected");
+    });
+  }
+
+  /**
+   *
+   * Handle connection attempt errors. Log failures and
+   * retry if required.
+   *
+   *
+   * @param {Error} error `node.net` system error (https://nodejs.org/api/errors.html#errors_common_system_errors)
+   * @param {Promise.resolve} resolve `Promise.resolve` passed from [connect]{@link JsonRpcClientProtocol#connect}
+   * @param {Promise.reject} reject `Promise.reject` passed from [connect]{@link JsonRpcClientProtocol#connect}
+   *
+   * @returns Promise
+   *
+   * @private
+   */
+  _onConnectionFailed(error, resolve, reject) {
+    if (this.factory.remainingRetries > 0) {
+      this.factory.remainingRetries -= 1;
+      console.error(
+        `Failed to connect. Address [${this.server.host}:${this.server.port}]. Retrying. ${this.factory.remainingRetries} attempts left.`
+      );
+    } else if (this.factory.remainingRetries === 0) {
+      this.factory.pcolInstance = undefined;
+      return reject(error);
+    } else {
+      console.error(
+        `Failed to connect. Address [${this.server.host}:${this.server.port}]. Retrying.`
+      );
+    }
+    this._connectionTimeout = setTimeout(() => {
+      this._retryConnection(resolve, reject);
+    }, this.factory.connectionTimeout);
   }
 
   /**
@@ -106,9 +138,12 @@ class JsonRpcClientProtocol {
    *
    * Sets `JsonRpcClientFactory.pcolInstance` to `undefined`
    *
+   * Clears the connection timeout
+   *
    * @param {function} cb Called when connection is sucessfully closed
    */
   end(cb) {
+    clearTimeout(this._connectionTimeout);
     this.factory.pcolInstance = undefined;
     this.connector.end(cb);
   }
