@@ -171,7 +171,7 @@ const handleSubscription = (result) => {
   if (program.write) {
     fs.appendFileSync(program.write, JSON.stringify(result) + "\n");
   } else {
-    process.stdout.write(result + "\n");
+    process.stdout.write(JSON.stringify(result) + "\n");
   }
 };
 
