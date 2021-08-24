@@ -1,6 +1,6 @@
 {
   "name": "jaysonic",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "A feature rich JSON-RPC 1.0/2.0 compliant client and server library",
   "repository": {
     "type": "git",
