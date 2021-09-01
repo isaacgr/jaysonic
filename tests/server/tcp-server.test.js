@@ -327,4 +327,25 @@ describe("TCP Server V1", () => {
       });
     });
   });
+  describe("listener events", () => {
+    it("should set the factory to stop listening and remove all connected clients", (done) => {
+      const server2 = new Jaysonic.server.tcp({ port: 8102 });
+      server2.listen().then(() => {
+        const client2 = new Jaysonic.client.tcp({
+          host: "127.0.0.1",
+          port: 8102,
+          retries: 0
+        });
+        client2.connect().then(() => {
+          expect(server2.clients).to.have.lengthOf(1);
+          server2.close().then(() => {
+            expect(server2.listening).to.eql(false);
+            expect(server2.clients).to.eql([]);
+            client2.end();
+            done();
+          });
+        });
+      });
+    });
+  });
 });

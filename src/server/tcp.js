@@ -15,15 +15,15 @@ class TcpServerFactory extends JsonRpcServerFactory {
   /** @inheritdoc */
   buildProtocol() {
     this.server.on("connection", (client) => {
-      this.connectedClients.push(client);
       this.emit("clientConnected", client);
-      this.pcolInstance = new TCPServerProtocol(
+      const pcol = new TCPServerProtocol(
         this,
         client,
         this.options.version,
         this.options.delimiter
       );
-      this.pcolInstance.clientConnected();
+      pcol.clientConnected();
+      this.clients.push(pcol);
     });
   }
 }

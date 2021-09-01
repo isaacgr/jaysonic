@@ -41,7 +41,6 @@ class HttpServerFactory extends JsonRpcServerFactory {
   /** @inheritdoc */
   buildProtocol() {
     this.server.on("connection", (client) => {
-      this.connectedClients.push(client);
       this.emit("clientConnected", client);
       client.on("close", () => {
         this.emit("clientDisconnected");
@@ -49,14 +48,15 @@ class HttpServerFactory extends JsonRpcServerFactory {
       // maybe need .on('end') event listener?
     });
     this.server.on("request", (request, response) => {
-      this.pcolInstance = new HttpServerProtocol(
+      const pcol = new HttpServerProtocol(
         this,
         request,
         response,
         this.options.version,
         this.options.delimiter
       );
-      this.pcolInstance.clientConnected();
+      pcol.clientConnected();
+      this.clients.push(pcol);
     });
   }
 }

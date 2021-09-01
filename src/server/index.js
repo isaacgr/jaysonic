@@ -14,9 +14,8 @@ class JsonRpcServerFactory extends EventEmitter {
    * @param {String} [options.delimiter="\n"] Delimiter to use for [JsonRpcServerProtocol]{@link JsonRpcServerProtocol}
    * @param {Boolean} [options.exlusive=false] disallow port sharing
    * @property {object} methods Key value pairs of server method to function call
-   * @property {array} connectedClients List of connected clients
+   * @property {array} clients List of client connections which are instances of [JsonRpcServerProtocol]{@link JsonRpcServerProtocol}
    * @property {boolean} listening  Inidicates if the server is currently listening
-   * @property {class} pcolInstance Instance of [JsonRpcServerProtocol]{@link JsonRpcServerProtocol}
    */
   constructor(options) {
     super();
@@ -38,9 +37,8 @@ class JsonRpcServerFactory extends EventEmitter {
     };
 
     this.methods = {};
-    this.connectedClients = [];
+    this.clients = [];
     this.listening = false;
-    this.pcolInstance = undefined;
   }
 
   /**
@@ -76,11 +74,14 @@ class JsonRpcServerFactory extends EventEmitter {
   }
 
   /**
-   * Set the `pcolInstance` for the server factory
+   * Establishes the client connection using the protocol instance
+   * and adds the newly connected client to `this.clients`.
    *
    * @abstract
    * @example
-   * this.pcolInstance = new JsonRpcClientProtocol()
+   * const pcol = JsonRpcServerProtocol()
+   * pcol.clientConnected()
+   * this.clients.push(pcol)
    */
   buildProtocol() {
     throw new Error("function must be overwritten in subclass");
@@ -121,16 +122,18 @@ class JsonRpcServerFactory extends EventEmitter {
       });
     });
     this.on("clientDisconnected", (client) => {
-      const clientIndex = this.connectedClients.findIndex(c => client === c);
+      const clientIndex = this.clients.findIndex(
+        pcol => client === pcol.client
+      );
       if (clientIndex === -1) {
         this.clientDisconnected({
           error: `Unknown client ${JSON.stringify(client)}`
         });
       } else {
-        const [deletedClient] = this.connectedClients.splice(clientIndex, 1);
+        const [pcol] = this.clients.splice(clientIndex, 1);
         this.clientDisconnected({
-          host: deletedClient.remoteAddress,
-          port: deletedClient.remotePort
+          host: pcol.client.remoteAddress,
+          port: pcol.client.remotePort
         });
       }
     });
@@ -159,12 +162,15 @@ class JsonRpcServerFactory extends EventEmitter {
   /**
    * Kicks all connected clients.
    *
+   * Removes all entries from `this.clients`
+   *
    * @private
    */
   _removeClients() {
-    for (const client of this.connectedClients) {
-      client.destroy();
+    for (const pcol of this.clients) {
+      pcol.client.destroy();
     }
+    this.clients = [];
   }
 
   /**
@@ -250,12 +256,12 @@ class JsonRpcServerFactory extends EventEmitter {
       response += "]";
       response = JSON.stringify(JSON.parse(response)) + this.options.delimiter;
     }
-    if (this.connectedClients.length === 0) {
+    if (this.clients.length === 0) {
       return [Error("No clients connected")];
     }
-    return this.connectedClients.map((client) => {
+    return this.clients.map((pcol) => {
       try {
-        return this.sendNotification(client, response);
+        return this.sendNotification(pcol.client, response);
       } catch (e) {
         // possibly client disconnected
         return e;

@@ -60,14 +60,14 @@ class WsServerFactory extends JsonRpcServerFactory {
   buildProtocol() {
     this.server.on("connection", (client) => {
       this.emit("clientConnected", client);
-      this.connectedClients.push(client);
-      this.pcolInstance = new WSServerProtocol(
+      const pcol = new WSServerProtocol(
         this,
         client,
         this.options.version,
         this.options.delimiter
       );
-      this.pcolInstance.clientConnected();
+      pcol.clientConnected();
+      this.clients.push(pcol);
     });
   }
 
