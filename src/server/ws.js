@@ -47,12 +47,13 @@ class WsServerFactory extends JsonRpcServerFactory {
       }
       this.setSever();
       this.listening = true;
-      this.pcolInstance = this.buildProtocol();
+      this.buildProtocol();
       resolve({
         host: this.options.host,
         port: this.options.port,
         path: this.options.path
       });
+      this._setupListeners();
     });
   }
 
@@ -73,9 +74,10 @@ class WsServerFactory extends JsonRpcServerFactory {
 
   /** @inheritdoc */
   _removeClients() {
-    for (const client of this.connectedClients) {
-      client.close();
+    for (const pcol of this.clients) {
+      pcol.client.close();
     }
+    this.clients = [];
   }
 
   /**
