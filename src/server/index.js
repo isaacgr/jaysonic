@@ -106,14 +106,12 @@ class JsonRpcServerFactory extends EventEmitter {
    * @private
    */
   _setupListeners() {
-    this.on("error", (error) => {
-      throw error;
-    });
     this.server.on("error", (error) => {
       throw error;
     });
     this.server.on("close", () => {
       this.listening = false;
+      this._removeClients();
     });
     this.on("clientConnected", (client) => {
       this.clientConnected({
