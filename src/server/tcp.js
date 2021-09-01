@@ -15,7 +15,6 @@ class TcpServerFactory extends JsonRpcServerFactory {
   /** @inheritdoc */
   buildProtocol() {
     this.server.on("connection", (client) => {
-      this.emit("clientConnected", client);
       const pcol = new TCPServerProtocol(
         this,
         client,
@@ -24,6 +23,10 @@ class TcpServerFactory extends JsonRpcServerFactory {
       );
       pcol.clientConnected();
       this.clients.push(pcol);
+      this.clientConnected({
+        host: client.remoteAddress,
+        port: client.remotePort
+      });
     });
   }
 }

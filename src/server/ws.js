@@ -60,7 +60,6 @@ class WsServerFactory extends JsonRpcServerFactory {
   /** @inheritdoc */
   buildProtocol() {
     this.server.on("connection", (client) => {
-      this.emit("clientConnected", client);
       const pcol = new WSServerProtocol(
         this,
         client,
@@ -69,6 +68,7 @@ class WsServerFactory extends JsonRpcServerFactory {
       );
       pcol.clientConnected();
       this.clients.push(pcol);
+      this.clientConnected(client);
     });
   }
 

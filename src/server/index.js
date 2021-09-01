@@ -113,28 +113,6 @@ class JsonRpcServerFactory extends EventEmitter {
       this.listening = false;
       this._removeClients();
     });
-    this.on("clientConnected", (client) => {
-      this.clientConnected({
-        host: client.remoteAddress,
-        port: client.remotePort
-      });
-    });
-    this.on("clientDisconnected", (client) => {
-      const clientIndex = this.clients.findIndex(
-        pcol => client === pcol.client
-      );
-      if (clientIndex === -1) {
-        this.clientDisconnected({
-          error: `Unknown client ${JSON.stringify(client)}`
-        });
-      } else {
-        const [pcol] = this.clients.splice(clientIndex, 1);
-        this.clientDisconnected({
-          host: pcol.client.remoteAddress,
-          port: pcol.client.remotePort
-        });
-      }
-    });
   }
 
   /**
@@ -302,7 +280,7 @@ class JsonRpcServerFactory extends EventEmitter {
   }
 
   /**
-   * Called when `clientConnected` event is fired.
+   * Called when client receives a `connection` event.
    *
    * @param {object} event Returns host and port or error object
    */
@@ -311,12 +289,24 @@ class JsonRpcServerFactory extends EventEmitter {
   }
 
   /**
-   * Called when `clientDisconnected` event is fired.
+   * Called when client disconnects from server.
    *
    * @param {object} event Returns host and port or error object
    */
-  clientDisconnected(event) {
-    return event;
+  clientDisconnected(client) {
+    const clientIndex = this.clients.findIndex(
+      pcol => client === pcol.client
+    );
+    if (clientIndex === -1) {
+      return {
+        error: `Unknown client ${JSON.stringify(client)}`
+      };
+    }
+    const [pcol] = this.clients.splice(clientIndex, 1);
+    return {
+      host: pcol.client.remoteAddress,
+      port: pcol.client.remotePort
+    };
   }
 
   /**
