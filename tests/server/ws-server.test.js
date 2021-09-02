@@ -236,5 +236,13 @@ describe("WebSocket Server", () => {
         });
       });
     });
+    it("should throw an error if an 'error' event occurs when starting serer", (done) => {
+      const wss3 = new Jaysonic.server.ws({ port: 0, host: "1.1.1.1" });
+      wss3.listen().catch((error) => {
+        expect(error).to.be.instanceOf(Error);
+        expect(error.code).to.eql("EADDRNOTAVAIL");
+        done();
+      });
+    });
   });
 });
