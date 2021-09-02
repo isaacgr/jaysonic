@@ -61,6 +61,7 @@ class JsonRpcServerFactory extends EventEmitter {
       const { host, port, exclusive } = this.options;
       this.setServer();
       this.server.listen({ host, port, exclusive });
+      this._setupListeners(reject);
       this.server.on("listening", () => {
         this.listening = true;
         this.buildProtocol();
@@ -69,7 +70,6 @@ class JsonRpcServerFactory extends EventEmitter {
           port: this.server.address().port
         });
       });
-      this._setupListeners();
     });
   }
 
@@ -103,12 +103,12 @@ class JsonRpcServerFactory extends EventEmitter {
    *
    * Calls the [JsonRpcServerFactory]{@link JsonRpcServerFactory#clientConnected} and
    * [JsonRpcServerFactory]{@link JsonRpcServerFactory#clientDisconnected} methods
+   *
+   * @param {function} cb Callback to invoke if server receives an `error` event
    * @private
    */
-  _setupListeners() {
-    this.server.on("error", (error) => {
-      throw error;
-    });
+  _setupListeners(cb) {
+    this.server.on("error", cb);
     this.server.on("close", () => {
       this.listening = false;
       this._removeClients();
