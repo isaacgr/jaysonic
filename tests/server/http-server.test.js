@@ -169,7 +169,16 @@ describe("Http Server", () => {
     });
   });
 });
-
+describe("listener events", () => {
+  it("should throw an error if an 'error' event occurs when starting serer", (done) => {
+    const server = new Jaysonic.server.http({ port: 0, host: "1.1.1.1" });
+    server.listen().catch((error) => {
+      expect(error).to.be.instanceOf(Error);
+      expect(error.code).to.eql("EADDRNOTAVAIL");
+      done();
+    });
+  });
+});
 describe("Http Server V1", () => {
   before((done) => {
     serverHttpV1.listen().then(() => {
