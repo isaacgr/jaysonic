@@ -48,8 +48,6 @@ class JsonRpcServerFactory extends EventEmitter {
    *
    * Establishes `error` and `close` listeners.
    *
-   * Establishes `clientConnected` and `clientDisconnected` listener.
-   *
    * @returns {Promise} Resolves host and port address for server.
    */
   listen() {
@@ -99,10 +97,9 @@ class JsonRpcServerFactory extends EventEmitter {
 
   /**
    * Setup the `error` and `close` events for the factory and server.
-   * Sets `listening` to false if any errors returned or if server stops listening.
    *
-   * Calls the [JsonRpcServerFactory]{@link JsonRpcServerFactory#clientConnected} and
-   * [JsonRpcServerFactory]{@link JsonRpcServerFactory#clientDisconnected} methods
+   * Calls [JsonRpcServerFactory]{@link JsonRpcServerFactory#_removeClients} when server closes
+   * and sets `listening` to false
    *
    * @param {function} cb Callback to invoke if server receives an `error` event
    * @private
@@ -260,6 +257,7 @@ class JsonRpcServerFactory extends EventEmitter {
    * Generate objects for notifications to send to client
    *
    * @param {Array.<string, Array>} notifications Array of notifications to send to client.
+   * @returns {JSON} Returns a valid JSON-RPC response object
    * @private
    */
   _getNotificationResponses(notifications) {
@@ -282,7 +280,8 @@ class JsonRpcServerFactory extends EventEmitter {
   /**
    * Called when client receives a `connection` event.
    *
-   * @param {object} event Returns host and port or error object
+   * @param {JsonRpcServerProtocol} pcol A {@link JsonRpcServerProtocol} instance
+   * @returns {JsonRpcServerProtocol.client} Returns a client for a given `JsonRpcServerProtocol` instance
    */
   clientConnected(event) {
     return event;
@@ -291,7 +290,9 @@ class JsonRpcServerFactory extends EventEmitter {
   /**
    * Called when client disconnects from server.
    *
-   * @param {object} event Returns host and port or error object
+   * @param {JsonRpcServerProtocol} pcol A {@link JsonRpcServerProtocol} instance
+   * @returns {object|error} Returns an object of {host, port} for the given protocol instance, or {error}
+   * if there was an error retrieving the client
    */
   clientDisconnected(client) {
     const clientIndex = this.clients.findIndex(
