@@ -91,7 +91,7 @@ class JsonRpcServerProtocol {
    * Validate the request message
    *
    * @param {string} chunk
-   * @return {JSON}
+   * @returns {JSON}
    * @throws Will throw an error with a JSON-RPC error object if chunk cannot be parsed
    */
   validateRequest(chunk) {
