@@ -40,7 +40,7 @@ class JsonRpcServerProtocol {
       this._waitForData();
     });
     this.client.on("end", () => {
-      this.factory.clientDisconnected(this.client);
+      this.factory.clientDisconnected(this);
     });
   }
 
