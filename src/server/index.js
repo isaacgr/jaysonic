@@ -283,8 +283,8 @@ class JsonRpcServerFactory extends EventEmitter {
    * @param {JsonRpcServerProtocol} pcol A {@link JsonRpcServerProtocol} instance
    * @returns {JsonRpcServerProtocol.client} Returns a client for a given `JsonRpcServerProtocol` instance
    */
-  clientConnected(event) {
-    return event;
+  clientConnected(pcol) {
+    return pcol.client;
   }
 
   /**
@@ -294,19 +294,17 @@ class JsonRpcServerFactory extends EventEmitter {
    * @returns {object|error} Returns an object of {host, port} for the given protocol instance, or {error}
    * if there was an error retrieving the client
    */
-  clientDisconnected(client) {
-    const clientIndex = this.clients.findIndex(
-      pcol => client === pcol.client
-    );
+  clientDisconnected(pcol) {
+    const clientIndex = this.clients.findIndex(p => p === pcol);
     if (clientIndex === -1) {
       return {
-        error: `Unknown client ${JSON.stringify(client)}`
+        error: `Unknown client ${JSON.stringify(pcol.client)}`
       };
     }
-    const [pcol] = this.clients.splice(clientIndex, 1);
+    const [protocol] = this.clients.splice(clientIndex, 1);
     return {
-      host: pcol.client.remoteAddress,
-      port: pcol.client.remotePort
+      host: protocol.client.remoteAddress,
+      port: protocol.client.remotePort
     };
   }
 
