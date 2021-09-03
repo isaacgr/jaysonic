@@ -23,10 +23,7 @@ class TcpServerFactory extends JsonRpcServerFactory {
       );
       pcol.clientConnected();
       this.clients.push(pcol);
-      this.clientConnected({
-        host: client.remoteAddress,
-        port: client.remotePort
-      });
+      this.clientConnected(pcol);
     });
   }
 }

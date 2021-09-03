@@ -71,7 +71,7 @@ class WsServerFactory extends JsonRpcServerFactory {
       );
       pcol.clientConnected();
       this.clients.push(pcol);
-      this.clientConnected(client);
+      this.clientConnected(pcol);
     });
   }
 
