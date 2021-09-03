@@ -42,6 +42,7 @@ class HttpServerFactory extends JsonRpcServerFactory {
   buildProtocol() {
     this.server.on("connection", (client) => {
       this.clientConnected(client);
+      this.clients.push(client);
       client.on("close", () => {
         this.clientDisconnected(client);
       });
@@ -56,8 +57,38 @@ class HttpServerFactory extends JsonRpcServerFactory {
         this.options.delimiter
       );
       pcol.clientConnected();
-      this.clients.push(pcol);
     });
+  }
+
+  /**
+   * Called when client receives a `connection` event.
+   *
+   * @param {stream.Duplex} client Instance of `stream.Duplex`
+   * @returns {stream.Duplex} Returns an instance of `stream.Duplex`
+   */
+  clientConnected(client) {
+    return client;
+  }
+
+  /**
+   * Called when client disconnects from server.
+   *
+   * @param {stream.Duplex} client Instance of `stream.Duplex`
+   * @returns {object|error} Returns an object of {host, port} for the given protocol instance, or {error}
+   * if there was an error retrieving the client
+   */
+  clientDisconnected(client) {
+    const clientIndex = this.clients.findIndex(c => c === client);
+    if (clientIndex === -1) {
+      return {
+        error: `Unknown client ${JSON.stringify(client)}`
+      };
+    }
+    const [diconnectedClient] = this.clients.splice(clientIndex, 1);
+    return {
+      host: diconnectedClient.remoteAddress,
+      port: diconnectedClient.remotePort
+    };
   }
 }
 
