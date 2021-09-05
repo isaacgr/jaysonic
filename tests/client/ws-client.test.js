@@ -1,7 +1,7 @@
 const { expect } = require("chai");
 const WebSocket = require("ws");
 const intercept = require("intercept-stdout");
-const { wss } = require("../test-server.js");
+const { wss } = require("../test-server");
 const data = require("../large-data.json");
 
 const Jaysonic = require("../../src/client-ws");
