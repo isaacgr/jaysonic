@@ -1,7 +1,11 @@
 const { expect } = require("chai");
+const chai = require("chai");
+const spies = require("chai-spies");
 const Jaysonic = require("../../src");
 const { server, serverV1 } = require("../test-server");
-const { client, socket, socketV1 } = require("../test-client.js");
+const { client, socket, socketV1 } = require("../test-client");
+
+chai.use(spies);
 
 server.method(
   "promise.resolve",
@@ -33,12 +37,45 @@ describe("TCP Server", () => {
   });
   describe("connection", () => {
     it("should accept incoming connections", (done) => {
-      server.clientConnected((conn) => {
-        expect(conn).to.have.all.keys("host", "port");
-      });
+      const method = chai.spy.on(server, "clientConnected");
       client.connect().then(() => {
-        done();
+        try {
+          expect(method).to.have.been.called.with(server.clients[0]);
+          client.end(() => {
+            done();
+          });
+        } catch (e) {
+          client.end(() => {
+            done(e);
+          });
+        }
       });
+    });
+    it("should call clientDisconnected and remove client from this.clients", (done) => {
+      const callback = chai.spy.on(server, "clientDisconnected");
+      client.connect().then(() => {
+        const c = server.clients[0];
+        client.end(() => {
+          setTimeout(() => {
+            try {
+              expect(callback).to.have.been.called.with(c);
+              expect(server.clients).to.have.lengthOf(0);
+              done();
+            } catch (e) {
+              done(e);
+            }
+          }, 500);
+        });
+      });
+    });
+    it("should return 'Unknown client' from clientDisconnected if client was not found", (done) => {
+      let res;
+      server.clientDisconnected = (pcol) => {
+        res = server.removeDisconnectedClient(pcol);
+      };
+      server.clientDisconnected({});
+      expect(res).to.be.eql({ error: "Unknown client {}" });
+      done();
     });
     it("should be unable to listen multiple times", (done) => {
       const conn = server.listen();
@@ -77,7 +114,9 @@ describe("TCP Server", () => {
   describe("requests", () => {
     before((done) => {
       socket.connect(8100, "127.0.0.1", () => {
-        done();
+        client.connect().then(() => {
+          done();
+        });
       });
     });
     after((done) => {

@@ -290,22 +290,33 @@ class JsonRpcServerFactory extends EventEmitter {
   /**
    * Called when client disconnects from server.
    *
+   * If overwriting, its recommended to call {@link JsonRpcServerFactory.removeDisconnectedClient} manually
+   * to ensure `this.clients` is cleaned up
+   *
    * @param {JsonRpcServerProtocol} pcol A {@link JsonRpcServerProtocol} instance
    * @returns {object|error} Returns an object of {host, port} for the given protocol instance, or {error}
    * if there was an error retrieving the client
    */
   clientDisconnected(pcol) {
+    return this.removeDisconnectedClient(pcol);
+  }
+
+  /**
+   * Removes disconnected client from `this.clients` list
+   *
+   * @param {JsonRpcServerProtocol} pcol A {@link JsonRpcServerProtocol} instance
+   * @returns {object|error} Returns an object of {host, port} for the given protocol instance, or {error}
+   *
+   */
+  removeDisconnectedClient(pcol) {
     const clientIndex = this.clients.findIndex(p => p === pcol);
     if (clientIndex === -1) {
       return {
-        error: `Unknown client ${JSON.stringify(pcol.client)}`
+        error: `Unknown client ${JSON.stringify(pcol)}`
       };
     }
     const [protocol] = this.clients.splice(clientIndex, 1);
-    return {
-      host: protocol.client.remoteAddress,
-      port: protocol.client.remotePort
-    };
+    return protocol.client;
   }
 
   /**

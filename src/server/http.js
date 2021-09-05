@@ -78,17 +78,25 @@ class HttpServerFactory extends JsonRpcServerFactory {
    * if there was an error retrieving the client
    */
   clientDisconnected(client) {
+    return this.removeDisconnectedClient(client);
+  }
+
+  /**
+   * Removes disconnected client from `this.clients` list
+   *
+   * @param {stream.Duplex} client Instance of `stream.Duplex`
+   * @returns {object|error} Returns an object of {host, port} for the given protocol instance, or {error}
+   * if there was an error retrieving the client
+   */
+  removeDisconnectedClient(client) {
     const clientIndex = this.clients.findIndex(c => c === client);
     if (clientIndex === -1) {
       return {
         error: `Unknown client ${JSON.stringify(client)}`
       };
     }
-    const [diconnectedClient] = this.clients.splice(clientIndex, 1);
-    return {
-      host: diconnectedClient.remoteAddress,
-      port: diconnectedClient.remotePort
-    };
+    const [disconnectedClient] = this.clients.splice(clientIndex, 1);
+    return disconnectedClient;
   }
 }
 

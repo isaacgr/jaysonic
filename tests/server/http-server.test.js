@@ -26,6 +26,20 @@ describe("Http Server", () => {
         done();
       });
     });
+    it("should return 'Unknown client' from clientDisconnected if client was not found", (done) => {
+      let res;
+      serverHttp.clientDisconnected = (client) => {
+        res = serverHttp.removeDisconnectedClient(client);
+      };
+      serverHttp.clientDisconnected({});
+      try {
+        expect(res).to.be.eql({ error: "Unknown client {}" });
+        done();
+      } catch (e) {
+        console.log(e);
+        done(e);
+      }
+    });
     it("should be unable to listen multiple times", (done) => {
       const conn = serverHttp.listen();
       conn.catch((error) => {
