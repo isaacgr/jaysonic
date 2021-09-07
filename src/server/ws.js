@@ -72,6 +72,10 @@ class WsServerFactory extends JsonRpcServerFactory {
       pcol.clientConnected();
       this.clients.push(pcol);
       this.clientConnected(pcol);
+      this.clientConnected(pcol);
+      client.on("close", () => {
+        this.clientDisconnected(pcol);
+      });
     });
   }
 

@@ -17,25 +17,6 @@ class WsServerProtocol extends JsonRpcServerProtocol {
     this.event = "message"; // ws uses 'message', tcp uses 'data'
     this.client.write = this.client.send; // ws uses .send(), tcp uses .write()
   }
-
-  /**
-   * Registers the `event` data listener when client connects.
-   *
-   * Pushes received data into `messageBuffer` and calls
-   * [_waitForData]{@link JsonRpcServerProtocol#_waitForData}.
-   *
-   * Registers `close` event to call `clientDisconnected` on the factory
-   *
-   */
-  clientConnected() {
-    this.client.on(this.event, (data) => {
-      this.messageBuffer.push(data);
-      this._waitForData();
-    });
-    this.client.on("close", () => {
-      this.factory.clientDisconnected(this);
-    });
-  }
 }
 
 module.exports = WsServerProtocol;

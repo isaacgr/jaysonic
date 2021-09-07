@@ -24,6 +24,9 @@ class TcpServerFactory extends JsonRpcServerFactory {
       pcol.clientConnected();
       this.clients.push(pcol);
       this.clientConnected(pcol);
+      client.on("end", () => {
+        this.clientDisconnected(pcol);
+      });
     });
   }
 }

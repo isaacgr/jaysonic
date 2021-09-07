@@ -31,16 +31,11 @@ class JsonRpcServerProtocol {
    * Pushes received data into `messageBuffer` and calls
    * [_waitForData]{@link JsonRpcServerProtocol#_waitForData}.
    *
-   * Registers `end` event to call `clientDisconnected` on the factory
-   *
    */
   clientConnected() {
     this.client.on(this.event, (data) => {
       this.messageBuffer.push(data);
       this._waitForData();
-    });
-    this.client.on("end", () => {
-      this.factory.clientDisconnected(this);
     });
   }
 
