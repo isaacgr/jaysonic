@@ -42,9 +42,14 @@ class WsClientFactory extends JsonRpcClientFactory {
     );
   }
 
-  /** @inheritdoc */
-  end(cb) {
-    this.pcolInstance.end(cb);
+  /**
+   * Calls .end() on the protocol instance
+   *
+   * @param {number} code Status code for the close event. https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code
+   * @param {string} reason Reason the connection was closed.
+   */
+  end(code, reason) {
+    this.pcolInstance.end(code, reason);
   }
 
   /** @inheritdoc */
