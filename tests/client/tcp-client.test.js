@@ -1,7 +1,7 @@
 const { expect } = require("chai");
 const intercept = require("intercept-stdout");
 const net = require("net");
-const { server } = require("../test-server.js");
+const { server } = require("../test-server");
 const data = require("../large-data.json");
 
 const Jaysonic = require("../../src");

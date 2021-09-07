@@ -31,8 +31,7 @@ class JsonRpcServerProtocol {
    * Pushes received data into `messageBuffer` and calls
    * [_waitForData]{@link JsonRpcServerProtocol#_waitForData}.
    *
-   * Registers `end` event to emit a `clientDisconnected` event
-   * on the factory
+   * Registers `end` event to call `clientDisconnected` on the factory
    *
    */
   clientConnected() {
@@ -41,7 +40,7 @@ class JsonRpcServerProtocol {
       this._waitForData();
     });
     this.client.on("end", () => {
-      this.factory.emit("clientDisconnected", this.client);
+      this.factory.clientDisconnected(this);
     });
   }
 
@@ -92,7 +91,7 @@ class JsonRpcServerProtocol {
    * Validate the request message
    *
    * @param {string} chunk
-   * @return {JSON}
+   * @returns {JSON}
    * @throws Will throw an error with a JSON-RPC error object if chunk cannot be parsed
    */
   validateRequest(chunk) {

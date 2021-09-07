@@ -26,6 +26,20 @@ describe("Http Server", () => {
         done();
       });
     });
+    it("should return 'Unknown client' from clientDisconnected if client was not found", (done) => {
+      let res;
+      serverHttp.clientDisconnected = (client) => {
+        res = serverHttp.removeDisconnectedClient(client);
+      };
+      serverHttp.clientDisconnected({});
+      try {
+        expect(res).to.be.eql({ error: "Unknown client {}" });
+        done();
+      } catch (e) {
+        console.log(e);
+        done(e);
+      }
+    });
     it("should be unable to listen multiple times", (done) => {
       const conn = serverHttp.listen();
       conn.catch((error) => {
@@ -169,7 +183,16 @@ describe("Http Server", () => {
     });
   });
 });
-
+describe("listener events", () => {
+  it("should throw an error if an 'error' event occurs when starting serer", (done) => {
+    const server = new Jaysonic.server.http({ port: 0, host: "1.1.1.1" });
+    server.listen().catch((error) => {
+      expect(error).to.be.instanceOf(Error);
+      expect(error.code).to.eql("EADDRNOTAVAIL");
+      done();
+    });
+  });
+});
 describe("Http Server V1", () => {
   before((done) => {
     serverHttpV1.listen().then(() => {

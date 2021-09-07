@@ -41,23 +41,62 @@ class HttpServerFactory extends JsonRpcServerFactory {
   /** @inheritdoc */
   buildProtocol() {
     this.server.on("connection", (client) => {
-      this.connectedClients.push(client);
-      this.emit("clientConnected", client);
+      this.clientConnected(client);
+      this.clients.push(client);
       client.on("close", () => {
-        this.emit("clientDisconnected");
+        this.clientDisconnected(client);
       });
       // maybe need .on('end') event listener?
     });
     this.server.on("request", (request, response) => {
-      this.pcolInstance = new HttpServerProtocol(
+      const pcol = new HttpServerProtocol(
         this,
         request,
         response,
         this.options.version,
         this.options.delimiter
       );
-      this.pcolInstance.clientConnected();
+      pcol.clientConnected();
     });
+  }
+
+  /**
+   * Called when client receives a `connection` event.
+   *
+   * @param {stream.Duplex} client Instance of `stream.Duplex`
+   * @returns {stream.Duplex} Returns an instance of `stream.Duplex`
+   */
+  clientConnected(client) {
+    return client;
+  }
+
+  /**
+   * Called when client disconnects from server.
+   *
+   * @param {stream.Duplex} client Instance of `stream.Duplex`
+   * @returns {object|error} Returns an object of {host, port} for the given protocol instance, or {error}
+   * if there was an error retrieving the client
+   */
+  clientDisconnected(client) {
+    return this.removeDisconnectedClient(client);
+  }
+
+  /**
+   * Removes disconnected client from `this.clients` list
+   *
+   * @param {stream.Duplex} client Instance of `stream.Duplex`
+   * @returns {object|error} Returns an object of {host, port} for the given protocol instance, or {error}
+   * if there was an error retrieving the client
+   */
+  removeDisconnectedClient(client) {
+    const clientIndex = this.clients.findIndex(c => c === client);
+    if (clientIndex === -1) {
+      return {
+        error: `Unknown client ${JSON.stringify(client)}`
+      };
+    }
+    const [disconnectedClient] = this.clients.splice(clientIndex, 1);
+    return disconnectedClient;
   }
 }
 

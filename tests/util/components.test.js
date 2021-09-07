@@ -347,7 +347,7 @@ describe("server.notify()", () => {
       done();
     });
     it("should return a list of error objects if there was an issue sending out to a client", (done) => {
-      server.connectedClients.push(1);
+      server.clients.push(1);
       const res = server.notify([["foo", []]]);
       expect(res).to.be.an("array");
       expect(res[0]).to.be.instanceOf(Error);
@@ -391,7 +391,7 @@ describe("server.notify()", () => {
       done();
     });
     it("should return a list of error objects if there was an issue sending out to a client", (done) => {
-      wss.connectedClients.push(1);
+      wss.clients.push(1);
       const res = server.notify([["foo", []]]);
       expect(res).to.be.an("array");
       expect(res[0]).to.be.instanceOf(Error);

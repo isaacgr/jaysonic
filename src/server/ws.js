@@ -45,13 +45,17 @@ class WsServerFactory extends JsonRpcServerFactory {
         // not having this caused MaxEventListeners error
         return reject(Error("server already listening"));
       }
+      const { host, port, path } = this.options;
       this.setSever();
-      this.listening = true;
-      this.pcolInstance = this.buildProtocol();
-      resolve({
-        host: this.options.host,
-        port: this.options.port,
-        path: this.options.path
+      this._setupListeners(reject);
+      this.server.on("listening", () => {
+        this.listening = true;
+        this.buildProtocol();
+        resolve({
+          host,
+          port,
+          path
+        });
       });
     });
   }
@@ -59,23 +63,24 @@ class WsServerFactory extends JsonRpcServerFactory {
   /** @inheritdoc */
   buildProtocol() {
     this.server.on("connection", (client) => {
-      this.emit("clientConnected", client);
-      this.connectedClients.push(client);
-      this.pcolInstance = new WSServerProtocol(
+      const pcol = new WSServerProtocol(
         this,
         client,
         this.options.version,
         this.options.delimiter
       );
-      this.pcolInstance.clientConnected();
+      pcol.clientConnected();
+      this.clients.push(pcol);
+      this.clientConnected(pcol);
     });
   }
 
   /** @inheritdoc */
   _removeClients() {
-    for (const client of this.connectedClients) {
-      client.close();
+    for (const pcol of this.clients) {
+      pcol.client.close();
     }
+    this.clients = [];
   }
 
   /**

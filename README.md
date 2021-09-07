@@ -396,11 +396,12 @@ _Note: The same syntax for all the above methods is used for the HTTP and WS ser
 The `clientConnected` and `clientDisconnected` methods return the host and port of the client in the event. These methods are not available for the HTTP server.
 
 ```js
-server.clientConnected = (event) => {
+server.clientConnected = (client) => {
   console.log("client connected");
 };
 
-server.clientDisconnected = (event) => {
+server.clientDisconnected = (client) => {
+  server.removeDisconnectedClient(client); // recommended to call along with clientDisconnected to clean up clients list
   console.log("client disconnected");
 };
 ```

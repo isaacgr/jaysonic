@@ -217,4 +217,32 @@ describe("WebSocket Server", () => {
         });
     });
   });
+  describe("listener events", () => {
+    it("should set the factory to stop listening and remove all connected clients", (done) => {
+      const wss2 = new Jaysonic.server.ws({ port: 8101 });
+      wss2.listen().then(() => {
+        const client = new Jaysonic.client.ws({
+          url: "ws://127.0.0.1:8101",
+          retries: 0
+        });
+        client.connect().then(() => {
+          expect(wss2.clients).to.have.lengthOf(1);
+          wss2.close().then(() => {
+            expect(wss2.listening).to.eql(false);
+            expect(wss2.clients).to.eql([]);
+            client.end();
+            done();
+          });
+        });
+      });
+    });
+    it("should throw an error if an 'error' event occurs when starting serer", (done) => {
+      const wss3 = new Jaysonic.server.ws({ port: 0, host: "1.1.1.1" });
+      wss3.listen().catch((error) => {
+        expect(error).to.be.instanceOf(Error);
+        expect(error.code).to.eql("EADDRNOTAVAIL");
+        done();
+      });
+    });
+  });
 });

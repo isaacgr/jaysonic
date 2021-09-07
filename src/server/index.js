@@ -14,9 +14,8 @@ class JsonRpcServerFactory extends EventEmitter {
    * @param {String} [options.delimiter="\n"] Delimiter to use for [JsonRpcServerProtocol]{@link JsonRpcServerProtocol}
    * @param {Boolean} [options.exlusive=false] disallow port sharing
    * @property {object} methods Key value pairs of server method to function call
-   * @property {array} connectedClients List of connected clients
+   * @property {array} clients List of client connections which are instances of [JsonRpcServerProtocol]{@link JsonRpcServerProtocol}
    * @property {boolean} listening  Inidicates if the server is currently listening
-   * @property {class} pcolInstance Instance of [JsonRpcServerProtocol]{@link JsonRpcServerProtocol}
    */
   constructor(options) {
     super();
@@ -38,9 +37,8 @@ class JsonRpcServerFactory extends EventEmitter {
     };
 
     this.methods = {};
-    this.connectedClients = [];
+    this.clients = [];
     this.listening = false;
-    this.pcolInstance = undefined;
   }
 
   /**
@@ -49,8 +47,6 @@ class JsonRpcServerFactory extends EventEmitter {
    * Calls [setServer]{@link JsonRpcServerFactory#setServer} and [buildProtocol]{@link JsonRpcServerFactory#buildProtocol}.
    *
    * Establishes `error` and `close` listeners.
-   *
-   * Establishes `clientConnected` and `clientDisconnected` listener.
    *
    * @returns {Promise} Resolves host and port address for server.
    */
@@ -63,6 +59,7 @@ class JsonRpcServerFactory extends EventEmitter {
       const { host, port, exclusive } = this.options;
       this.setServer();
       this.server.listen({ host, port, exclusive });
+      this._setupListeners(reject);
       this.server.on("listening", () => {
         this.listening = true;
         this.buildProtocol();
@@ -71,16 +68,18 @@ class JsonRpcServerFactory extends EventEmitter {
           port: this.server.address().port
         });
       });
-      this._setupListeners();
     });
   }
 
   /**
-   * Set the `pcolInstance` for the server factory
+   * Establishes the client connection using the protocol instance
+   * and adds the newly connected client to `this.clients`.
    *
    * @abstract
    * @example
-   * this.pcolInstance = new JsonRpcClientProtocol()
+   * const pcol = JsonRpcServerProtocol()
+   * pcol.clientConnected()
+   * this.clients.push(pcol)
    */
   buildProtocol() {
     throw new Error("function must be overwritten in subclass");
@@ -98,41 +97,18 @@ class JsonRpcServerFactory extends EventEmitter {
 
   /**
    * Setup the `error` and `close` events for the factory and server.
-   * Sets `listening` to false if any errors returned or if server stops listening.
    *
-   * Calls the [JsonRpcServerFactory]{@link JsonRpcServerFactory#clientConnected} and
-   * [JsonRpcServerFactory]{@link JsonRpcServerFactory#clientDisconnected} methods
+   * Calls [JsonRpcServerFactory]{@link JsonRpcServerFactory#_removeClients} when server closes
+   * and sets `listening` to false
+   *
+   * @param {function} cb Callback to invoke if server receives an `error` event
    * @private
    */
-  _setupListeners() {
-    this.on("error", (error) => {
-      throw error;
-    });
-    this.server.on("error", (error) => {
-      throw error;
-    });
+  _setupListeners(cb) {
+    this.server.on("error", cb);
     this.server.on("close", () => {
       this.listening = false;
-    });
-    this.on("clientConnected", (client) => {
-      this.clientConnected({
-        host: client.remoteAddress,
-        port: client.remotePort
-      });
-    });
-    this.on("clientDisconnected", (client) => {
-      const clientIndex = this.connectedClients.findIndex(c => client === c);
-      if (clientIndex === -1) {
-        this.clientDisconnected({
-          error: `Unknown client ${JSON.stringify(client)}`
-        });
-      } else {
-        const [deletedClient] = this.connectedClients.splice(clientIndex, 1);
-        this.clientDisconnected({
-          host: deletedClient.remoteAddress,
-          port: deletedClient.remotePort
-        });
-      }
+      this._removeClients();
     });
   }
 
@@ -159,12 +135,15 @@ class JsonRpcServerFactory extends EventEmitter {
   /**
    * Kicks all connected clients.
    *
+   * Removes all entries from `this.clients`
+   *
    * @private
    */
   _removeClients() {
-    for (const client of this.connectedClients) {
-      client.destroy();
+    for (const pcol of this.clients) {
+      pcol.client.destroy();
     }
+    this.clients = [];
   }
 
   /**
@@ -250,12 +229,12 @@ class JsonRpcServerFactory extends EventEmitter {
       response += "]";
       response = JSON.stringify(JSON.parse(response)) + this.options.delimiter;
     }
-    if (this.connectedClients.length === 0) {
+    if (this.clients.length === 0) {
       return [Error("No clients connected")];
     }
-    return this.connectedClients.map((client) => {
+    return this.clients.map((pcol) => {
       try {
-        return this.sendNotification(client, response);
+        return this.sendNotification(pcol.client, response);
       } catch (e) {
         // possibly client disconnected
         return e;
@@ -278,6 +257,7 @@ class JsonRpcServerFactory extends EventEmitter {
    * Generate objects for notifications to send to client
    *
    * @param {Array.<string, Array>} notifications Array of notifications to send to client.
+   * @returns {JSON} Returns a valid JSON-RPC response object
    * @private
    */
   _getNotificationResponses(notifications) {
@@ -298,21 +278,45 @@ class JsonRpcServerFactory extends EventEmitter {
   }
 
   /**
-   * Called when `clientConnected` event is fired.
+   * Called when client receives a `connection` event.
    *
-   * @param {object} event Returns host and port or error object
+   * @param {JsonRpcServerProtocol} pcol A {@link JsonRpcServerProtocol} instance
+   * @returns {JsonRpcServerProtocol.client} Returns a client for a given `JsonRpcServerProtocol` instance
    */
-  clientConnected(event) {
-    return event;
+  clientConnected(pcol) {
+    return pcol.client;
   }
 
   /**
-   * Called when `clientDisconnected` event is fired.
+   * Called when client disconnects from server.
    *
-   * @param {object} event Returns host and port or error object
+   * If overwriting, its recommended to call {@link JsonRpcServerFactory.removeDisconnectedClient} manually
+   * to ensure `this.clients` is cleaned up
+   *
+   * @param {JsonRpcServerProtocol} pcol A {@link JsonRpcServerProtocol} instance
+   * @returns {object|error} Returns an object of {host, port} for the given protocol instance, or {error}
+   * if there was an error retrieving the client
    */
-  clientDisconnected(event) {
-    return event;
+  clientDisconnected(pcol) {
+    return this.removeDisconnectedClient(pcol);
+  }
+
+  /**
+   * Removes disconnected client from `this.clients` list
+   *
+   * @param {JsonRpcServerProtocol} pcol A {@link JsonRpcServerProtocol} instance
+   * @returns {object|error} Returns an object of {host, port} for the given protocol instance, or {error}
+   *
+   */
+  removeDisconnectedClient(pcol) {
+    const clientIndex = this.clients.findIndex(p => p === pcol);
+    if (clientIndex === -1) {
+      return {
+        error: `Unknown client ${JSON.stringify(pcol)}`
+      };
+    }
+    const [protocol] = this.clients.splice(clientIndex, 1);
+    return protocol.client;
   }
 
   /**
