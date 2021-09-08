@@ -1,7 +1,11 @@
 const { expect } = require("chai");
+const chai = require("chai");
+const spies = require("chai-spies");
 const Jaysonic = require("../../src");
 const { clientws } = require("../test-client");
 const { wss } = require("../test-server");
+
+chai.use(spies);
 
 wss.method(
   "promise.resolve",
@@ -29,7 +33,7 @@ describe("WebSocket Server", () => {
   });
   after((done) => {
     wss.close().then(() => {
-      clientws.end();
+      clientws.end(1000);
       done();
     });
   });
@@ -42,11 +46,32 @@ describe("WebSocket Server", () => {
       });
     });
     it("should accept incoming connections", (done) => {
-      wss.clientConnected((conn) => {
-        expect(conn).to.have.all.keys("host", "port");
-      });
+      const method = chai.spy.on(wss, "clientConnected");
       clientws.connect().then(() => {
-        done();
+        try {
+          expect(method).to.have.been.called.with(wss.clients[0]);
+          clientws.end(1000);
+          done();
+        } catch (e) {
+          clientws.end(1000);
+          done(e);
+        }
+      });
+    });
+    it("should call clientDisconnected and remove client from this.clients", (done) => {
+      const callback = chai.spy.on(wss, "clientDisconnected");
+      clientws.connect().then(() => {
+        const c = wss.clients[0];
+        clientws.end(1000);
+        setTimeout(() => {
+          try {
+            expect(callback).to.have.been.called.with(c);
+            expect(wss.clients).to.have.lengthOf(0);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        }, 500);
       });
     });
     it("should handle requests from multiple clients", (done) => {
@@ -79,6 +104,11 @@ describe("WebSocket Server", () => {
     });
   });
   describe("requests", () => {
+    before((done) => {
+      clientws.connect().then(() => {
+        done();
+      });
+    });
     it("should handle call with positional params", (done) => {
       const req = clientws.request().send("params", [1, 2]);
       req.then((result) => {

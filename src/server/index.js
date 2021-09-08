@@ -75,6 +75,8 @@ class JsonRpcServerFactory extends EventEmitter {
    * Establishes the client connection using the protocol instance
    * and adds the newly connected client to `this.clients`.
    *
+   * Registers the event to call `clientDisconnected` when a client a closes the connection
+   *
    * @abstract
    * @example
    * const pcol = JsonRpcServerProtocol()

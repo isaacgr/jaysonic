@@ -75,7 +75,16 @@ class WsClientProtocol extends JsonRpcClientProtocol {
     }, this.factory.connectionTimeout);
   }
 
-  /** @inheritdoc */
+  /**
+   * Ends connection to the server.
+   *
+   * Sets `JsonRpcClientFactory.pcolInstance` to `undefined`
+   *
+   * Clears the connection timeout
+   *
+   * @param {number} code Status code for the close event. https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code
+   * @param {string} reason Reason the connection was closed.
+   */
   end(code, reason) {
     clearTimeout(this._connectionTimeout);
     this.factory.pcolInstance = undefined;
