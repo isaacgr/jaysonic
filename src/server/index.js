@@ -1,5 +1,6 @@
 const EventEmitter = require("events");
 const { formatResponse } = require("../util/format");
+const JsonRpcServerProtocol = require("./protocol/base");
 
 /**
  * Creates an instance of JsonRpcServerFactory
@@ -39,6 +40,7 @@ class JsonRpcServerFactory extends EventEmitter {
     this.methods = {};
     this.clients = [];
     this.listening = false;
+    this.protocol = JsonRpcServerProtocol;
   }
 
   /**

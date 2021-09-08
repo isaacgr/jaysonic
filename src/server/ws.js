@@ -31,6 +31,8 @@ class WsServerFactory extends JsonRpcServerFactory {
       ...defaults,
       ...(this.options || {})
     };
+
+    this.protocol = WSServerProtocol;
   }
 
   /** @inheritdoc */
@@ -63,7 +65,7 @@ class WsServerFactory extends JsonRpcServerFactory {
   /** @inheritdoc */
   buildProtocol() {
     this.server.on("connection", (client) => {
-      const pcol = new WSServerProtocol(
+      const pcol = new this.protocol(
         this,
         client,
         this.options.version,
