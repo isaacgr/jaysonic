@@ -17,6 +17,7 @@ class JsonRpcServerFactory extends EventEmitter {
    * @property {object} methods Key value pairs of server method to function call
    * @property {array} clients List of client connections which are instances of [JsonRpcServerProtocol]{@link JsonRpcServerProtocol}
    * @property {boolean} listening  Inidicates if the server is currently listening
+   * @property {Object} protocol  Instance of [JsonRpcServerProtocol]{@link JsonRpcServerProtocol} to use for client conenctions
    */
   constructor(options) {
     super();
