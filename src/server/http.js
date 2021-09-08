@@ -22,6 +22,7 @@ class HttpServerFactory extends JsonRpcServerFactory {
     this.scheme = this.options.scheme || "http";
     this.key = this.options.key;
     this.cert = this.options.cert;
+    this.protocol = HttpServerProtocol;
   }
 
   /** @inheritdoc */
@@ -49,7 +50,7 @@ class HttpServerFactory extends JsonRpcServerFactory {
       // maybe need .on('end') event listener?
     });
     this.server.on("request", (request, response) => {
-      const pcol = new HttpServerProtocol(
+      const pcol = new this.protocol(
         this,
         request,
         response,
