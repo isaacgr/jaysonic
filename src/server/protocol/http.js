@@ -24,8 +24,7 @@ class HttpServerProtocol extends JsonRpcServerProtocol {
   }
 
   /**
-   * Send message to the client. If a notification is passed, then
-   * a 204 response code is sent.
+   * Send message to the client.
    *
    * @param {string} message Stringified JSON-RPC message object
    */
@@ -41,15 +40,12 @@ class HttpServerProtocol extends JsonRpcServerProtocol {
         this.status = 200;
       }
     }
-    this.response.writeHead(this.status, this.headers);
-    this.response.write(message, () => {
-      this.response.end();
-    });
+    this.response.writeHead(this.status, this.headers).end(message);
   }
 
   /**
    * Calls `emit` on factory with the event name being `message.method` and
-   * the date being `message`. Responds to client.
+   * the data being `message`.
    *
    * Responds to client with 204 status.
    *
@@ -60,8 +56,7 @@ class HttpServerProtocol extends JsonRpcServerProtocol {
     this.setResponseStatus({
       notification: true
     });
-    this.response.writeHead(this.status, this.headers);
-    this.response.end();
+    this.response.writeHead(this.status, this.headers).end();
   }
 
   /**
@@ -82,7 +77,6 @@ class HttpServerProtocol extends JsonRpcServerProtocol {
    * @param {number} options.errorCode The JSON-RPC error code to lookup a corresponding status code for
    * @param {number} options.status The HTTP status code (will override the errorCode)
    * @param {boolean} options.notification Inidicate if setting header for notification (will override other options with 204 status)
-
    */
   setResponseStatus({ errorCode, status, notification }) {
     this.status = 200;
