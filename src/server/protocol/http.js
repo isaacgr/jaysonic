@@ -49,7 +49,7 @@ class HttpServerProtocol extends JsonRpcServerProtocol {
    *
    * Responds to client with 204 status.
    *
-   * @param {string} message JSON-RPC message object
+   * @param {object} message JSON-RPC message object
    */
   gotNotification(message) {
     super.gotNotification(message.method, message);
@@ -60,12 +60,13 @@ class HttpServerProtocol extends JsonRpcServerProtocol {
   }
 
   /**
-   * @extends HttpServerProtocol.clientConnected
+   * @extends JsonRpcServerProtocol.clientConnected
    */
   clientConnected() {
     this.client.on(this.event, (data) => {
       this.client.on("end", () => {
-        this._validateData(data);
+        this.messageBuffer.push(data);
+        this._waitForData();
       });
     });
   }
