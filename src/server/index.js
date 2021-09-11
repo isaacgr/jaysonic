@@ -1,5 +1,6 @@
 const EventEmitter = require("events");
 const { formatResponse } = require("../util/format");
+const JsonRpcServerProtocol = require("./protocol/base");
 
 /**
  * Creates an instance of JsonRpcServerFactory
@@ -16,6 +17,7 @@ class JsonRpcServerFactory extends EventEmitter {
    * @property {object} methods Key value pairs of server method to function call
    * @property {array} clients List of client connections which are instances of [JsonRpcServerProtocol]{@link JsonRpcServerProtocol}
    * @property {boolean} listening  Inidicates if the server is currently listening
+   * @property {Object} protocol  Instance of [JsonRpcServerProtocol]{@link JsonRpcServerProtocol} to use for client connections
    */
   constructor(options) {
     super();
@@ -39,6 +41,7 @@ class JsonRpcServerFactory extends EventEmitter {
     this.methods = {};
     this.clients = [];
     this.listening = false;
+    this.protocol = JsonRpcServerProtocol;
   }
 
   /**

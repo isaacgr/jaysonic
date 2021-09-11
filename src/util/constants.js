@@ -21,14 +21,14 @@ const ERR_CODES = {
 };
 
 /**
- * @property {object} ERR_CODES
- * @property {string} ERR_CODES.parseError "Parse Error"
- * @property {string} ERR_CODES.invalidRequest "Invalid Request"
- * @property {string} ERR_CODES.methodNotFound "Method not found"
- * @property {string} ERR_CODES.invalidParams "Invalid Parameters"
- * @property {string} ERR_CODES.internal "Internal Error"
- * @property {string} ERR_CODES.timeout "Request Timeout"
- * @property {string} ERR_CODES.unknown "Unknown Error"
+ * @property {object} ERR_MSGS
+ * @property {string} ERR_MSGS.parseError "Parse Error"
+ * @property {string} ERR_MSGS.invalidRequest "Invalid Request"
+ * @property {string} ERR_MSGS.methodNotFound "Method not found"
+ * @property {string} ERR_MSGS.invalidParams "Invalid Parameters"
+ * @property {string} ERR_MSGS.internal "Internal Error"
+ * @property {string} ERR_MSGS.timeout "Request Timeout"
+ * @property {string} ERR_MSGS.unknown "Unknown Error"
  * @memberof Utils.constants
  */
 const ERR_MSGS = {

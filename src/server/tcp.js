@@ -7,6 +7,11 @@ const TCPServerProtocol = require("./protocol/tcp");
  * @extends JsonRpcServerFactory
  */
 class TcpServerFactory extends JsonRpcServerFactory {
+  constructor(options) {
+    super(options);
+    this.protocol = TCPServerProtocol;
+  }
+
   /** @inheritdoc */
   setServer() {
     this.server = new net.Server();
@@ -15,7 +20,7 @@ class TcpServerFactory extends JsonRpcServerFactory {
   /** @inheritdoc */
   buildProtocol() {
     this.server.on("connection", (client) => {
-      const pcol = new TCPServerProtocol(
+      const pcol = new this.protocol(
         this,
         client,
         this.options.version,
