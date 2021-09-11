@@ -337,7 +337,7 @@ class JsonRpcServerProtocol {
    * Writes error to the client. Will send a JSON-RPC error object if the
    * passed error cannot be parsed.
    *
-   * @param {string} error Stringified error object
+   * @param {Error} error `Error` object instance where the message should be a JSON-RPC message object
    */
   gotError(error) {
     let err;
