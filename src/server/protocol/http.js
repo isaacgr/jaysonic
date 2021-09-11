@@ -12,7 +12,7 @@ class HttpServerProtocol extends JsonRpcServerProtocol {
    * the following properties are available.
    *
    * @property {class} response HTTP response object
-   * @property {object} headers={"Content-Type": "application/json"} HTTP response headers
+   * @property {object} headers={"Content-Type":"application/json"} HTTP response headers
    */
   constructor(factory, client, response, version, delimiter) {
     super(factory, client, version, delimiter);
