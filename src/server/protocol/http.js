@@ -51,7 +51,9 @@ class HttpServerProtocol extends JsonRpcServerProtocol {
    * Calls `emit` on factory with the event name being `message.method` and
    * the date being `message`. Responds to client.
    *
-   * @param {string} message Stringified JSON-RPC message object
+   * Responds to client with 204 status.
+   *
+   * @param {string} message JSON-RPC message object
    */
   gotNotification(message) {
     super.gotNotification(message.method, message);

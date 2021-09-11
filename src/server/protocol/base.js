@@ -208,7 +208,7 @@ class JsonRpcServerProtocol {
    * Calls `emit` on factory with the event name being `message.method` and
    * the date being `message`.
    *
-   * @param {string} message Stringified JSON-RPC message object
+   * @param {string} message JSON-RPC message object
    */
   gotNotification(message) {
     this.factory.emit(message.method, message);
