@@ -208,7 +208,7 @@ class JsonRpcServerProtocol {
    * Calls `emit` on factory with the event name being `message.method` and
    * the date being `message`.
    *
-   * @param {string} message Stringified JSON-RPC message object
+   * @param {string} message JSON-RPC message object
    */
   gotNotification(message) {
     this.factory.emit(message.method, message);
@@ -337,7 +337,7 @@ class JsonRpcServerProtocol {
    * Writes error to the client. Will send a JSON-RPC error object if the
    * passed error cannot be parsed.
    *
-   * @param {string} error Stringified error object
+   * @param {Error} error `Error` object instance where the message should be a JSON-RPC message object
    */
   gotError(error) {
     let err;

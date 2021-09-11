@@ -12,81 +12,89 @@ class HttpServerProtocol extends JsonRpcServerProtocol {
    * the following properties are available.
    *
    * @property {class} response HTTP response object
-   *
+   * @property {object} headers={"Content-Type":"application/json"} HTTP response headers
    */
   constructor(factory, client, response, version, delimiter) {
     super(factory, client, version, delimiter);
     this.response = response;
+    this.headers = {
+      "Content-Type": "application/json"
+    };
+    this.status = null;
   }
 
   /**
-   * Send message to the client. If a notification is passed, then
-   * a 204 response code is sent.
+   * Send message to the client.
    *
    * @param {string} message Stringified JSON-RPC message object
-   * @param {boolean} notification Indicates if message is a notification
    */
-  writeToClient(message, notification) {
-    if (notification) {
-      this._setResponseHeader({
-        response: this.response,
-        notification: true
-      });
-      this.response.end();
-      return;
-    }
+  writeToClient(message) {
     const json = JSON.parse(message);
-    const header = { response: this.response };
-    if ("error" in json && json.error !== null) {
-      header.errorCode = json.error.code;
+    if (!this.status) {
+      // set the status code if it has not been overwritten
+      if (json.error) {
+        this.setResponseStatus({
+          errorCode: json.error.code
+        });
+      } else {
+        this.status = 200;
+      }
     }
-    this._setResponseHeader(header);
-    this.response.write(message, () => {
-      this.response.end();
-    });
+    this.response.writeHead(this.status, this.headers).end(message);
   }
 
   /**
    * Calls `emit` on factory with the event name being `message.method` and
-   * the date being `message`. Responds to client.
+   * the data being `message`.
    *
-   * @param {string} message Stringified JSON-RPC message object
+   * Responds to client with 204 status.
+   *
+   * @param {object} message JSON-RPC message object
    */
   gotNotification(message) {
     super.gotNotification(message.method, message);
-    this.writeToClient(message, true);
+    this.setResponseStatus({
+      notification: true
+    });
+    this.response.writeHead(this.status, this.headers).end();
   }
 
-  /** @inheritdoc */
+  /**
+   * Registers the `event` data listener when client connects.
+   *
+   * Pushes received data into `messageBuffer` and calls
+   * [_waitForData]{@link JsonRpcServerProtocol#_waitForData}.
+   *
+   * @extends JsonRpcServerProtocol.clientConnected
+   */
   clientConnected() {
     this.client.on(this.event, (data) => {
       this.client.on("end", () => {
-        this._validateData(data);
+        this.messageBuffer.push(data);
+        this._waitForData();
       });
     });
   }
 
   /**
-   * Set response header and response code
+   * Set response status code
    *
    * @param {object} options
-   * @param {class} options.response Http response instance
-   * @param {boolean} options.notification Inidicate if setting header for notification
    * @param {number} options.errorCode The JSON-RPC error code to lookup a corresponding status code for
-   * @private
+   * @param {number} options.status The HTTP status code (will override the errorCode)
+   * @param {boolean} options.notification Inidicate if setting header for notification (will override other options with 204 status)
    */
-  _setResponseHeader({ response, errorCode, notification }) {
-    let statusCode = 200;
-    if (notification) {
-      statusCode = 204;
-    }
-    const header = {
-      "Content-Type": "application/json"
-    };
+  setResponseStatus({ errorCode, status, notification }) {
+    this.status = 200;
     if (errorCode) {
-      statusCode = errorToStatus[String(errorCode)];
+      this.status = errorToStatus[String(errorCode)];
     }
-    response.writeHead(statusCode, header);
+    if (status) {
+      this.status = status;
+    }
+    if (notification) {
+      this.status = 204; // notification responses must be 204 per spec, so no point in allowing an override
+    }
   }
 }
 
