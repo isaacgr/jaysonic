@@ -60,6 +60,11 @@ class HttpServerProtocol extends JsonRpcServerProtocol {
   }
 
   /**
+   * Registers the `event` data listener when client connects.
+   *
+   * Pushes received data into `messageBuffer` and calls
+   * [_waitForData]{@link JsonRpcServerProtocol#_waitForData}.
+   *
    * @extends JsonRpcServerProtocol.clientConnected
    */
   clientConnected() {
