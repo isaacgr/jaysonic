@@ -13,9 +13,11 @@ const serverHttp = new Jaysonic.server.http();
 const serverHttpV1 = new Jaysonic.server.http({ version: 1 });
 const serverHttps = new Jaysonic.server.http({
   scheme: "https",
-  key: fs.readFileSync("tests/key.pem"),
-  cert: fs.readFileSync("tests/server.crt"),
-  ca: "selfSignedRootCaPemCrtBuffer"
+  ssl: {
+    key: fs.readFileSync("tests/key.pem"),
+    cert: fs.readFileSync("tests/server.crt"),
+    ca: "selfSignedRootCaPemCrtBuffer"
+  }
 });
 const wss = new Jaysonic.server.ws();
 
