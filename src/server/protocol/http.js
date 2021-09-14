@@ -68,10 +68,10 @@ class HttpServerProtocol extends JsonRpcServerProtocol {
    * @extends JsonRpcServerProtocol.clientConnected
    */
   clientConnected() {
-    this.client.on(this.event, (data) => {
+    this.client.on(this.event, (chunk) => {
+      this.messageBuffer.push(chunk);
       this.client.on("end", () => {
-        this.messageBuffer.push(data);
-        this._waitForData();
+        this._validateData(this.messageBuffer.emptyBuffer());
       });
     });
   }
