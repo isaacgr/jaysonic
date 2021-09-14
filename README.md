@@ -297,7 +297,8 @@ const server = new Jaysonic.server.http()
 
 Pass `https` to the `sheme` option to use an https client or server.
 
-The https server requires an SSL key and certificate file.
+The https server requires an SSL key and certificate file. Valid options for the `ssl` object are any of the options
+given by https://nodejs.org/api/tls.html#tls_tls_createsecurecontext_options.
 
 ```js
 const Jaysonic = require("jaysonic");
@@ -307,9 +308,11 @@ const client = new Jaysonic.client.http({ scheme: "https" });
 
 // https server
 const server = new Jaysonic.server.http({
-  scheme: "http",
-  key: fs.readFileSync("key.pem"),
-  cert: fs.readFileSync("server.crt")
+  scheme: "https",
+  ssl: {
+    key: fs.readFileSync("key.pem"),
+    cert: fs.readFileSync("server.crt")
+  }
 });
 ```
 
