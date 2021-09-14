@@ -14,14 +14,12 @@ class HttpServerFactory extends JsonRpcServerFactory {
    * the WsServerProtocol has the following properties:
    *
    * @property {'http'|'https'} scheme The scheme to allow connections with
-   * @property {file} key The private SSL key file
-   * @property {file} cert The SSL certificate file
+   * @property {object} sslOptions Any of the ssl options for the http server according to https://nodejs.org/api/tls.html#tls_tls_createsecurecontext_options
    */
   constructor(options) {
     super(options);
     this.scheme = this.options.scheme || "http";
-    this.key = this.options.key;
-    this.cert = this.options.cert;
+    this.sslOptions = this.options.ssl;
     this.protocol = HttpServerProtocol;
   }
 
@@ -31,8 +29,7 @@ class HttpServerFactory extends JsonRpcServerFactory {
       this.server = new http.Server();
     } else if (this.scheme === "https") {
       this.server = new https.Server({
-        key: this.key,
-        cert: this.cert
+        ...this.sslOptions
       });
     } else {
       throw Error("Invalid scheme");
