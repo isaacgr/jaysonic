@@ -42,7 +42,7 @@ describe("Message Buffer", () => {
     });
   });
   describe("emptyBuffer()", () => {
-    it("should return return the message buffer and set it to empty", (done) => {
+    it("should return the message buffer and set it to empty", (done) => {
       const buffer = new MessageBuffer();
       buffer.push("foo\r\nbar");
       expect(buffer.emptyBuffer()).to.equal("foo\r\nbar");

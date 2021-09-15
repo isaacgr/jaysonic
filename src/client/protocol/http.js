@@ -80,8 +80,11 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
    * Calls [_waitForData]{@link JsonRpcClientProtocol#_waitForData}
    */
   listen() {
-    this.listener.on("data", (data) => {
-      this._waitForData(data);
+    this.listener.on("data", (chunk) => {
+      this.messageBuffer.push(chunk);
+      this.listener.on("end", () => {
+        this._waitForData(this.messageBuffer.emptyBuffer());
+      });
     });
   }
 
