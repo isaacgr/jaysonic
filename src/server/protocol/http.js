@@ -65,14 +65,19 @@ class HttpServerProtocol extends JsonRpcServerProtocol {
    * Pushes received data into `messageBuffer` and calls
    * [_waitForData]{@link JsonRpcServerProtocol#_waitForData}.
    *
+   * The HTTP server does not use the delimiter since the completion of a request indicates
+   * the end of data.
+   *
    * @extends JsonRpcServerProtocol.clientConnected
    */
   clientConnected() {
     this.client.on(this.event, (chunk) => {
       this.messageBuffer.push(chunk);
-      this.client.on("end", () => {
+    });
+    this.client.on("end", () => {
+      if (this.messageBuffer.buffer !== "") {
         this._validateData(this.messageBuffer.emptyBuffer());
-      });
+      }
     });
   }
 
