@@ -295,33 +295,36 @@ class JsonRpcServerFactory extends EventEmitter {
   /**
    * Called when client disconnects from server.
    *
-   * If overwriting, its recommended to call {@link JsonRpcServerFactory.removeDisconnectedClient} manually
+   * If overwriting, its recommended to call {@link JsonRpcServerFactory._removeFromArray} manually
    * to ensure `this.clients` is cleaned up
+   *
+   * Calls `this._removeFromArray` and removes disconnected client from `this.clients` list
    *
    * @param {JsonRpcServerProtocol} pcol A {@link JsonRpcServerProtocol} instance
    * @returns {object|error} Returns an object of {host, port} for the given protocol instance, or {error}
    * if there was an error retrieving the client
    */
   clientDisconnected(pcol) {
-    return this.removeDisconnectedClient(pcol);
+    return this._removeFromArray(pcol, this.clients);
   }
 
   /**
-   * Removes disconnected client from `this.clients` list
+   * Removes item from the given list
    *
-   * @param {JsonRpcServerProtocol} pcol A {@link JsonRpcServerProtocol} instance
-   * @returns {object|error} Returns an object of {host, port} for the given protocol instance, or {error}
+   * @param {*} item Any item in the list
+   * @param {array} array The array to remove the item from
+   * @returns {*|error} Returns the item that was removed from the array or {error}
    *
    */
-  removeDisconnectedClient(pcol) {
-    const clientIndex = this.clients.findIndex(p => p === pcol);
-    if (clientIndex === -1) {
+  _removeFromArray(item, array) {
+    const itemIndex = array.findIndex(c => c === item);
+    if (itemIndex === -1) {
       return {
-        error: `Unknown client ${JSON.stringify(pcol)}`
+        error: `Unable to remove ${JSON.stringify(item)}`
       };
     }
-    const [protocol] = this.clients.splice(clientIndex, 1);
-    return protocol.client;
+    const [removedItem] = array.splice(itemIndex, 1);
+    return removedItem;
   }
 
   /**

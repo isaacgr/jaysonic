@@ -29,11 +29,11 @@ describe("Http Server", () => {
     it("should return 'Unknown client' from clientDisconnected if client was not found", (done) => {
       let res;
       serverHttp.clientDisconnected = (client) => {
-        res = serverHttp.removeDisconnectedClient(client);
+        res = serverHttp._removeFromArray(client, serverHttp.clients);
       };
       serverHttp.clientDisconnected({});
       try {
-        expect(res).to.be.eql({ error: "Unknown client {}" });
+        expect(res).to.be.eql({ error: "Unable to remove {}" });
         done();
       } catch (e) {
         console.log(e);

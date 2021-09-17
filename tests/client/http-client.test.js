@@ -1,7 +1,11 @@
 const { expect } = require("chai");
+const chai = require("chai");
+const spies = require("chai-spies");
 const Jaysonic = require("../../src");
 const data = require("../large-data.json");
 const { serverHttp } = require("../test-server");
+
+chai.use(spies);
 
 const clientHttp = new Jaysonic.client.http();
 
