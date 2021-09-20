@@ -7,9 +7,14 @@ const TcpClientProtocol = require("./protocol/tcp");
  * @extends JsonRpcClientFactory
  */
 class TcpClientFactory extends JsonRpcClientFactory {
+  constructor(options) {
+    super(options);
+    this.protocol = TcpClientProtocol;
+  }
+
   /** @inheritdoc */
   buildProtocol() {
-    this.pcolInstance = new TcpClientProtocol(
+    this.pcolInstance = new this.protocol(
       this,
       this.options.version,
       this.options.delimiter

@@ -41,11 +41,11 @@ class HttpClientFactory extends JsonRpcClientFactory {
         ...this.options.headers
       }
     };
+    this.protocol = HttpClientProtocol;
     this.headers = this.options.headers;
     this.encoding = this.options.encoding;
     this.scheme = this.options.scheme;
-
-    this.pcolInstance = new HttpClientProtocol(
+    this.pcolInstance = new this.protocol(
       this,
       this.options.version,
       this.options.delimiter,

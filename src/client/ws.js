@@ -29,13 +29,13 @@ class WsClientFactory extends JsonRpcClientFactory {
       ...defaults,
       ...(this.options || {})
     };
-
+    this.protocol = WsClientProtocol;
     this.url = this.options.url;
   }
 
   /** @inheritdoc */
   buildProtocol() {
-    this.pcolInstance = new WsClientProtocol(
+    this.pcolInstance = new this.protocol(
       this,
       this.options.version,
       this.options.delimiter

@@ -1,4 +1,5 @@
 const EventEmitter = require("events");
+const JsonRpcClientProtocol = require("./protocol/base");
 
 /**
  * Creates an instance of JsonRpcClientFactory. This is the base factory which
@@ -18,6 +19,7 @@ class JsonRpcClientFactory extends EventEmitter {
    * @param {number} [options.timeout=30] Timeout for request response
    * @param {number} [options.connectionTimeout=5000] Timeout for connection to server
    * @param {number} [options.retries=2] Number of connection retry attempts
+   * @property {Object} protocol  Instance of [JsonRpcClientProtocol]{@link JsonRpcClientProtocol} to use for managing client connections
    * @property {class} pcolInstance The [JsonRpcClientProtocol]{@link JsonRpcClientProtocol} instance
    * @property {object} timeouts Key value pairs of request IDs to `setTimeout` instance
    * @property {number} requestTimeout Same as `options.timeout`
@@ -45,6 +47,7 @@ class JsonRpcClientFactory extends EventEmitter {
       ...defaults,
       ...(options || {})
     };
+    this.protocol = JsonRpcClientProtocol;
     this.pcolInstance = undefined;
     this.timeouts = {};
     this.requestTimeout = this.options.timeout * 1000;
