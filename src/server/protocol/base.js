@@ -127,11 +127,16 @@ class JsonRpcServerProtocol {
       }
       // possible batch request
       this.gotBatchRequest(result).then((res) => {
-        this.writeToClient(JSON.stringify(res) + this.delimiter);
+        if (res.length !== 0) {
+          // if all the messages in the batch were notifications,
+          // then we wouldnt want to return anything
+          this.writeToClient(JSON.stringify(res) + this.delimiter);
+        }
       });
     } else if (result === Object(result) && !("id" in result)) {
       // no id, so assume notification
       this.gotNotification(result);
+      return false;
     } else {
       this.validateMessage(result);
       return true;
@@ -243,10 +248,14 @@ class JsonRpcServerProtocol {
     const batchResponses = requests
       .map((request) => {
         try {
-          this._maybeHandleRequest(request);
-          return this.getResult(request)
-            .then(result => JSON.parse(result))
-            .catch(error => JSON.parse(error));
+          const isMessage = this._maybeHandleRequest(request);
+          if (isMessage) {
+            // if its a notification we dont want to return anything
+            return this.getResult(request)
+              .then(result => JSON.parse(result))
+              .catch(error => JSON.parse(error));
+          }
+          return null;
         } catch (e) {
           // basically reject the whole batch if any one thing fails
           return JSON.parse(e.message);

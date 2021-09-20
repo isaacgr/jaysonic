@@ -74,14 +74,19 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
   /**
    * Setup `this.listener.on("data")` event to listen for data coming into the client.
    *
-   * The HTTP client does not use the messageBuffer since each request should
-   * only receive one response at a time.
+   * The HTTP client does not use the delimiter since the completion of a response indicates
+   * the end of data.
    *
    * Calls [_waitForData]{@link JsonRpcClientProtocol#_waitForData}
    */
   listen() {
-    this.listener.on("data", (data) => {
-      this._waitForData(data);
+    this.listener.on("data", (chunk) => {
+      this.messageBuffer.push(chunk);
+    });
+    this.listener.on("end", () => {
+      if (this.messageBuffer.buffer !== "") {
+        this._waitForData(this.messageBuffer.emptyBuffer());
+      }
     });
   }
 

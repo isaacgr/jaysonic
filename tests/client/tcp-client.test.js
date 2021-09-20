@@ -287,7 +287,7 @@ describe("TCP Client", () => {
       });
     });
   });
-  describe("notifications", () => {
+  describe("receiving notifications", () => {
     it("should handle receiving a notification", (done) => {
       const callback = (message) => {
         expect(message).to.be.eql({

@@ -33,11 +33,20 @@ const res2 = {
 };
 
 describe("Message Buffer", () => {
-  describe("get.message()", () => {
+  describe("getMessage()", () => {
     it("should return null if no delimiter found", (done) => {
       const buffer = new MessageBuffer("\n");
       buffer.push("foo");
       expect(buffer.getMessage()).to.equal(null);
+      done();
+    });
+  });
+  describe("emptyBuffer()", () => {
+    it("should return the message buffer and set it to empty", (done) => {
+      const buffer = new MessageBuffer();
+      buffer.push("foo\r\nbar");
+      expect(buffer.emptyBuffer()).to.equal("foo\r\nbar");
+      expect(buffer.buffer).to.equal("");
       done();
     });
   });

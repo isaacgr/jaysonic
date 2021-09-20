@@ -82,6 +82,20 @@ class MessageBuffer {
   }
 
   /**
+   *
+   * Returns the contents of `this.buffer`.
+   *
+   * Particularily useful for http buffering, where delimiters might not be used.
+   *
+   * @returns {string} message
+   */
+  emptyBuffer() {
+    const data = this.buffer;
+    this.buffer = "";
+    return data;
+  }
+
+  /**
    * @returns {function} MessageBuffer.getMessage()
    */
   handleData() {

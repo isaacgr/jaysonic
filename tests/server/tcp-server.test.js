@@ -71,10 +71,10 @@ describe("TCP Server", () => {
     it("should return 'Unknown client' from clientDisconnected if client was not found", (done) => {
       let res;
       server.clientDisconnected = (pcol) => {
-        res = server.removeDisconnectedClient(pcol);
+        res = server._removeFromArray(pcol, server.clients);
       };
       server.clientDisconnected({});
-      expect(res).to.be.eql({ error: "Unknown client {}" });
+      expect(res).to.be.eql({ error: "Unable to remove {}" });
       done();
     });
     it("should be unable to listen multiple times", (done) => {
