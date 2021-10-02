@@ -1,27 +1,30 @@
 class Logger {
   constructor() {
+    if (Logger._instance) {
+      return Logger._instance;
+    }
+    Logger._instance = this;
     this.log = console;
   }
-}
 
-class Singleton {
-  constructor() {
-    if (!Singleton.instance) {
-      Singleton.instance = new Logger();
-    }
+  setLogger(newLogger) {
+    this.log = newLogger;
   }
 
-  getInstance() {
-    return Singleton.instance;
+  getLogger() {
+    return Logger._instance || new Logger();
   }
 }
 
 const logging = {
   setLogger(newLogger) {
-    new Singleton().getInstance().log = newLogger;
+    new Logger().setLogger(newLogger);
   },
   getLogger() {
-    return new Singleton().getInstance().log;
+    return new Logger().getLogger().log;
+  },
+  getInstance() {
+    return new Logger().getLogger();
   }
 };
 
