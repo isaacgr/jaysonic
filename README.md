@@ -6,8 +6,8 @@
   - [Download & Installation](#download--installation)
   - [Class Documentation](#class-documentation)
   - [CLI tool](#cli-tool)
-      - [Install](#install)
-      - [Usage](#usage)
+    - [Install](#install)
+    - [Usage](#usage)
   - [Use of the library as a standalone module](#use-of-the-library-as-a-standalone-module)
     - [Initialization](#initialization)
       - [WS Client for browser](#ws-client-for-browser)
@@ -18,10 +18,10 @@
       - [Other client and server options](#other-client-and-server-options)
     - [Code Demos](#code-demos)
       - [Initialization](#initialization-1)
-          - [TCP](#tcp)
-          - [HTTP](#http)
-          - [HTTPS](#https)
-          - [Websocket](#websocket)
+        - [TCP](#tcp)
+        - [HTTP](#http)
+        - [HTTPS](#https)
+        - [Websocket](#websocket)
       - [Server side](#server-side)
         - [Instantiation and Listening](#instantiation-and-listening)
         - [Closing the connection](#closing-the-connection)
@@ -50,12 +50,12 @@
 
 # Jaysonic - A persistent JSON-RPC client and server
 
-| Check                | Status                                                                                                                                                                  |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Travis CI Build      | [![Build Status](https://travis-ci.com/isaacgr/jaysonic.svg?branch=master)](https://travis-ci.com/isaacgr/jaysonic)                                                     |
-| Test Coverage        | [![Coverage Status](https://coveralls.io/repos/github/isaacgr/jaysonic/badge.svg?branch=master)](https://coveralls.io/github/isaacgr/jaysonic?branch=master)            |
-| Code Maintainability | [![Maintainability](https://api.codeclimate.com/v1/badges/b061f4e44fa85d5e8b04/maintainability)](https://codeclimate.com/github/isaacgr/jaysonic/maintainability)       |
-| Docs Build           | [![Netlify Status](https://api.netlify.com/api/v1/badges/34ec9715-e872-4a37-a53b-7a0207fc57a3/deploy-status)](https://app.netlify.com/sites/keen-sammet-556a43/deploys) |
+| Check                | Status                                                                                                                                                                    |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Github CI Build      | [![Build Status](https://github.com/isaacgr/jaysonic/actions/workflows/main.yml/badge.svg)](https://github.com/isaacgr/jaysonic/actions/workflows/main.yml?branch=master) |
+| Test Coverage        | [![Coverage Status](https://coveralls.io/repos/github/isaacgr/jaysonic/badge.svg?branch=master)](https://coveralls.io/github/isaacgr/jaysonic?branch=master)              |
+| Code Maintainability | [![Maintainability](https://api.codeclimate.com/v1/badges/b061f4e44fa85d5e8b04/maintainability)](https://codeclimate.com/github/isaacgr/jaysonic/maintainability)         |
+| Docs Build           | [![Netlify Status](https://api.netlify.com/api/v1/badges/34ec9715-e872-4a37-a53b-7a0207fc57a3/deploy-status)](https://app.netlify.com/sites/keen-sammet-556a43/deploys)   |
 
 ---
 
