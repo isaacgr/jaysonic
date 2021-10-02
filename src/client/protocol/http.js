@@ -1,6 +1,7 @@
 const http = require("http");
 const https = require("https");
 const JsonRpcClientProtocol = require("./base");
+const logging = require("../../util/logger");
 
 /**
  * Creates an instance of HttpClientProtocol, which has some tweaks from the base class
@@ -178,9 +179,11 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
     } catch (e) {
       if (e instanceof TypeError) {
         // probably a parse error, which might not have an id
-        console.error(
-          `Message has no outstanding calls: ${JSON.stringify(err.body)}`
-        );
+        logging
+          .getLogger()
+          .error(
+            `Message has no outstanding calls: ${JSON.stringify(err.body)}`
+          );
       }
     }
   }

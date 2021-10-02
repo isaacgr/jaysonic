@@ -285,9 +285,11 @@ class JsonRpcClientProtocol {
     } catch (e) {
       if (e instanceof TypeError) {
         // response id likely not in the queue
-        console.error(
-          `Message has no outstanding calls: ${JSON.stringify(message)}`
-        );
+        logging
+          .getLogger()
+          .error(
+            `Message has no outstanding calls: ${JSON.stringify(message)}`
+          );
       }
     }
   }
@@ -509,7 +511,9 @@ class JsonRpcClientProtocol {
         delete this.pendingCalls[id];
       } catch (e) {
         if (e instanceof TypeError) {
-          console.error(`Message has no outstanding calls. ID [${id}]`);
+          logging
+            .getLogger()
+            .error(`Message has no outstanding calls. ID [${id}]`);
         }
       }
     }, this.factory.requestTimeout);
@@ -544,9 +548,11 @@ class JsonRpcClientProtocol {
     } catch (e) {
       if (e instanceof TypeError) {
         // no outstanding calls
-        console.log(
-          `Batch response has no outstanding calls. Response IDs [${batchIds}]`
-        );
+        logging
+          .getLogger()
+          .log(
+            `Batch response has no outstanding calls. Response IDs [${batchIds}]`
+          );
       }
     }
   }
@@ -599,7 +605,8 @@ class JsonRpcClientProtocol {
   /**
    * Reject the pending call for the given ID is in the error object.
    *
-   * If the error object has a null id, then log the message to the console.
+   * If the error object has a null id, then log the message to the logging
+        .getLogger().
    *
    * @param {string} error Stringified JSON-RPC error object
    *
@@ -611,9 +618,9 @@ class JsonRpcClientProtocol {
     } catch (e) {
       if (e instanceof TypeError) {
         // error object id probably not a pending response
-        console.error(
-          `Message has no outstanding calls: ${JSON.stringify(error)}`
-        );
+        logging
+          .getLogger()
+          .error(`Message has no outstanding calls: ${JSON.stringify(error)}`);
       }
     }
   }

@@ -1,5 +1,6 @@
 const WebSocket = require("ws");
 const JsonRpcClientProtocol = require("./base");
+const logging = require("../../util/logger");
 
 /**
  * Creates and instance of WsClientProtocol
@@ -46,9 +47,11 @@ class WsClientProtocol extends JsonRpcClientProtocol {
     this.connector.onclose = (event) => {
       if (this.connector.__clientClosed) {
         // we dont want to retry if the client purposefully closed the connection
-        console.log(
-          `Client closed connection. Code [${event.code}]. Reason [${event.reason}].`
-        );
+        logging
+          .getLogger()
+          .log(
+            `Client closed connection. Code [${event.code}]. Reason [${event.reason}].`
+          );
       } else {
         return this._onConnectionFailed(event, resolve, reject);
       }
@@ -61,14 +64,18 @@ class WsClientProtocol extends JsonRpcClientProtocol {
   _onConnectionFailed(event, resolve, reject) {
     if (this.factory.remainingRetries > 0) {
       this.factory.remainingRetries -= 1;
-      console.error(
-        `Failed to connect. Address [${this.url}]. Retrying. ${this.factory.remainingRetries} attempts left.`
-      );
+      logging
+        .getLogger()
+        .error(
+          `Failed to connect. Address [${this.url}]. Retrying. ${this.factory.remainingRetries} attempts left.`
+        );
     } else if (this.factory.remainingRetries === 0) {
       this.factory.pcolInstance = undefined;
       return reject(event);
     } else {
-      console.error(`Failed to connect. Address [${this.url}]. Retrying.`);
+      logging
+        .getLogger()
+        .error(`Failed to connect. Address [${this.url}]. Retrying.`);
     }
     this._connectionTimeout = setTimeout(() => {
       this._retryConnection(resolve, reject);
