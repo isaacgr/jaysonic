@@ -1,6 +1,7 @@
 const { formatRequest, formatError } = require("../../util/format");
 const { ERR_CODES, ERR_MSGS } = require("../../util/constants");
 const MessageBuffer = require("../../util/buffer");
+const logging = require("../../util/logger");
 
 /**
  * Creates an instance of the base client protocol class.
@@ -117,16 +118,20 @@ class JsonRpcClientProtocol {
   _onConnectionFailed(error, resolve, reject) {
     if (this.factory.remainingRetries > 0) {
       this.factory.remainingRetries -= 1;
-      console.error(
-        `Failed to connect. Address [${this.server.host}:${this.server.port}]. Retrying. ${this.factory.remainingRetries} attempts left.`
-      );
+      logging
+        .getLogger()
+        .info(
+          `Failed to connect. Address [${this.server.host}:${this.server.port}]. Retrying. ${this.factory.remainingRetries} attempts left.`
+        );
     } else if (this.factory.remainingRetries === 0) {
       this.factory.pcolInstance = undefined;
       return reject(error);
     } else {
-      console.error(
-        `Failed to connect. Address [${this.server.host}:${this.server.port}]. Retrying.`
-      );
+      logging
+        .getLogger()
+        .info(
+          `Failed to connect. Address [${this.server.host}:${this.server.port}]. Retrying.`
+        );
     }
     this._connectionTimeout = setTimeout(() => {
       this._retryConnection(resolve, reject);
