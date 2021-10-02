@@ -27,6 +27,8 @@ jobs:
         with:
             node-version: ${{ matrix.node-version }}
             cache: 'npm'
+      - name: Install packages
+        run: npm install
       - name: Prepare
         run: npm run prepare
       - name: Coveralls GitHub Action
