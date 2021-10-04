@@ -120,7 +120,7 @@ class JsonRpcClientProtocol {
       this.factory.remainingRetries -= 1;
       logging
         .getLogger()
-        .info(
+        .error(
           `Failed to connect. Address [${this.server.host}:${this.server.port}]. Retrying. ${this.factory.remainingRetries} attempts left.`
         );
     } else if (this.factory.remainingRetries === 0) {
@@ -129,7 +129,7 @@ class JsonRpcClientProtocol {
     } else {
       logging
         .getLogger()
-        .info(
+        .error(
           `Failed to connect. Address [${this.server.host}:${this.server.port}]. Retrying.`
         );
     }
