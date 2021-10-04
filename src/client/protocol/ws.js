@@ -49,7 +49,7 @@ class WsClientProtocol extends JsonRpcClientProtocol {
         // we dont want to retry if the client purposefully closed the connection
         logging
           .getLogger()
-          .log(
+          .info(
             `Client closed connection. Code [${event.code}]. Reason [${event.reason}].`
           );
       } else {
