@@ -18,6 +18,6 @@ Jaysonic.server = require("./server");
 
 /**
  * @static
- * @type Object
+ * @type Logger
  */
 Jaysonic.logging = require("./util/logger");
