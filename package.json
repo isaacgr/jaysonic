@@ -48,6 +48,7 @@
     "async"
   ],
   "main": "./lib/index.js",
+  "types": "./lib/index.d.js",
   "bin": {
     "jaysonic-client": "./bin/client"
   },
