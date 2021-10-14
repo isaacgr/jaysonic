@@ -1,6 +1,7 @@
 const { formatRequest, formatError } = require("../../util/format");
 const { ERR_CODES, ERR_MSGS } = require("../../util/constants");
 const MessageBuffer = require("../../util/buffer");
+const logging = require("../../util/logger");
 
 /**
  * Creates an instance of the base client protocol class.
@@ -117,16 +118,20 @@ class JsonRpcClientProtocol {
   _onConnectionFailed(error, resolve, reject) {
     if (this.factory.remainingRetries > 0) {
       this.factory.remainingRetries -= 1;
-      console.error(
-        `Failed to connect. Address [${this.server.host}:${this.server.port}]. Retrying. ${this.factory.remainingRetries} attempts left.`
-      );
+      logging
+        .getLogger()
+        .error(
+          `Failed to connect. Address [${this.server.host}:${this.server.port}]. Retrying. ${this.factory.remainingRetries} attempts left.`
+        );
     } else if (this.factory.remainingRetries === 0) {
       this.factory.pcolInstance = undefined;
       return reject(error);
     } else {
-      console.error(
-        `Failed to connect. Address [${this.server.host}:${this.server.port}]. Retrying.`
-      );
+      logging
+        .getLogger()
+        .error(
+          `Failed to connect. Address [${this.server.host}:${this.server.port}]. Retrying.`
+        );
     }
     this._connectionTimeout = setTimeout(() => {
       this._retryConnection(resolve, reject);
@@ -280,9 +285,11 @@ class JsonRpcClientProtocol {
     } catch (e) {
       if (e instanceof TypeError) {
         // response id likely not in the queue
-        console.error(
-          `Message has no outstanding calls: ${JSON.stringify(message)}`
-        );
+        logging
+          .getLogger()
+          .error(
+            `Message has no outstanding calls: ${JSON.stringify(message)}`
+          );
       }
     }
   }
@@ -504,7 +511,9 @@ class JsonRpcClientProtocol {
         delete this.pendingCalls[id];
       } catch (e) {
         if (e instanceof TypeError) {
-          console.error(`Message has no outstanding calls. ID [${id}]`);
+          logging
+            .getLogger()
+            .error(`Message has no outstanding calls. ID [${id}]`);
         }
       }
     }, this.factory.requestTimeout);
@@ -539,9 +548,11 @@ class JsonRpcClientProtocol {
     } catch (e) {
       if (e instanceof TypeError) {
         // no outstanding calls
-        console.log(
-          `Batch response has no outstanding calls. Response IDs [${batchIds}]`
-        );
+        logging
+          .getLogger()
+          .log(
+            `Batch response has no outstanding calls. Response IDs [${batchIds}]`
+          );
       }
     }
   }
@@ -594,7 +605,8 @@ class JsonRpcClientProtocol {
   /**
    * Reject the pending call for the given ID is in the error object.
    *
-   * If the error object has a null id, then log the message to the console.
+   * If the error object has a null id, then log the message to the logging
+        .getLogger().
    *
    * @param {string} error Stringified JSON-RPC error object
    *
@@ -606,9 +618,9 @@ class JsonRpcClientProtocol {
     } catch (e) {
       if (e instanceof TypeError) {
         // error object id probably not a pending response
-        console.error(
-          `Message has no outstanding calls: ${JSON.stringify(error)}`
-        );
+        logging
+          .getLogger()
+          .error(`Message has no outstanding calls: ${JSON.stringify(error)}`);
       }
     }
   }

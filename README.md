@@ -16,6 +16,7 @@
       - [Client and server options](#client-and-server-options)
       - [Client only options](#client-only-options)
       - [Other client and server options](#other-client-and-server-options)
+    - [Logging](#logging)
     - [Code Demos](#code-demos)
       - [Initialization](#initialization-1)
         - [TCP](#tcp)
@@ -241,6 +242,25 @@ The WebSocket client supports an additional option in place of the host property
 The WebSocket server is based on the ws library (https://github.com/websockets/ws).
 
 It supports all of the options listed in their README. Typically changing the port is enough.
+
+### Logging
+
+`Jaysonic` includes a logging override to suppress or enhance the built in log messages for the library.
+
+By default `console` is used, but to overwrite this with your own logging function simply call `setLogger` before
+instantiating any clients or servers.
+
+All messages currently in the library are logged at the `info` and `error` levels.
+
+```javascript
+const Jaysonic = require("jaysonic");
+Jaysonic.logging.setLogger(myLogger); // overwrites `Logger.log` with custom logger
+
+const log = Jaysonic.logging.getLogger(); // returns `Logger.log` which is `console` by default
+log.info("foo"); // to use the logger returned from `getLogger`
+
+Jaysonic.logging.getInstance(); // returns instance of `Logger`
+```
 
 ### Code Demos
 

@@ -15,3 +15,9 @@ Jaysonic.client = require("./client");
  * @type JsonRpcServerFactory
  */
 Jaysonic.server = require("./server");
+
+/**
+ * @static
+ * @type Logger
+ */
+Jaysonic.logging = require("./util/logger");
