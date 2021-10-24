@@ -563,6 +563,7 @@ class JsonRpcClientProtocol {
    * @param {string} message Error message
    * @param {number} code Error code
    * @param {string|number=} id ID for error message object
+   * @param {*=} data Optional data to include about the error
    * @throws Error
    * @private
    */
