@@ -211,9 +211,9 @@ class JsonRpcClientProtocol {
       } else if (message.error) {
         // got an error back so reject the message
         const { id } = message;
-        const { code } = message.error;
+        const { code, data } = message.error;
         const errorMessage = message.error.message;
-        this._raiseError(errorMessage, code, id);
+        this._raiseError(errorMessage, code, id, data);
       } else if ("result" in message) {
         // Got a result, so must be a response
         this.gotResponse(message);
@@ -563,16 +563,18 @@ class JsonRpcClientProtocol {
    * @param {string} message Error message
    * @param {number} code Error code
    * @param {string|number=} id ID for error message object
+   * @param {*=} data Optional data to include about the error
    * @throws Error
    * @private
    */
-  _raiseError(message, code, id) {
+  _raiseError(message, code, id, data) {
     const error = formatError({
       jsonrpc: this.version,
       delimiter: this.delimiter,
       id,
       code,
-      message
+      message,
+      data
     });
     throw new Error(error);
   }

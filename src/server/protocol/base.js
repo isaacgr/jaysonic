@@ -302,6 +302,7 @@ class JsonRpcServerProtocol {
             .catch((resError) => {
               error.code = ERR_CODES.internal;
               error.message = `${JSON.stringify(resError.message || resError)}`;
+              error.data = resError.data;
               reject(formatError(error));
             });
         } else {
@@ -318,6 +319,7 @@ class JsonRpcServerProtocol {
           error.message = ERR_MSGS.unknown;
           // error.data = e.message;
         }
+        error.data = e.data;
         reject(formatError(error));
       }
     });
