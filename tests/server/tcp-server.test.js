@@ -291,7 +291,7 @@ describe("TCP Server", () => {
         .send("promise.resolve", [])
         .then((result) => {
           expect(result).to.be.eql({
-            result: ["resolve"],
+            result: "resolve",
             jsonrpc: "2.0",
             id: 5
           });
