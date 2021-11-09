@@ -294,7 +294,7 @@ class JsonRpcServerProtocol {
           methodResult instanceof Promise
           || typeof methodResult.then === "function"
         ) {
-          Promise.all([methodResult])
+          methodResult
             .then((results) => {
               response.result = results;
               resolve(formatResponse(response));
