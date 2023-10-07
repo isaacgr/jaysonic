@@ -91,6 +91,7 @@ class JsonRpcClientProtocol {
     this.connector.connect(this.server);
     this.connector.setEncoding("utf8");
     this.connector.on("connect", () => {
+      this.factory.remainingRetries = this.factory.options.retries;
       this.listener = this.connector;
       this.listen();
       resolve(this.server);
