@@ -91,13 +91,18 @@ class JsonRpcClientProtocol {
     this.connector.connect(this.server);
     this.connector.setEncoding("utf8");
     this.connector.on("connect", () => {
+      this.factory.remainingRetries = this.factory.options.retries;
       this.listener = this.connector;
       this.listen();
       resolve(this.server);
     });
-    this.connector.on("error", error => this._onConnectionFailed(error, resolve, reject));
-    this.connector.on("close", () => {
-      this.factory.emit("serverDisconnected");
+    this.connector.on("error", (error) =>
+      this._onConnectionFailed(error, resolve, reject)
+    );
+    this.connector.on("close", (hadError) => {
+      if (!hadError) {
+        this.factory.emit("serverDisconnected");
+      }
     });
   }
 
