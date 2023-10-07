@@ -95,9 +95,13 @@ class JsonRpcClientProtocol {
       this.listen();
       resolve(this.server);
     });
-    this.connector.on("error", error => this._onConnectionFailed(error, resolve, reject));
-    this.connector.on("close", () => {
-      this.factory.emit("serverDisconnected");
+    this.connector.on("error", (error) =>
+      this._onConnectionFailed(error, resolve, reject)
+    );
+    this.connector.on("close", (hadError) => {
+      if (!hadError) {
+        this.factory.emit("serverDisconnected");
+      }
     });
   }
 
