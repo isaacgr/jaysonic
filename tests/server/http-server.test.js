@@ -7,7 +7,7 @@ const { serverHttp, serverHttpV1 } = require("../test-server");
 
 chai.use(chaiHttp);
 
-const httpRequest = chai.request("http://localhost:8100");
+const httpRequest = chai.request("http://127.0.0.1:8100");
 
 describe("Http Server", () => {
   after((done) => {
@@ -137,6 +137,7 @@ describe("Http Server", () => {
         .set("Content-Type", "application/json")
         .send("{]\n")
         .end((error, response) => {
+          console.log(error, response);
           expect(JSON.parse(response.text)).to.be.eql({
             jsonrpc: "2.0",
             error: { code: -32700, message: "Parse Error" },
