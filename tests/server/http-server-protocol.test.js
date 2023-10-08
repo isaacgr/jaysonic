@@ -51,7 +51,7 @@ describe("HTTP Server Protocol Status Override", () => {
         this.setResponseStatus({ errorCode: 400, status: 301 });
         this.gotError(
           new Error(
-            '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid Request"}, "id": 2}'
+            "{\"jsonrpc\": \"2.0\", \"error\": {\"code\": -32600, \"message\": \"Invalid Request\"}, \"id\": 2}"
           )
         );
       }
