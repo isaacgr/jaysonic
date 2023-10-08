@@ -62,14 +62,14 @@ class HttpClientProtocol extends JsonRpcClientProtocol {
     } else {
       throw Error("Invalid scheme");
     }
-    this.connector.write(request, this.encoding);
-    this.connector.end();
     this.connector.on("close", () => {
       this.factory.emit("serverDisconnected");
     });
     this.connector.on("error", (error) => {
       throw error;
     });
+    this.connector.write(request, this.encoding);
+    this.connector.end();
   }
 
   /**
