@@ -3,7 +3,11 @@ const Jaysonic = require("../src");
 const WebSocket = require("../src/client-ws");
 
 const client = new Jaysonic.client.tcp();
-const clienthttp = new Jaysonic.client.http();
+const clienthttp = new Jaysonic.client.http({
+  headers: {
+    Connection: "close"
+  }
+});
 const socket = new net.Socket();
 const socketV1 = new net.Socket();
 

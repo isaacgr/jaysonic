@@ -7,7 +7,7 @@ const { serverHttp, serverHttpV1 } = require("../test-server");
 
 chai.use(chaiHttp);
 
-const httpRequest = chai.request("http://localhost:8100");
+const httpRequest = chai.request("http://127.0.0.1:8100");
 
 describe("Http Server", () => {
   after((done) => {
@@ -48,8 +48,18 @@ describe("Http Server", () => {
       });
     });
     it("should handle requests from multiple clients", (done) => {
-      const client1 = new Jaysonic.client.http({ port: 8100 });
-      const client2 = new Jaysonic.client.http({ port: 8100 });
+      const client1 = new Jaysonic.client.http({
+        port: 8100,
+        headers: {
+          Connection: "close"
+        }
+      });
+      const client2 = new Jaysonic.client.http({
+        port: 8100,
+        headers: {
+          Connection: "close"
+        }
+      });
       const req1 = client1.request().send("params", [1, 2]);
       const req2 = client2.request().send("named.params", { name: "jaysonic" });
       Promise.all([req1, req2]).then((results) => {

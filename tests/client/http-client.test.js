@@ -7,7 +7,11 @@ const { serverHttp } = require("../test-server");
 
 chai.use(spies);
 
-const clientHttp = new Jaysonic.client.http();
+const clientHttp = new Jaysonic.client.http({
+  headers: {
+    Connection: "close"
+  }
+});
 
 describe("HTTP Client", () => {
   before((done) => {
@@ -16,7 +20,7 @@ describe("HTTP Client", () => {
       .then(() => {
         done();
       })
-      .catch(e => console.log(e));
+      .catch((e) => console.log(e));
   });
   after((done) => {
     serverHttp
@@ -24,7 +28,7 @@ describe("HTTP Client", () => {
       .then(() => {
         done();
       })
-      .catch(e => console.log(e));
+      .catch((e) => console.log(e));
   });
   describe("connection", () => {
     // it("should receive error trying to write while disconnected", (done) => {

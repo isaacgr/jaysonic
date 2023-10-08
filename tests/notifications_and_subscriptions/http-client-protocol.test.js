@@ -5,7 +5,10 @@ const http = new Jaysonic.client.http({
   host: "httpbin.org",
   path: "/status/200",
   scheme: "https",
-  port: 443
+  port: 443,
+  headers: {
+    Connection: "close"
+  }
 });
 
 describe("Http Client Protocol Notifications", () => {

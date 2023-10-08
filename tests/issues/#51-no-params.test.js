@@ -3,7 +3,11 @@ const Jaysonic = require("../../src");
 const { server, serverHttp, wss } = require("../test-server");
 
 const tcpclient = new Jaysonic.client.tcp();
-const httpclient = new Jaysonic.client.http();
+const httpclient = new Jaysonic.client.http({
+  headers: {
+    Connection: "close"
+  }
+});
 const wsclient = new Jaysonic.client.ws();
 
 const noParams = () => "success";

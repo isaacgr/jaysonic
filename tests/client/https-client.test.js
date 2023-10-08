@@ -5,7 +5,10 @@ const { serverHttps } = require("../test-server");
 
 const clienthttps = new Jaysonic.client.http({
   scheme: "https",
-  rejectUnauthorized: false
+  rejectUnauthorized: false,
+  headers: {
+    Connection: "close"
+  }
 });
 
 describe("HTTPS Client", () => {
@@ -15,7 +18,7 @@ describe("HTTPS Client", () => {
       .then(() => {
         done();
       })
-      .catch(e => console.log(e));
+      .catch((e) => console.log(e));
   });
   after((done) => {
     serverHttps
@@ -23,7 +26,7 @@ describe("HTTPS Client", () => {
       .then(() => {
         done();
       })
-      .catch(e => console.log(e));
+      .catch((e) => console.log(e));
   });
   describe("connection", () => {
     // it("should receive error trying to write while disconnected", (done) => {
