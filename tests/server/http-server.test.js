@@ -137,7 +137,6 @@ describe("Http Server", () => {
         .set("Content-Type", "application/json")
         .send("{]\n")
         .end((error, response) => {
-          console.log(error, response);
           expect(JSON.parse(response.text)).to.be.eql({
             jsonrpc: "2.0",
             error: { code: -32700, message: "Parse Error" },
